@@ -1,0 +1,9 @@
+ &declares
+ idimp = 2, nmv = 40, ipbc = 1
+ iuin = 8, iuot = 18, iudm = 19, iup = 11, ium = 21
+ zero = 0.0, time = 0.0, tloop = 0.0
+ tpush = 0.0, tdpost = 0.0, tsort = 0.0, tfft = 0.0
+ totpush = 0.0, ts = 0.0
+ pxi = 0.0,nts=1
+ /
+

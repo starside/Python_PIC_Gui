@@ -1,0 +1,133 @@
+import sys, os
+from lib import *
+import numpy as NP
+import matplotlib.pyplot as plt
+import time
+
+import wx
+import wx.stc as stc
+import threading
+import copy
+import matplotlib
+import matplotlib.cm as cm
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib.colors import LogNorm
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
+from matplotlib.backends.backend_wx import NavigationToolbar2Wx
+from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
+from collections import deque
+
+from defaults import *
+from NewFrame import *
+from RightPanel import *
+from GraphStack import *
+from PipeSim import *
+from Signals import *
+
+#TODO:  Use nplots as default window size
+#print pyfft1mod.fft1d.pycal()
+
+# Button definitions
+ID_START = wx.NewId()
+ID_STOP = wx.NewId()		
+
+programDefaults = DefaultLoader("foo.default")
+
+# GUI Frame class that spins off the worker thread
+class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
+	"""Class MainFrame."""
+	def __init__(self, parent, id, loader, pipemode=None, que=None, timedir=None, events=None, outq=None):
+		"""Create the MainFrame."""
+		wx.Frame.__init__(self, parent, id, 'Thread Test')
+		self.loader = loader
+		self.loader.loadFromFile()
+		self.initStack()
+		
+		self.status = self.CreateStatusBar()	#create status bar
+		self.status.SetStatusText("Hola")
+
+		self.rpanel = RightPanel(self,self)	#create interface
+		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+		self.sizer.Add(item=self.rpanel, proportion=1, flag=wx.ALL | wx.EXPAND, border=2)
+		self.Bind(wx.EVT_CLOSE, self.OnExit)
+		self.SetSizerAndFit(self.sizer)
+
+		#self.Bind(wx.EVT_CLOSE, self.OnQuit)
+
+		self.pEvents = events  #Communicate with parent process, various GUI events
+		self.outq = outq
+		self.pipemode = pipemode
+		self.commKill = (pipemode, que, timedir, events, outq)
+		self.worker = PipeSimulation(self, pipemode, que, timedir, outq)
+		EVT_RESULT(self,self.OnResultPre) #Link up events
+		EVT_CONTROL(self, self.OnControl)
+		EVT_NEWTIME(self, self.OnNewTime) #link up sim time
+		EVT_CLEARGRAPHSTACK(self, self.OnClearGraphStack)
+		self.windowList = [] #list of frames
+
+	def OnExit(self, event):
+		self.rpanel.alive = False
+		for e in self.commKill:
+			if hasattr(e,"poll"):
+				print e.poll()
+			if hasattr(e,"close"):
+				e.close()
+		exit(0)
+
+	def OnNewTime(self,event):
+		self.rpanel.timerText.SetLabel("Time is " + str(event.time))
+
+	def OnReset(self,event):
+		self.pEvents.put( ResetSignal() )
+
+	def OnControl(self,event):
+		self.rpanel.makeNewFrame(event.data.layout, event.data.defaults)
+
+	def OnResultPre(self,event):
+		#Find a home for the event
+		self.OnResult(event)  #Call the result handler in the Dispatcher mixin
+
+	def OnQuit(self,event):
+		print "OnQuit"
+		if self.pipemode != None:
+			self.pipemode.close()
+			self.pEvents.close()
+			self.que.close()
+
+	def OnClearGraphStack(self,event):
+		if hasattr(event,"codename"):
+			self.dispatchers.append(GraphStack(3,event.codename, event.desc))
+		else:
+			print "Clearing GS"
+			del self.dispatchers[:]  #Delete all objects in dispatchers, defined in GraphStack.py
+
+def restart_program():
+    """Restarts the current program.
+    Note: this function does not return. Any cleanup action (like
+    saving data) must be done before calling this function."""
+    python = sys.executable
+    os.execl(python, python, * sys.argv)
+
+class MainApp(wx.App):
+	"""Class Main App."""
+	def __init__(self,arg, pipemode=None,que=None, timedir=None, events=None, outq = None):
+		self.pipemode = pipemode
+		self.que = que
+		self.timeDir = timedir
+		self.pEvents = events
+		self.outq = outq
+		wx.App.__init__(self,arg)
+
+	def OnInit(self):
+		"""Init Main App."""
+		self.frame = MainFrame(None, -1, programDefaults, pipemode=self.pipemode, que=self.que, timedir=self.timeDir, events=self.pEvents, outq = self.outq)
+		self.frame.Show(True)
+		self.SetTopWindow(self.frame)
+		return True
+
+
+if __name__ == "__main__":
+	#main()
+	app = MainApp(0)
+	app.MainLoop()

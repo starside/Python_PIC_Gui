@@ -1,0 +1,15 @@
+Write out time in master window
+Color bar on Phi
+Select Input Files
+Write out data files
+Make Movie
+
+Save runs, with name and notes.  # windows open
+Fix Axes
+Insteractive parameter changes
+
+Non jumping color bar
+flip color axis
+
+More diagnostics on charts
+Better movie res

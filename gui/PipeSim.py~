@@ -1,0 +1,94 @@
+import threading
+from lib import *
+import numpy as NP
+import cPickle
+import time
+
+from Graphs import *
+from Events import *
+
+from multiprocessing import Queue
+import Queue as QE
+
+class PipeSimulation():
+	def __init__(self,notify_window, pipe, que, timedir, async):
+		"""Init Worker Thread Class."""
+		#threading.Thread.__init__(self)
+		#self.unproc = []
+		self._notify_window = notify_window
+		self._want_abort = 0
+		self.pipe = pipe
+		self.que = que
+		self.async = async
+		self.timeDir = timedir
+		self._pollrate = 1.0/30.0  #times per second to poll for input.  Set to 0 for no delay
+		self.initFortran()
+		#self.start()
+
+	def initFortran(self):
+		self.iAmRunning = False
+		self.fC = 0
+		self.curTime = 0
+
+	def run(self):
+		while self.step() == 0:
+			True
+
+	def step(self):
+		#Python Changes
+		self.fC += 1
+		postCount = 1
+		#if self.pipe.poll(self._pollrate):  #If there is data for us
+		#temp_obj = self.pipe.recv()
+		#wx.PostEvent(self._notify_window, ResultEvent(temp_obj, self.curTime))
+		try:
+			#if len(self.unproc) > 0:
+			#	temp_obj = self.unproc.pop()
+			#else:
+			to_str = self.que.get(True,1)
+			temp_obj = cPickle.loads( to_str )
+		except QE.Empty:
+			return 1
+		except:
+			print sys.exc_info()[0]
+			return 1
+		try:
+			self.curTime = temp_obj._tackOnTime
+		except:
+			True
+		try:  #Check to see if object is a graph of a signal
+			if temp_obj.signame == "OPENFRAME":
+				print "Got OpenFRame"
+				wx.PostEvent(self._notify_window, ControlEvent(temp_obj, self.curTime))
+				return postCount
+			if temp_obj.signame == "SETTIME":
+				wx.PostEvent(self._notify_window, SimTimeEvent(temp_obj.time))
+				return postCount
+			if temp_obj.signame == "CLEARGRAPHSTACK":
+				_tcs = ClearGraphStackEvent()
+				if hasattr(temp_obj,"codename"):  #pass on info related to adding new graphstack listeners
+					_tcs.codename = temp_obj.codename
+					_tcs.desc = temp_obj.desc
+				wx.PostEvent(self._notify_window, _tcs)
+				return postCount
+			else:
+				raise AttributeError
+		except AttributeError:
+			#if not running, save event as unprocessed and continue blocking
+			if not self.iAmRunning:
+				#self.unproc.append(temp_obj)
+				try:
+					self.que.put_nowait(to_str)
+					time.sleep(0.1)  #Introduce a 1/10 second delay in pausing/unpausing.  This is so
+					#We do not use 100% CPU waiting for the simulation to resume
+				except QE.Full:
+					sys.stderr.write("Queue Full, not so good.  Exiting!\n")
+					exit(0)
+				wx.Yield()
+				return 1
+			if self.async.value == 0 :
+				self.pipe.send("Go")
+			wx.PostEvent(self._notify_window, ResultEvent(temp_obj, self.curTime))
+
+			
+		return postCount

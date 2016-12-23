@@ -1,0 +1,1402 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"in",
+				"initFortran"
+			],
+			[
+				"lb",
+				"lb"
+			],
+			[
+				"PF",
+				"PFrameMax"
+			],
+			[
+				"syn",
+				"syncParameters"
+			],
+			[
+				"PFr",
+				"PFrameMax"
+			],
+			[
+				"P",
+				"PFrameMax"
+			],
+			[
+				"defa",
+				"defaultKeylist"
+			],
+			[
+				"arg",
+				"arbGraphParameters"
+			],
+			[
+				"ke",
+				"keyList"
+			],
+			[
+				"set",
+				"setDict"
+			],
+			[
+				"_dc",
+				"_dc"
+			],
+			[
+				"frame",
+				"frameb"
+			],
+			[
+				"key",
+				"keylist"
+			],
+			[
+				"upda",
+				"updateKeylist"
+			],
+			[
+				"setPa",
+				"setParameters"
+			],
+			[
+				"up",
+				"updateKeylist"
+			],
+			[
+				"keyl",
+				"keylist"
+			],
+			[
+				"pare",
+				"parent"
+			],
+			[
+				"Def",
+				"DefaultControlPanel"
+			],
+			[
+				"axes",
+				"axes"
+			],
+			[
+				"res",
+				"resetGraph"
+			],
+			[
+				"E",
+				"EVT_REFRESHGRAPH"
+			],
+			[
+				"Pos",
+				"PostEvent"
+			],
+			[
+				"EVT_RE",
+				"EVT_REFRESHGRAPH"
+			],
+			[
+				"EVT_REF",
+				"EVT_REFRESHGRAPH_ID"
+			],
+			[
+				"EVT_RES",
+				"EVT_REFRESHGRAPH_ID"
+			],
+			[
+				"EVT",
+				"EVT_COMBOBOX"
+			],
+			[
+				"ax",
+				"axesTypeList"
+			],
+			[
+				"Dra",
+				"DrawPlot"
+			],
+			[
+				"get",
+				"getParameterValues"
+			],
+			[
+				"max",
+				"maxFrame"
+			],
+			[
+				"om",
+				"omegaMinVal"
+			],
+			[
+				"v",
+				"vsizer1"
+			],
+			[
+				"pa",
+				"panel"
+			],
+			[
+				"Hor",
+				"HORIZONTAL"
+			],
+			[
+				"Set",
+				"SetSizerAndFit"
+			],
+			[
+				"EVT_CL",
+				"EVT_CLOSEOP"
+			],
+			[
+				"EV",
+				"EVT_CLOSEOP_ID"
+			],
+			[
+				"Lo",
+				"LogNorm"
+			],
+			[
+				"ome",
+				"omegaN"
+			],
+			[
+				"phik",
+				"phikw"
+			],
+			[
+				"ph",
+				"phikw_time"
+			],
+			[
+				"phi",
+				"phikw"
+			],
+			[
+				"N",
+				"N"
+			],
+			[
+				"d",
+				"d"
+			],
+			[
+				"parent",
+				"parentWindow"
+			],
+			[
+				"Phi",
+				"PhiControlPanel"
+			],
+			[
+				"mak",
+				"makeControlPanel"
+			],
+			[
+				"grap",
+				"graphOptionsButton"
+			],
+			[
+				"cur",
+				"currentEvent"
+			],
+			[
+				"arb",
+				"arbGraphParameters"
+			],
+			[
+				"temp",
+				"temp_obj"
+			],
+			[
+				"phikw",
+				"phikw_time"
+			],
+			[
+				"x",
+				"x"
+			],
+			[
+				"curr",
+				"currentEvent"
+			],
+			[
+				"make",
+				"makeRunLongButton"
+			],
+			[
+				"run",
+				"runContinually"
+			],
+			[
+				"Draw",
+				"DrawOptions"
+			],
+			[
+				"nav",
+				"navMenu"
+			],
+			[
+				"energy",
+				"energySeries"
+			],
+			[
+				"ener",
+				"energySeries"
+			],
+			[
+				"ALI",
+				"ALIGN_CENTER"
+			],
+			[
+				"ini",
+				"initStack"
+			],
+			[
+				"sim",
+				"simframe"
+			],
+			[
+				"stat",
+				"statusbar"
+			],
+			[
+				"Cre",
+				"CreateStatusBar"
+			],
+			[
+				"AL",
+				"ALIGN_RIGHT"
+			],
+			[
+				"top",
+				"toupdate"
+			],
+			[
+				"cop",
+				"copyint"
+			],
+			[
+				"real",
+				"realTimeUpdate"
+			],
+			[
+				"load",
+				"loadNamelist"
+			],
+			[
+				"new",
+				"newb3"
+			],
+			[
+				"sav",
+				"saveInput"
+			],
+			[
+				"event",
+				"events"
+			],
+			[
+				"Ho",
+				"HORIZONTAL"
+			],
+			[
+				"SetS",
+				"SetSizer"
+			],
+			[
+				"On",
+				"OnQuit"
+			],
+			[
+				"Pr",
+				"PruneDisplays"
+			],
+			[
+				"pos",
+				"postCount"
+			],
+			[
+				"enu",
+				"enumList"
+			],
+			[
+				"App",
+				"Append"
+			],
+			[
+				"DRA",
+				"DRAWPOT"
+			],
+			[
+				"DR",
+				"DRAWPHASE"
+			],
+			[
+				"def",
+				"defaultGraphs"
+			],
+			[
+				"np",
+				"nplot"
+			],
+			[
+				"O",
+				"OnLayout3"
+			],
+			[
+				"OnL",
+				"OnLayout1"
+			],
+			[
+				"n",
+				"nplot"
+			],
+			[
+				"dis",
+				"displayAreas"
+			],
+			[
+				"wind",
+				"windowList"
+			],
+			[
+				"slo",
+				"slopeButton"
+			],
+			[
+				"sl",
+				"slopeButton"
+			],
+			[
+				"Dr",
+				"DrawPlot"
+			],
+			[
+				"EVT_",
+				"EVT_BUTTON"
+			],
+			[
+				"to",
+				"toolbar"
+			],
+			[
+				"is",
+				"isTrue"
+			],
+			[
+				"Even",
+				"EventFlag"
+			],
+			[
+				"New",
+				"NewFrame"
+			],
+			[
+				"graph",
+				"graphstack"
+			],
+			[
+				"lis",
+				"listener"
+			],
+			[
+				"Add",
+				"AddListener"
+			],
+			[
+				"ce",
+				"centralDispatcher"
+			],
+			[
+				"disa",
+				"dispatchers"
+			],
+			[
+				"des",
+				"description"
+			],
+			[
+				"dispa",
+				"dispatchers"
+			],
+			[
+				"Des",
+				"Destroy"
+			],
+			[
+				"em",
+				"emptyLabel"
+			],
+			[
+				"displa",
+				"displayAreas"
+			],
+			[
+				"Rem",
+				"RemoveListener"
+			],
+			[
+				"disp",
+				"displayAreas"
+			],
+			[
+				"H",
+				"HORIZONTAL"
+			],
+			[
+				"win",
+				"windowList"
+			],
+			[
+				"DRAW",
+				"DRAWVELOCITY"
+			],
+			[
+				"Test",
+				"TestMe"
+			],
+			[
+				"stack",
+				"stackSize"
+			],
+			[
+				"main",
+				"mainframe"
+			],
+			[
+				"list",
+				"listbox2"
+			],
+			[
+				"plot",
+				"plottype"
+			],
+			[
+				"glob",
+				"globalCounter"
+			],
+			[
+				"data",
+				"dataQueue"
+			],
+			[
+				"A",
+				"ALL"
+			],
+			[
+				"Li",
+				"ListSizer"
+			],
+			[
+				"Con",
+				"ControlSizer"
+			],
+			[
+				"dra",
+				"drawPlot"
+			],
+			[
+				"Resu",
+				"ResultEvent"
+			],
+			[
+				"OnS",
+				"OnStart"
+			],
+			[
+				"Initia",
+				"initialization"
+			],
+			[
+				"menu",
+				"menuOpen"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "lib.py",
+			"settings":
+			{
+				"buffer_size": 2516,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "new_beps1gl.py",
+			"settings":
+			{
+				"buffer_size": 40585,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "FeatureRequests.txt",
+			"settings":
+			{
+				"buffer_size": 188,
+				"line_ending": "Unix",
+				"name": "Write out time in master window"
+			}
+		},
+		{
+			"file": "/bigdrive/Dropbox/Research/Viruses/ViennaRNA-2.1.7/Research/gkmeigne.py",
+			"settings":
+			{
+				"buffer_size": 7459,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wxLearn/colourlog.py",
+			"settings":
+			{
+				"buffer_size": 5207,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wxLearn/RightClickMenu.py",
+			"settings":
+			{
+				"buffer_size": 2114,
+				"line_ending": "Unix",
+				"name": "from wxPython.wx import *"
+			}
+		},
+		{
+			"file": "wxLearn/MenuBar.py",
+			"settings":
+			{
+				"buffer_size": 951,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wxLearn/learnsizers.py",
+			"settings":
+			{
+				"buffer_size": 32752,
+				"line_ending": "Unix",
+				"name": "# Name:      LearnSizers1.py"
+			}
+		},
+		{
+			"file": "tfix.py",
+			"settings":
+			{
+				"buffer_size": 6785,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wxLearn/t6.py",
+			"settings":
+			{
+				"buffer_size": 3985,
+				"line_ending": "Unix",
+				"name": "import time"
+			}
+		},
+		{
+			"file": "wxLearn/t4.py",
+			"settings":
+			{
+				"buffer_size": 4992,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wxLearn/t1.py",
+			"settings":
+			{
+				"buffer_size": 1427,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "wxLearn/t2.py",
+			"settings":
+			{
+				"buffer_size": 2589,
+				"line_ending": "Unix",
+				"name": "import wx"
+			}
+		},
+		{
+			"file": "wxLearn/t3.py",
+			"settings":
+			{
+				"buffer_size": 3324,
+				"line_ending": "Unix",
+				"name": "import wx"
+			}
+		},
+		{
+			"file": "declares",
+			"settings":
+			{
+				"buffer_size": 425,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 306.0,
+		"last_filter": "inst",
+		"selected_items":
+		[
+			[
+				"inst",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 449.0
+	},
+	"console":
+	{
+		"height": 139.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '2915d1851351e5ee549c20394736b442' + '8bc59f460fa1548d1514676163dafc88'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by) "
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/bigdrive/Dropbox/Research/Viruses/ViennaRNA-2.1.7/Research/CythonTest.py",
+		"/bigdrive/Dropbox/Research/Viruses/ViennaRNA-2.1.7/Research/FloydWarshall.pyx",
+		"/bigdrive/Dropbox/Research/Viruses/ViennaRNA-2.1.7/Research/FloryLibrary.py",
+		"/bigdrive/Dropbox/Research/Viruses/ViennaRNA-2.1.7/Research/randomgkmeigne.py",
+		"/bigdrive/Dropbox/Research/Viruses/ViennaRNA-2.1.7/Research/prototype.py",
+		"/bigdrive/Dropbox/Research/Viruses/ViennaRNA-2.1.7/Research/rbpgkmeigne.py",
+		"/bigdrive/Dropbox/Research/Viruses/ViennaRNA-2.1.7/Research/sumBranchedGraphs.py",
+		"/home/starside/.config/sublime-text-3/Packages/Default/Preferences.sublime-settings",
+		"/bigdrive/Dropbox/Plasma/new_beps1.source/python_version/new_beps1gl_old.py",
+		"/bigdrive/Dropbox/Plasma/new_beps1.source/python_version/wxLearn/TreeCtrl.py",
+		"/home/starside/Desktop/QBf20.csv",
+		"/bigdrive/Dropbox/EncapsidationPaper/Encapsidation_RB_JoshVersion.bib",
+		"/bigdrive/Dropbox/EncapsidationPaper/acs-Feb_25AG.bib",
+		"/bigdrive/Dropbox/Plasma/new_beps1.source/fft1mod.f90"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"self.worker",
+			"reset",
+			"start()",
+			"RunSimulation",
+			"wke",
+			"slider",
+			"RefreshGraphEvent",
+			"setPArams",
+			"arbGraphParameters",
+			"setParams",
+			"arbGraph",
+			"arb",
+			"setDict",
+			"arbGraphParameters",
+			"setDict",
+			"arbGraphParameters",
+			"updateKeyList",
+			"resetGrap",
+			"removeList",
+			"imshow",
+			"setGraphByName",
+			"DrawPlot",
+			"EVT_CLOSEOP",
+			"Onselect",
+			"axesTypeList",
+			"axesType",
+			"arbGraphParameters",
+			"ControlPanel",
+			"imShow",
+			"setParams",
+			"drawPlot",
+			"arbGr",
+			"arb",
+			"makeControlPanel",
+			"PhiControlPanel",
+			"CloseOptionsEvent",
+			"Closed it",
+			"EVT_CLOSEOP",
+			"EVT_CLOSEOP_ID",
+			"CloseOptionsEvent",
+			"makeCon",
+			"phikw_time",
+			"DrawPhi",
+			"self.pott",
+			"makeCon",
+			"sfield",
+			"self.sfield",
+			"pott",
+			"])",
+			"N",
+			"cannot plot",
+			"print",
+			"DrawVeloc",
+			"axesType",
+			"cm",
+			"DrawEnergy",
+			"in1.dt",
+			"RunSimu",
+			"StatusBar",
+			"CreateStatusBar",
+			"StatusBar",
+			"wx.frame",
+			"DrawPotential",
+			"DrawPhase",
+			"print",
+			"Style",
+			"SetMinSize",
+			"())",
+			"in1.ntw",
+			"DrawVelocity",
+			"self.part",
+			"Button",
+			"emptyLabel",
+			"wx.CENTER",
+			"Add",
+			"ResultEvent",
+			"isTrue",
+			"ResultEvent",
+			"wt",
+			"itw",
+			"we",
+			"ws",
+			"we",
+			"part",
+			"windowList",
+			"NewFrame",
+			"self.part",
+			"itw",
+			"part",
+			"Dumb",
+			"RemoveListener",
+			"Dumb",
+			"GraphStack",
+			"try",
+			"Dumb",
+			"simframe",
+			"dispatchers",
+			"Dumb",
+			"AddList",
+			"AddLis",
+			"ResultEvent",
+			"run(",
+			"EVT_",
+			"poplieft",
+			"Hola",
+			"print",
+			"PostEvent",
+			"MyPanel_0",
+			"mycanvas",
+			"qe",
+			"npic",
+			"ndim",
+			"wx",
+			"part",
+			"qe",
+			"sfield",
+			"pott",
+			"fvm",
+			"fv",
+			"tres",
+			"npic",
+			"ip",
+			"pt",
+			"wt",
+			"fpname",
+			"tt",
+			"sct",
+			"mixup"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": true,
+		"replace_history":
+		[
+			"wx.ALIGN_CENTER",
+			"\\1,intent(inout)\\2",
+			"integer, intent(inout) ::",
+			"integer, intent(in) ::"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "lib.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2516,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "new_beps1gl.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 40585,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								40342,
+								40342
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 23495.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "FeatureRequests.txt",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 188,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								188,
+								188
+							]
+						],
+						"settings":
+						{
+							"auto_name": "Write out time in master window",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "/bigdrive/Dropbox/Research/Viruses/ViennaRNA-2.1.7/Research/gkmeigne.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7459,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2250,
+								2250
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 969.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "wxLearn/colourlog.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 5207,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2534,
+								2534
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 767.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "wxLearn/RightClickMenu.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2114,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1910,
+								1910
+							]
+						],
+						"settings":
+						{
+							"auto_name": "from wxPython.wx import *",
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 287.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "wxLearn/MenuBar.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 951,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								436,
+								436
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "wxLearn/learnsizers.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 32752,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								27289,
+								27289
+							]
+						],
+						"settings":
+						{
+							"auto_name": "# Name:      LearnSizers1.py",
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 14449.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 9,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "tfix.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 6785,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6625,
+								6625
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 2878.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 11,
+					"type": "text"
+				},
+				{
+					"buffer": 9,
+					"file": "wxLearn/t6.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3985,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3305,
+								3305
+							]
+						],
+						"settings":
+						{
+							"auto_name": "import time",
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1211.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 10,
+					"type": "text"
+				},
+				{
+					"buffer": 10,
+					"file": "wxLearn/t4.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4992,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								70,
+								70
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 11,
+					"file": "wxLearn/t1.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1427,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1180,
+								1180
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 582.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 14,
+					"type": "text"
+				},
+				{
+					"buffer": 12,
+					"file": "wxLearn/t2.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2589,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2589,
+								2589
+							]
+						],
+						"settings":
+						{
+							"auto_name": "import wx",
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 13,
+					"type": "text"
+				},
+				{
+					"buffer": 13,
+					"file": "wxLearn/t3.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3324,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3224,
+								3224
+							]
+						],
+						"settings":
+						{
+							"auto_name": "import wx",
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1026.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 12,
+					"type": "text"
+				},
+				{
+					"buffer": 14,
+					"file": "declares",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 425,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								420,
+								420
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 27.0
+	},
+	"input":
+	{
+		"height": 33.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"pinned_build_system": "",
+	"project": "python.sublime-project",
+	"replace":
+	{
+		"height": 50.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 250.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
