@@ -39,7 +39,7 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
 	"""Class MainFrame."""
 	def __init__(self, parent, id, loader, pipemode=None, que=None, timedir=None, events=None, outq=None):
 		"""Create the MainFrame."""
-		wx.Frame.__init__(self, parent, id, 'Thread Test', style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
+		wx.Frame.__init__(self, parent, id, 'PIC Interface.  J. Kelly & V. Decyk', style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
 		self.loader = loader
 		self.loader.loadFromFile()
 		self.initStack()

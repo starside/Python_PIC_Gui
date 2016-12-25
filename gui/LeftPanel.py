@@ -93,8 +93,6 @@ class MyCustomToolbar(NavigationToolbar2Wx):
 		self.DeleteToolByPos(1)
 		self.DeleteToolByPos(1)
 		self.DeleteToolByPos(5)
-		print self.GetToolsCount()
-
 
 class LeftPanel(wx.Panel):
 	def __init__(self, parent):
