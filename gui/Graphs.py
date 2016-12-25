@@ -89,7 +89,9 @@ class DefaultControlPanel(BaseControlPanel):
 	def __init__(self, parent):
 		BaseControlPanel.__init__(self,parent)
 		vsizer1 = self.SetupControls()
-		self.panel.SetSizer(vsizer1)
+		self.SetSizer(vsizer1)
+		self.SetAutoLayout(1)
+		vsizer1.Fit(self)
 		self.Show()
 
 	#The following methods should be overriden if inherited
@@ -329,7 +331,8 @@ class DrawEnergyControlPanel(BaseControlPanel):
 		self.labels.insert(0,"Off")
 		vsizer1 = self.SetupControls()
 		vsizer1.SetSizeHints(self)
-		self.panel.SetSizer(vsizer1)
+		self.SetSizer(vsizer1)
+		self.SetAutoLayout(1)
 		self.Show()
 
 	#The following methods should be overriden if inherited
@@ -526,7 +529,7 @@ class PhiControlPanel(BaseControlPanel):
 		BaseControlPanel.__init__(self,parent,PhiControlPanel.defaultKeylist)
 		vsizer1 = self.SetupControls()
 		vsizer1.SetSizeHints(self)
-		self.panel.SetSizer(vsizer1)
+		self.SetSizer(vsizer1)
 		self.Show()
 
 	def SetupControls(self):

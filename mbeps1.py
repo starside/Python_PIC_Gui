@@ -22,15 +22,40 @@ in1.ndim = 1
 # import electrostatic module after namelist has been read
 import s1
 
+
+"""
+This imports the gui code
+"""
+from types import *  #This is required for the rightType function
+import sys
+sys.path.append('./gui')
+from ProceduralInterface import *
+
 int_type = numpy.int32
 double_type = numpy.float64
-#if (minit1.fprecision()==0):
 float_type = numpy.float32
 complex_type = numpy.complex64
-#else:
-#  float_type = numpy.float64
-#  complex_type = numpy.complex128
-#  print "using double precision"
+
+#Some boilderplate
+def changeVarsCallback(obj, to):
+   for key in to.var:
+      setattr(obj, key, rightType(to.var[key]) )
+
+
+def rightType(val):
+   ints, reals, complexs = int_type, float_type, complex_type
+   if type(val) is IntType:
+      return numpy.array([val], ints)
+   elif type(val) is FloatType:
+      return numpy.array([val],reals)
+   elif type(val) is ComplexType:
+      return numpy.array([val], complexs)
+
+"""
+Define function that initializes menus
+"""
+def initialize_menus(pc, defaultGraph):
+   True
 
 # declare scalars for standard code
 npi = 0
