@@ -10,7 +10,7 @@ from multiprocessing import Queue
 import Queue as QE
 
 class PipeSimulation():
-	def __init__(self,notify_window, pipe, que, timedir, async):
+	def __init__(self,notify_window, pipe, que, timedir, outq):
 		"""Init Worker Thread Class."""
 		#threading.Thread.__init__(self)
 		#self.unproc = []
@@ -18,7 +18,7 @@ class PipeSimulation():
 		self._want_abort = 0
 		self.pipe = pipe
 		self.que = que
-		self.async = async
+		self.outq = outq
 		self.timeDir = timedir
 		self._pollrate = 1.0/30.0  #times per second to poll for input.  Set to 0 for no delay
 		self.initFortran()
@@ -85,8 +85,7 @@ class PipeSimulation():
 					exit(0)
 				wx.Yield()
 				return 1
-			if self.async.value == 0 :
-				self.pipe.send("Go")
+			self.pipe.send("Go")
 			#Special code for the run once feature
 			if temp_obj == "RUNCONTROL":
 				if hasattr(self,"runCounter"):

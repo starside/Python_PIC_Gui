@@ -3,7 +3,7 @@ import wx
 import os
 import time
 from threading import Thread
-from multiprocessing import Process, Pipe, Queue, Lock, Value
+from multiprocessing import Process, Pipe, Queue, Lock, Value, Manager
 import cPickle
 
 import Graphs
@@ -28,7 +28,8 @@ def initGui(q, que, td, events, outqueue):
 
 class PlasmaContext():
 	def __init__(self):
-		self.async = Value('i',0)  #synch or async mode
+		manager = Manager()
+		self.async = manager.dict()  #synch or async mode
 		self.que = Queue()
 		self.events = Queue()
 		self.timeDir = None#Value('i',0) #Shared memory
@@ -91,7 +92,13 @@ class PlasmaContext():
 	def showGraphs(self, val): 
 		self.graphEnabled = val
 
-	def isGraphing(self):
+	def isGraphing(self, name=None):
+		if name != None:
+			try:
+				if self.async[name] == 0:
+					return False
+			except:  #Key does not exist.  Not drawing
+				return False
 		return self.graphEnabled
 
 	#Set aync or sync mode
@@ -123,7 +130,7 @@ class PlasmaContext():
 
 	#Plottype is optional.  Use it to rename the dv1 plottype
 	def showVelocity(self, data, labels, fvm=None, plottype=None):
-		if not self.isGraphing():
+		if not self.isGraphing(plottype):
 			return
 		dv1 = Graphs.DrawVelocity(data,labels, fvm=fvm)
 		if plottype is not None:
@@ -137,19 +144,19 @@ class PlasmaContext():
 		self._sendplot(dv1)
 
 	def showEnergy(self, time, data, maxtimeindex, labels):
-		if not self.isGraphing():
+		if not self.isGraphing("ENERGY"):
 			return
 		dv1 = Graphs.DrawEnergy( data, time,labels, timeindex = maxtimeindex)
 		self._sendplot(dv1)
 
 	def showSimple(self, name, xdata, ydata, text, graphoptions=None):
-		if not self.isGraphing():
+		if not self.isGraphing(name[0]):
 			return
 		dv1 = Graphs.DrawSimple(name, xdata, ydata, text, graphoptions=graphoptions)
 		self._sendplot(dv1)
 
 	def showPhase(self, ppart, kpic, plottype=None):  #data is the particle data, ppart.  kpic is array of num particles per tile
-		if not self.isGraphing():
+		if not self.isGraphing(plottype):
 			return
 		#shape is the bounds of the histogram, [[xmin,xmax], [ymin,ymax]]
 		numPart = np.sum(kpic) #number of particles
@@ -214,7 +221,7 @@ class PlasmaContext():
 			self._sendplot(dv1)
 
 	def showSimpleImage(self, name, data, text, extent=(), labl=("","")):
-		if not self.isGraphing():
+		if not self.isGraphing(name):
 			return
 		dv1 = Graphs.DrawSimpleImage(name,data,text,extent=extent,labl=labl)
 		self._sendplot(dv1)

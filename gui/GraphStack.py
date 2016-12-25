@@ -2,12 +2,14 @@ from collections import deque
 
 
 class GraphStack:
-	def __init__(self, ss, name, desc):
+
+	def __init__(self, ss, name, desc, callback = None):
 		self.description = desc
 		self.name = name
 		self.listenerQ = []  #List of registered listeners.  Unlimited size
 		self.stack = deque() #internal stack
 		self.stackSize = ss #set stack size
+		self.callback = callback
 
 	def OnResult(self,event): #event handler
 		self.stack.append(event)
@@ -17,6 +19,8 @@ class GraphStack:
 
 	def AddListener(self, obj, pos=1): #Pos currently does nothing, but I may change that
 		self.listenerQ.append([pos,obj])
+		if hasattr(self.callback, "GraphStackChanged"):
+			self.callback.GraphStackChanged(self.countListeners(), self.name)
 
 	def RemoveListener(self,obj):
 		rem = None
@@ -26,6 +30,8 @@ class GraphStack:
 		if rem != None:
 			self.listenerQ.remove(rem)
 			print "Deleting Listener " + str(rem)
+			if hasattr(self.callback, "GraphStackChanged"):
+				self.callback.GraphStackChanged(self.countListeners(), self.name)
 
 	def broadcast(self, event):
 		for l in self.listenerQ: #dispatch result signal to all listener objects
@@ -49,10 +55,7 @@ class DispList:
 
 class Dispatcher:
 	def initStack(self):
-		self.dispatchers = [GraphStack(3,"DRAWVELOCITY","Velocity Graph"), GraphStack(3,"DRAWPOT","Potenial Graph"), \
-			GraphStack(3,"ENERGY","Energy Graph"), GraphStack(3,"DRAWPHASE","Phase Plot"), GraphStack(3,"DRAWFASTPHASE","Phase Histogram (Faster)"), GraphStack(3,"DRAWPHI","Phi(k,w)"), \
-			GraphStack(3,"DRAWTRAJ","Trajectory"),GraphStack(3,"DRAWMULTITRAJ","Multiple Trajectories"), GraphStack(3,"DRAWDENSE","Electron Density"), GraphStack(3,"LONEFIELD","E-Field Longitudinal"),
-			GraphStack(3,"ENTROPY","Entropy") ]
+		self.dispatchers = []
 
 
 	def OnResult(self, event):
