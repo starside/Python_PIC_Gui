@@ -93,6 +93,8 @@ class PlasmaContext():
 		self.graphEnabled = val
 
 	def isGraphing(self, name):
+		if self.graphEnabled == False:
+			return False
 		if name != None:
 			try:
 				if self.async[name] == 0:
