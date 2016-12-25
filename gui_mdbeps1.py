@@ -464,8 +464,8 @@ for ntime in xrange(nstart,nloop):
 # ion spectral analysis
             if ((in1.nddi==2) or (in1.nddi==3)):
 # display frequency spectrum
-               pc.showSimpleImage("ION DENSITY OMEGA VS MODE+",s1.pkwdi[::-1,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxdi,in1.wmin,in1.wmax) )
-               pc.showSimpleImage("ION DENSITY OMEGA VS MODE-",s1.pkwdi[::-1,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxdi,in1.wmin,in1.wmax) )
+               pc.showSimpleImage("ION DENSITY OMEGA VS MODE+",s1.pkwdi[::,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxdi,in1.wmin,in1.wmax) )
+               pc.showSimpleImage("ION DENSITY OMEGA VS MODE-",s1.pkwdi[::,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxdi,in1.wmin,in1.wmax) )
                wax = numpy.array(range(in1.modesxdi))
                pc.showSimple(["ION DENSITY OMEGA VS MODE LINE","+OMEGA","-OMEGA"],[wax,wax],[s1.wkdi[0:in1.modesxdi,0],s1.wkdi[0:in1.modesxdi,1]],"Time="+str(ntime*in1.dt))
                graf1.dmscaler1(s1.wkdi,'ION DENSITY OMEGA VS MODE',
@@ -555,10 +555,10 @@ for ntime in xrange(nstart,nloop):
 # ion spectral analysis
             if ((in1.ndji==2) or (in1.ndji==3)):
 # display frequency spectrum
-               pc.showSimpleImage("ION CURRENT OMEGA VS MODEY+",sb1.vpkwji[0,::-1,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxji,in1.wmin,in1.wmax) )
-               pc.showSimpleImage("ION CURRENT OMEGA VS MODEY-",sb1.vpkwji[0,::-1,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxji,in1.wmin,in1.wmax) )
-               pc.showSimpleImage("ION CURRENT OMEGA VS MODEZ+",sb1.vpkwji[1,::-1,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxji,in1.wmin,in1.wmax) )
-               pc.showSimpleImage("ION CURRENT OMEGA VS MODEZ-",sb1.vpkwji[1,::-1,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxji,in1.wmin,in1.wmax) )
+               pc.showSimpleImage("ION CURRENT OMEGA VS MODEY+",sb1.vpkwji[0,::,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxji,in1.wmin,in1.wmax) )
+               pc.showSimpleImage("ION CURRENT OMEGA VS MODEY-",sb1.vpkwji[0,::,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxji,in1.wmin,in1.wmax) )
+               pc.showSimpleImage("ION CURRENT OMEGA VS MODEZ+",sb1.vpkwji[1,::,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxji,in1.wmin,in1.wmax) )
+               pc.showSimpleImage("ION CURRENT OMEGA VS MODEZ-",sb1.vpkwji[1,::,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxji,in1.wmin,in1.wmax) )
                graf1.dmvector1(sb1.vwkji,'ION CURRENT OMEGA VS MODE',
                                ntime,999,2,2,in1.modesxji,s1.cwk,irc)
                if (irc[0]==1):
@@ -581,8 +581,8 @@ for ntime in xrange(nstart,nloop):
 # spectral analysis
          if ((in1.ndp==2) or (in1.ndp==3)):
 # display frequency spectrum
-            pc.showSimpleImage("POTENTIAL OMEGA VS MODE+",s1.pkw[::-1,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxp,in1.wmin,in1.wmax) )
-            pc.showSimpleImage("POTENTIAL OMEGA VS MODE-",s1.pkw[::-1,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxp,in1.wmin,in1.wmax) )
+            pc.showSimpleImage("POTENTIAL OMEGA VS MODE+",s1.pkw[::,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxp,in1.wmin,in1.wmax) )
+            pc.showSimpleImage("POTENTIAL OMEGA VS MODE-",s1.pkw[::,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxp,in1.wmin,in1.wmax) )
             wax = numpy.array(range(in1.modesxp))
             pc.showSimple(["POTENTIAL OMEGA VS MODE LINE","+OMEGA","-OMEGA"],[wax,wax],[s1.wk[0:in1.modesxdi,0],s1.wk[0:in1.modesxdi,1]],"Time="+str(ntime*in1.dt))
             graf1.dmscaler1(s1.wk,'POTENTIAL OMEGA VS MODE',ntime,999,2,
