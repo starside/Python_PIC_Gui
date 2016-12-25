@@ -85,6 +85,16 @@ class RecordPanel(wx.Frame):
 	def fileExists(self, fname):
 		return os.path.isfile(fname)
 
+class MyCustomToolbar(NavigationToolbar2Wx): 
+	def __init__(self, plotCanvas):
+		# create the default toolbar
+		NavigationToolbar2Wx.__init__(self, plotCanvas)
+		# remove the unwanted buttons
+		self.DeleteToolByPos(1)
+		self.DeleteToolByPos(1)
+		self.DeleteToolByPos(5)
+		print self.GetToolsCount()
+
 
 class LeftPanel(wx.Panel):
 	def __init__(self, parent):
@@ -157,7 +167,7 @@ class LeftPanel(wx.Panel):
 		#self.axes.imshow(mpimg.imread('gui/default.png'), interpolation='nearest', aspect='auto')
 		self.mycanvas.mpl_connect('button_press_event',self.onclick)
 		self.toolbar = wx.BoxSizer(orient=wx.HORIZONTAL)
-		self.navMenu = NavigationToolbar2Wx(self.mycanvas)
+		self.navMenu = MyCustomToolbar(self.mycanvas)
 		self.toolbar.Add(item=self.navMenu )
 		self.slopeButton = wx.ToggleButton(self,-1,"Measure Slope")  #create slope measurement button
 		self.toolbar.Add(item=self.slopeButton )

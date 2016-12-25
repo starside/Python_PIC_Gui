@@ -62,6 +62,7 @@ def initialize_menus(pc, defaultGraph):
    # initialize all diagnostics from namelist input parameters
    # ntime = current time step
    # initialize energy diagnostic: allocates wt
+   pc.addGraph("NOPLOT","No Plot")
    if (in1.ntw > 0):
       pc.addGraph("ENERGY", "Energy") #Enable electron velocity
       defaultGraphs.append("ENERGY")

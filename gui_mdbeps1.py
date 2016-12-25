@@ -49,6 +49,7 @@ Define function that initializes menus
 def initialize_menus(pc, defaultGraphs):
 # initialize all diagnostics from namelist input parameters
 # initialize energy diagnostic: allocates wt
+   pc.addGraph("NOPLOT","No Plot")
    if (in1.ntw > 0):
       pc.addGraph("ENERGY", "Energy") #Enable electron velocity
       defaultGraphs.append("ENERGY")

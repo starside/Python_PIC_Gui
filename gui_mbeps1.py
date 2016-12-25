@@ -56,6 +56,7 @@ def rightType(val):
 Define function that initializes menus
 """
 def initialize_menus(pc, defaultGraph):
+   pc.addGraph("NOPLOT","No Plot")
    if (in1.ntde > 0):
       pc.addGraph(' EDENSITY', "Density/Electron Density") #Enable electron velocity
       defaultGraphs.append(' EDENSITY')
