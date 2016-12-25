@@ -36,6 +36,8 @@ class NewFrame(wx.Frame, DefaultsCommLink):
 			else:  #Fail if the specified layout does not exist
 				sys.stderr.write("The layout you specified "+layout+" is not defined in NewFrame.py.  Expect a method name starting with OnLayout\n")
 				exit(0)
+
+		self.Bind(wx.EVT_ACTIVATE, self.OnFocus)
 		
 
 	def InitData(self):
@@ -109,6 +111,11 @@ class NewFrame(wx.Frame, DefaultsCommLink):
 		self.saveAsDefault(self.loader, "NewFrame"+self.layoutName)
 		self.loader.saveToFile()
 
+	def OnFocus(self, event):
+		border = 10
+		if event.GetActive() and not self.mainframe.rpanel.pin.GetValue():
+			(x,y,w,h) = self.GetScreenRect()
+			self.mainframe.Move( wx.Point(x+w+border,y) )
 	def OnQuit(self,event):
 		if self.mainframe is not None: #remove self from windowList
 			try:

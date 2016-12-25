@@ -43,6 +43,11 @@ class RightPanel(wx.Panel):
 		vsizer1.Add(item=newb2, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
 		vsizer1.Add(item=newb3)
 		vsizer1.Add(item=newb4)
+
+		self.pin = wx.CheckBox(self, -1, "Unpin This Window?")
+		self.pin.SetValue(False)
+		vsizer1.Add(item=self.pin)
+		
 		self.SetSizer(vsizer1)
 		EVT_RUNSTEP(self, self.OnRunStep)
 		wx.PostEvent(self, RunStepEvent() )

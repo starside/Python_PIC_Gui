@@ -92,7 +92,7 @@ class PlasmaContext():
 	def showGraphs(self, val): 
 		self.graphEnabled = val
 
-	def isGraphing(self, name=None):
+	def isGraphing(self, name):
 		if name != None:
 			try:
 				if self.async[name] == 0:
@@ -130,7 +130,10 @@ class PlasmaContext():
 
 	#Plottype is optional.  Use it to rename the dv1 plottype
 	def showVelocity(self, data, labels, fvm=None, plottype=None):
-		if not self.isGraphing(plottype):
+		pt = plottype
+		if pt == None:
+			pt = "DRAWVELOCITY"
+		if not self.isGraphing(pt):
 			return
 		dv1 = Graphs.DrawVelocity(data,labels, fvm=fvm)
 		if plottype is not None:
@@ -138,7 +141,7 @@ class PlasmaContext():
 		self._sendplot(dv1)
 
 	def showPotential(self, data):
-		if not self.isGraphing():
+		if not self.isGraphing("DRAWPOT"):
 			return
 		dv1 = Graphs.DrawPotential(data)
 		self._sendplot(dv1)
@@ -156,7 +159,10 @@ class PlasmaContext():
 		self._sendplot(dv1)
 
 	def showPhase(self, ppart, kpic, plottype=None):  #data is the particle data, ppart.  kpic is array of num particles per tile
-		if not self.isGraphing(plottype):
+		pt = plottype
+		if pt == None:
+			pt = "DRAWPHASE"
+		if not self.isGraphing(pt):
 			return
 		#shape is the bounds of the histogram, [[xmin,xmax], [ymin,ymax]]
 		numPart = np.sum(kpic) #number of particles
@@ -175,7 +181,7 @@ class PlasmaContext():
 		self._sendplot(dv1)
 
 	def showFastPhase(self, ppart, kpic):  #data is the particle data, ppart.  kpic is array of num particles per tile
-		if not self.isGraphing():
+		if not self.isGraphing("DRAWFASTPHASE"):
 			return
 		#shape is the bounds of the histogram, [[xmin,xmax], [ymin,ymax]]
 		numPart = np.sum(kpic) #number of particles
@@ -194,7 +200,7 @@ class PlasmaContext():
 		self._sendplot(dv1)
 
 	def showTrajectory(self, data):
-		if not self.isGraphing():
+		if not self.isGraphing("DRAWTRAJ"):
 			return
 		dv1 = Graphs.DrawTrajectory(data)
 		self._sendplot(dv1)
@@ -206,13 +212,13 @@ class PlasmaContext():
 		self._sendplot(dv1)
 
 	def showScaler(self, data, name, nx, time):
-		if not self.isGraphing():
+		if not self.isGraphing("DRAWDENSE"):
 			return
 		dv1 = Graphs.DrawScaler(name,data, nx, time)
 		self._sendplot(dv1)
 
 	def showPhi(self, time, phi, dta, dt, plottype=None, omn=100):
-		if not self.isGraphing():
+		if not self.isGraphing("DRAWPHI"):
 			return
 		if len(phi) > 0:
 			dv1 = Graphs.DrawPhi([np.array(time), phi, dta], dt, omn=omn)
@@ -227,7 +233,7 @@ class PlasmaContext():
 		self._sendplot(dv1)
 
 	def showMultiTrajectory(self, partd, itt, comp):
-		if not self.isGraphing():
+		if not self.isGraphing("DRAWMULTITRAJ"):
 			return
 		dv1 = Graphs.DrawMultiTraj(partd, itt, comp)
 		self._sendplot(dv1)
