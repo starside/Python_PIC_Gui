@@ -51,8 +51,10 @@ class PlasmaContext():
 			except:
 				True
 			self.que.put( cPickle.dumps(obj) )
-			if self.async.value == 0:  #In synchronous mode
-				self.child_conn.recv()
+			self.child_conn.recv()
+
+	def _sendplotasync(self, obj):
+		self.que.put( cPickle.dumps(obj) )
 
 	#Takes a layout index between 1 and 4, and a list of default graphs to plot
 	def newFrame(self, layout, defaults):
@@ -76,6 +78,8 @@ class PlasmaContext():
 				readQ = False
 
 		#Run callbacks.  A signal sent from the GUI must have a signame attribute
+		if len(que) > 0:
+			print que
 		for q in que:
 			if self.callbacks.has_key(q.signame):
 				cb = self.callbacks[q.signame]
@@ -104,8 +108,8 @@ class PlasmaContext():
 		return self.graphEnabled
 
 	#Set aync or sync mode
-	def asyncMode(self,mode):
-		self.async.value = mode
+	#def asyncMode(self,mode):
+	#	self.async.value = mode
 
 	#Set the global time in the control panel
 	def setTime(self,time):
@@ -117,14 +121,25 @@ class PlasmaContext():
 		#if self.async.value == 0:  #In synchronous mode
 		#	self.child_conn.recv()
 
+	def pause(self):
+		self._sendplotasync("PAUSE")
+
 	#Allow fast forwarding.  Stop sending graphics output when ctime is less than some value specified in
 	#inputlist variable fastforward
 	def fastForward(self, ctime, obj):
-		#try:
+		global _ffwding
 		if hasattr(obj,"fastforward"):
 			if ctime < obj.fastforward:
 				self.showGraphs(False)
+				_ffwding = True
 			else:
+				try:
+					_ffwding
+				except:
+					_ffwding = False
+				if _ffwding == True:
+					self.pause()
+					_ffwding = False
 				self.showGraphs(True)
 		else:
 			return
@@ -241,13 +256,17 @@ class PlasmaContext():
 		self._sendplot(dv1)
 
 	def wait(self):
-		self.asyncMode(1)
+	#	self.asyncMode(1)
 		while True:
 			time.sleep(1)
 
 	def clearGraphList(self):
 		ptr = ClearGraphStack()
 		self.que.put(cPickle.dumps(ptr)) 
+
+	def updateSimInfo(self,data):
+		ptr = SimData(data)
+		self.que.put(cPickle.dumps(ptr))
 
 	def addGraph(self, codename, desc):
 		ptr = ClearGraphStack()

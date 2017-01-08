@@ -30,6 +30,12 @@ class SetFrameTime:
 		self.time = time
 
 
+class SimData:
+	def __init__(self,data):
+		self.signame = "SIMDATA"
+		self.data = data
+
+
 #This event manipulates GraphStack.  By default, it will clear the dispatcher list.
 #You can also add a dispatcher by dynamically tacking on a codename and desc attribute
 #where GraphStack(3,codename,desc)

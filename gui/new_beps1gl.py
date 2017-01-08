@@ -77,10 +77,16 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
 
 
 	def OnNewTime(self,event):
-		self.rpanel.timerText.SetLabel("Time is " + str(event.time))
+		if self.worker.simdata.has_key('tend'):
+			te = self.worker.simdata['tend']
+			self.rpanel.timerText.SetLabel("Time is " + str(event.time) +" of "+str(te))
+		else:
+			self.rpanel.timerText.SetLabel("Time is " + str(event.time) )
 
 	def OnReset(self,event):
 		self.pEvents.put( ResetSignal() )
+		self.status.SetStatusText("Run At Least one timestep to Reset SIM!")
+
 
 	def OnControl(self,event):
 		self.rpanel.makeNewFrame(event.data.layout, event.data.defaults)

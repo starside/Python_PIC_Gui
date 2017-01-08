@@ -21,6 +21,10 @@ class PipeSimulation():
 		self.outq = outq
 		self.timeDir = timedir
 		self._pollrate = 1.0/30.0  #times per second to poll for input.  Set to 0 for no delay
+		self.myq = []
+		self.guiq = []  #GUI CONTROL QUEUE
+		self.runCounter = -1
+		self.simdata = {}
 		self.initFortran()
 		#self.start()
 
@@ -33,6 +37,46 @@ class PipeSimulation():
 		while self.step() == 0:
 			True
 
+	def sigPath(self,temp_obj):
+		if temp_obj.signame == "OPENFRAME":
+			wx.PostEvent(self._notify_window, ControlEvent(temp_obj, self.curTime))
+		elif temp_obj.signame == "SETTIME":
+			wx.PostEvent(self._notify_window, SimTimeEvent(temp_obj.time))
+		elif temp_obj.signame == "CLEARGRAPHSTACK":
+			_tcs = ClearGraphStackEvent()
+			if hasattr(temp_obj,"codename"):  #pass on info related to adding new graphstack listeners
+				_tcs.codename = temp_obj.codename
+				_tcs.desc = temp_obj.desc
+			wx.PostEvent(self._notify_window, _tcs)
+		elif temp_obj.signame == "SIMDATA":
+			self.simdata = temp_obj.data
+
+	def controlPath(self, temp_obj):
+		if temp_obj == "RUNCONTROL":
+			if self.runCounter > 0:
+				self.iAmRunning = True
+			if self.runCounter == 0:
+				self.iAmRunning = False
+			self.runCounter += -1
+			if self.runCounter < 0:
+				self.runCounter = -1
+		elif temp_obj == "PAUSE":
+			self.iAmRunning = False
+			self._notify_window.rpanel.RunLongButton.SetValue(False)
+			self.guiq.remove(temp_obj)
+
+	def dataPath(self, temp_obj):
+		#Is the sim running?
+		#if not self.iAmRunning:
+		#	time.sleep(0.1)  #Introduce a 1/10 second delay in pausing/unpausing.  This is so
+		#	return 1
+		#Try to set curTime
+		try:
+			self.curTime = temp_obj._tackOnTime
+		except:
+			True
+		wx.PostEvent(self._notify_window, ResultEvent(temp_obj, self.curTime))
+
 	def step(self):
 		#Python Changes
 		self.fC += 1
@@ -40,62 +84,40 @@ class PipeSimulation():
 		#if self.pipe.poll(self._pollrate):  #If there is data for us
 		#temp_obj = self.pipe.recv()
 		#wx.PostEvent(self._notify_window, ResultEvent(temp_obj, self.curTime))
-		try:
-			#if len(self.unproc) > 0:
-			#	temp_obj = self.unproc.pop()
-			#else:
-			to_str = self.que.get(True,1)
-			temp_obj = cPickle.loads( to_str )
-		except QE.Empty:
-			return 1
-		except:
-			print sys.exc_info()[0]
-			return 1
-		try:
-			self.curTime = temp_obj._tackOnTime
-		except:
-			True
-		try:  #Check to see if object is a graph of a signal
-			if temp_obj.signame == "OPENFRAME":
-				print "Got OpenFRame"
-				wx.PostEvent(self._notify_window, ControlEvent(temp_obj, self.curTime))
-				return postCount
-			if temp_obj.signame == "SETTIME":
-				wx.PostEvent(self._notify_window, SimTimeEvent(temp_obj.time))
-				return postCount
-			if temp_obj.signame == "CLEARGRAPHSTACK":
-				_tcs = ClearGraphStackEvent()
-				if hasattr(temp_obj,"codename"):  #pass on info related to adding new graphstack listeners
-					_tcs.codename = temp_obj.codename
-					_tcs.desc = temp_obj.desc
-				wx.PostEvent(self._notify_window, _tcs)
-				return postCount
-			else:
-				raise AttributeError
-		except AttributeError:
-			#if not running, save event as unprocessed and continue blocking
-			if not self.iAmRunning:
-				#self.unproc.append(temp_obj)
-				try:
-					self.que.put_nowait(to_str)
-					time.sleep(0.1)  #Introduce a 1/10 second delay in pausing/unpausing.  This is so
-					#We do not use 100% CPU waiting for the simulation to resume
-				except QE.Full:
-					sys.stderr.write("Queue Full, not so good.  Exiting!\n")
-					exit(0)
+		#print self.fC
+		#see if we need to read data from queue
+		#if not self.que.empty():
+		if len(self.myq) == 0 and len(self.guiq) == 0:
+			try:
+				rdo = cPickle.loads(self.que.get())
+			except:
 				wx.Yield()
 				return 1
-			self.pipe.send("Go")
-			#Special code for the run once feature
-			if temp_obj == "RUNCONTROL":
-				if hasattr(self,"runCounter"):
-					if self.runCounter > 0:
-						self.runCounter += -1
-					if self.runCounter == 0:
-						self.iAmRunning = False
-						self.runCounter = -1
-				return postCount
-			wx.PostEvent(self._notify_window, ResultEvent(temp_obj, self.curTime))
+			if type(rdo) == str or hasattr(rdo,'signame'):  #Split to two different ques
+				self.guiq.append(rdo)
+			else:
+				self.myq.append(rdo)
+		if len(self.myq) == 0 and len(self.guiq) == 0:
+			return 1 #Nothing to do
 
+		#Read control q.  The que is always responsive
+		if len(self.guiq) > 0:
+			temp_obj = self.guiq[0]
+			if hasattr(temp_obj, 'signame'): #Check to see if object is a graph of a signal
+				self.sigPath(temp_obj)
+				self.guiq.remove(temp_obj)
+			else:
+				self.controlPath(temp_obj)
+				time.sleep(1.0/30.0)
+				if self.iAmRunning:  #The will cause getEvents to block unless iAmRunning is True
+					self.pipe.send("GoR")
+					self.guiq.remove(temp_obj)
+
+		#Read queue myq.  This que can be paused
+		if len(self.myq) > 0:
+			temp_obj = self.myq[0]
+			self.myq.remove(temp_obj)
+			self.dataPath(temp_obj)
+			self.pipe.send("Go")
 			
 		return postCount

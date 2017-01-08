@@ -43,7 +43,16 @@ complex_type = numpy.complex64
 #Some boilderplate
 def changeVarsCallback(obj, to):
    for key in to.var:
+      if key == "fastforward":
+         if rightType(to.var[key]) > obj.tend:
+            continue
       setattr(obj, key, rightType(to.var[key]) )
+
+#The function to be called when reset is pushed
+def resetCallback(obj, to):
+   print "The reset button was pushed!"
+   #Do something
+   print obj.tend
 
 
 def rightType(val):
@@ -253,9 +262,9 @@ def initialize_menus(pc, defaultGraph):
 #init GUI
 pc = PlasmaContext()  #Create GUI
 pc.showGraphs(True)   #enable graphics.  Setting to false will disable graphics
-pc.asyncMode(0)     #Run in synchornos mode.
 pc.clearGraphList()  #remove all default graph options
 pc.callbacks["VARCHANGE"] = changeVarsCallback  #Set a callback
+pc.callbacks["RESET"] = resetCallback
 defaultGraphs = []
 
 # declare scalars for standard code
@@ -368,8 +377,11 @@ sb1.cue.fill(0.0)
 # set magnitude of external transverse magnetic field
 omt = numpy.sqrt(in1.omy*in1.omy + in1.omz*in1.omz)
 
+in1.timedirection = 0
+pc.getEvents(in1)
+
 # reverse simulation at end back to start
-if (in1.treverse==1):
+if (in1.treverse==in1.timedirection):
    nloop = 2*nloop
    sb1.nloop = nloop
 
@@ -436,6 +448,8 @@ if remplt > 0: #Create smaller window
       lon = lon + str(remplt)
    pc.newFrame(lon,defaultGraphs)
 
+#sends data the GUI may want to know about the simulation
+pc.updateSimInfo({"tend":in1.tend})
 # * * * start main iteration loop * * *
 
 for ntime in xrange(nstart,nloop):
