@@ -382,6 +382,9 @@ if remplt > 0: #Create smaller window
       lon = lon + str(remplt)
    pc.newFrame(lon,defaultGraphs)
 
+#sends data the GUI may want to know about the simulation
+pc.updateSimInfo({"tend":in1.tend})
+
 # * * * start main iteration loop * * *
 
 for ntime in xrange(nstart,nloop):
