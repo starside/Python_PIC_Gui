@@ -50,6 +50,7 @@ class RightPanel(wx.Panel):
         
         self.SetSizer(vsizer1)
         EVT_RUNSTEP(self, self.OnRunStep)
+        wx.CallAfter( self.OnRunDir, None)  #Set reverse time variable in main code
         wx.PostEvent(self, RunStepEvent() )
 
     def OnFFChange(self,event):

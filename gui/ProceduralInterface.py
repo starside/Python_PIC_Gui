@@ -64,15 +64,16 @@ class PlasmaContext():
 		self.que.put(cPickle.dumps(to)) 
 
 	#process events, such as callbacks and variable changes from the GUI
-	def getEvents(self, obj):
+	def getEvents(self, obj,pause=True):
 		que = []
 		readQ = True
 
-		self._sendplot("RUNCONTROL")  #This simply makes sure the run once button runs only 1 timestep
+		if pause:
+			self._sendplot("RUNCONTROL")  #This simply makes sure the run once button runs only 1 timestep
 
 		while readQ:
 			try:
-				to = self.events.get_nowait()
+				to = self.events.get(not pause)
 				que.append( to )
 			except:
 				readQ = False

@@ -266,6 +266,8 @@ pc.clearGraphList()  #remove all default graph options
 pc.callbacks["VARCHANGE"] = changeVarsCallback  #Set a callback
 pc.callbacks["RESET"] = resetCallback
 defaultGraphs = []
+in1.timedirection = 0 #default state of the GUI.  MUST BE 0
+
 
 # declare scalars for standard code
 npi = 0
@@ -377,9 +379,6 @@ sb1.cue.fill(0.0)
 # set magnitude of external transverse magnetic field
 omt = numpy.sqrt(in1.omy*in1.omy + in1.omz*in1.omz)
 
-in1.timedirection = 0
-pc.getEvents(in1)
-
 # reverse simulation at end back to start
 if (in1.treverse==in1.timedirection):
    nloop = 2*nloop
@@ -454,7 +453,7 @@ pc.updateSimInfo({"tend":in1.tend})
 
 for ntime in xrange(nstart,nloop):
    print >> iuot, "ntime = ", ntime
-
+   print "Time direction is ", in1.timedirection
    """ 
    The following 4 lines process events from the GUI.
    Nothing will happen without calling getEvents

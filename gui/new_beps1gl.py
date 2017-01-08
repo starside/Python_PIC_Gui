@@ -85,7 +85,7 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
 
 	def OnReset(self,event):
 		self.pEvents.put( ResetSignal() )
-		self.status.SetStatusText("Run At Least one timestep to Reset SIM!")
+		wx.CallAfter(self.rpanel.OnStart, None)  #Run one time step is necessary to reset
 
 
 	def OnControl(self,event):

@@ -40,7 +40,16 @@ complex_type = numpy.complex64
 #Some boilderplate
 def changeVarsCallback(obj, to):
    for key in to.var:
+      if key == "fastforward":
+         if rightType(to.var[key]) > obj.tend:
+            continue
       setattr(obj, key, rightType(to.var[key]) )
+
+#The function to be called when reset is pushed
+def resetCallback(obj, to):
+   print "The reset button was pushed!"
+   #Do something
+   print obj.tend
 
 
 def rightType(val):
@@ -95,12 +104,14 @@ def initialize_menus(pc, defaultGraph):
       pc.addGraph("ENERGY", "Energy") #Enable electron velocity
       defaultGraphs.append("ENERGY")
 
+#init GUI
 pc = PlasmaContext()  #Create GUI
 pc.showGraphs(True)   #enable graphics.  Setting to false will disable graphics
-pc.asyncMode(0)     #Run in synchornos mode.
 pc.clearGraphList()  #remove all default graph options
 pc.callbacks["VARCHANGE"] = changeVarsCallback  #Set a callback
+pc.callbacks["RESET"] = resetCallback
 defaultGraphs = []
+in1.timedirection = 0 #default state of the GUI.  MUST BE 0
 
 graf2 = GraphicsInterface(pc)
 
@@ -259,6 +270,7 @@ for ntime in xrange(nstart,nloop):
    pc.setTime(curtime)
    pc.getEvents(in1)
    pc.fastForward(curtime, in1)
+   print "Time direction is ", in1.timedirection
 
 # debug reset
 #  if (ntime==nloop/2):
