@@ -42,17 +42,23 @@ complex_type = numpy.complex64
 
 #Some boilderplate
 def changeVarsCallback(obj, to):
-   for key in to.var:
-      if key == "fastforward":
-         if rightType(to.var[key]) > obj.tend:
-            continue
-      setattr(obj, key, rightType(to.var[key]) )
+   try:
+      for key in to.var:
+         if key == "fastforward":
+            if rightType(to.var[key]) > obj.tend:
+               continue
+         setattr(obj, key, rightType(to.var[key]) )
+   except AttributeError:
+      print "Could not change variables"
 
 #The function to be called when reset is pushed
 def resetCallback(obj, to):
    print "The reset button was pushed!"
    #Do something
    print obj.tend
+
+def exitCallback(obj, to):
+   exit(0)
 
 
 def rightType(val):
@@ -265,6 +271,7 @@ pc.showGraphs(True)   #enable graphics.  Setting to false will disable graphics
 pc.clearGraphList()  #remove all default graph options
 pc.callbacks["VARCHANGE"] = changeVarsCallback  #Set a callback
 pc.callbacks["RESET"] = resetCallback
+pc.callbacks["EXIT"] = exitCallback
 defaultGraphs = []
 in1.timedirection = 0 #default state of the GUI.  MUST BE 0
 

@@ -49,6 +49,7 @@ class RightPanel(wx.Panel):
         vsizer1.Add(item=self.pin)
         
         self.SetSizer(vsizer1)
+
         EVT_RUNSTEP(self, self.OnRunStep)
         wx.CallAfter( self.OnRunDir, None)  #Set reverse time variable in main code
         wx.PostEvent(self, RunStepEvent() )
@@ -146,6 +147,7 @@ class RightPanel(wx.Panel):
 
     def OnRunStep(self,event):
         if not self.alive:
+            self.Destroy()
             return
         self.RunLongButton.Bind(wx.EVT_BUTTON, self.OnStartLong)
         self.runOnceButton.Bind(wx.EVT_BUTTON, self.OnStart)

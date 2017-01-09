@@ -83,6 +83,8 @@ class PlasmaContext():
 			print que
 		for q in que:
 			if self.callbacks.has_key(q.signame):
+				if q.signame == "EXIT":
+					self._sendplot("EXIT")
 				cb = self.callbacks[q.signame]
 				cb(obj, to)
 

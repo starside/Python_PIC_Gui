@@ -15,7 +15,7 @@ class PipeSimulation():
 		#threading.Thread.__init__(self)
 		#self.unproc = []
 		self._notify_window = notify_window
-		self._want_abort = 0
+		self._want_abort = False
 		self.pipe = pipe
 		self.que = que
 		self.outq = outq
@@ -64,6 +64,9 @@ class PipeSimulation():
 			self.iAmRunning = False
 			self._notify_window.rpanel.RunLongButton.SetValue(False)
 			self.guiq.remove(temp_obj)
+		elif temp_obj == "EXIT":
+			self.iAmRunning = True
+			EVT_RUNSTEP(self._notify_window.rpanel,self._notify_window.OnExitPhase2)  #Redirect running loop to an exit callback
 
 	def dataPath(self, temp_obj):
 		#Is the sim running?

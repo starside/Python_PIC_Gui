@@ -50,7 +50,7 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
 		self.rpanel = RightPanel(self,self)	#create interface
 		self.sizer = wx.BoxSizer(wx.HORIZONTAL)
 		self.sizer.Add(item=self.rpanel, proportion=1, flag=wx.ALL | wx.EXPAND, border=2)
-		#self.Bind(wx.EVT_CLOSE, self.OnExit)
+		self.Bind(wx.EVT_CLOSE, self.OnExit)
 		self.SetSizerAndFit(self.sizer)
 
 		#self.Bind(wx.EVT_CLOSE, self.OnQuit)
@@ -67,13 +67,12 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
 		self.windowList = [] #list of frames
 
 	def OnExit(self, event):
-		self.rpanel.alive = False
-		for e in self.commKill:
-			if hasattr(e,"poll"):
-				print e.poll()
-			if hasattr(e,"close"):
-				e.close()
-		exit(0)
+		self.pEvents.put( ExitSignal() )  #Tell main thread to exit
+		wx.CallAfter(self.rpanel.OnStart, None)  #Call run to pump event loop
+		#EVT_RUNSTEP(self.rpanel,self.OnExitPhase2)  #Redirect running loop to an exit callback
+
+	def OnExitPhase2(self,event):
+		self.Destroy()
 
 
 	def OnNewTime(self,event):
