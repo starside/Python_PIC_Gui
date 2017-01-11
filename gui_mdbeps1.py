@@ -46,7 +46,8 @@ def resetCallback(obj, to):
    print obj.tend
 
 def exitCallback(obj, to):
-   exit(0)
+   print "Exit"
+   #exit(0)
 
 
 def rightType(val):

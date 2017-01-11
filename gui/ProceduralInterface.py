@@ -34,6 +34,7 @@ class PlasmaContext():
 		self.events = Queue()
 		self.timeDir = None#Value('i',0) #Shared memory
 		self.parent_conn, self.child_conn = Pipe()
+		self.norun = False
 		self.p = Process(target=initGui, args=(self.parent_conn, self.que, self.timeDir, self.events, self.async) )
 		self.p.daemon = True
 		self.p.start()
@@ -45,6 +46,8 @@ class PlasmaContext():
 	#Low Level method to communicate with gui thread
 	def _sendplot(self, obj):
 		#self.parent_conn.send(obj)
+		if self.norun:
+			return
 		if self.graphEnabled:
 			try:
 				obj._tackOnTime = self.curTime  #Just sloppily glue the time on the object
@@ -54,10 +57,14 @@ class PlasmaContext():
 			self.child_conn.recv()
 
 	def _sendplotasync(self, obj):
+		if self.norun:
+			return
 		self.que.put( cPickle.dumps(obj) )
 
 	#Takes a layout index between 1 and 4, and a list of default graphs to plot
 	def newFrame(self, layout, defaults):
+		if self.norun:
+			return
 		to = OpenFrame()
 		to.layout = layout
 		to.defaults = defaults
@@ -65,6 +72,8 @@ class PlasmaContext():
 
 	#process events, such as callbacks and variable changes from the GUI
 	def getEvents(self, obj,pause=True):
+		if self.norun:
+			return
 		que = []
 		readQ = True
 
@@ -85,6 +94,8 @@ class PlasmaContext():
 			if self.callbacks.has_key(q.signame):
 				if q.signame == "EXIT":
 					self._sendplot("EXIT")
+					self.showGraphs(False)
+					self.norun = True
 				cb = self.callbacks[q.signame]
 				cb(obj, to)
 
@@ -96,10 +107,14 @@ class PlasmaContext():
 		self.p.join()
 
 	#Enable or disable graphics for speed reasons
-	def showGraphs(self, val): 
+	def showGraphs(self, val):
+		if self.norun:
+			return
 		self.graphEnabled = val
 
 	def isGraphing(self, name):
+		if self.norun:
+			return
 		if self.graphEnabled == False:
 			return False
 		if name != None:
@@ -116,6 +131,8 @@ class PlasmaContext():
 
 	#Set the global time in the control panel
 	def setTime(self,time):
+		if self.norun:
+			return
 		#Let the graphs know the simulation time
 		self.curTime = time
 		obj = SetFrameTime(time)
@@ -125,12 +142,16 @@ class PlasmaContext():
 		#	self.child_conn.recv()
 
 	def pause(self):
+		if self.norun:
+			return
 		self._sendplotasync("PAUSE")
 
 	#Allow fast forwarding.  Stop sending graphics output when ctime is less than some value specified in
 	#inputlist variable fastforward
 	def fastForward(self, ctime, obj):
 		global _ffwding
+		if self.norun:
+			return
 		if hasattr(obj,"fastforward"):
 			if ctime < obj.fastforward:
 				self.showGraphs(False)
@@ -150,6 +171,8 @@ class PlasmaContext():
 
 	#Plottype is optional.  Use it to rename the dv1 plottype
 	def showVelocity(self, data, labels, fvm=None, plottype=None):
+		if self.norun:
+			return
 		pt = plottype
 		if pt == None:
 			pt = "DRAWVELOCITY"
@@ -161,24 +184,32 @@ class PlasmaContext():
 		self._sendplot(dv1)
 
 	def showPotential(self, data):
+		if self.norun:
+			return
 		if not self.isGraphing("DRAWPOT"):
 			return
 		dv1 = Graphs.DrawPotential(data)
 		self._sendplot(dv1)
 
 	def showEnergy(self, time, data, maxtimeindex, labels):
+		if self.norun:
+			return
 		if not self.isGraphing("ENERGY"):
 			return
 		dv1 = Graphs.DrawEnergy( data, time,labels, timeindex = maxtimeindex)
 		self._sendplot(dv1)
 
 	def showSimple(self, name, xdata, ydata, text, graphoptions=None):
+		if self.norun:
+			return
 		if not self.isGraphing(name[0]):
 			return
 		dv1 = Graphs.DrawSimple(name, xdata, ydata, text, graphoptions=graphoptions)
 		self._sendplot(dv1)
 
 	def showPhase(self, ppart, kpic, plottype=None):  #data is the particle data, ppart.  kpic is array of num particles per tile
+		if self.norun:
+			return
 		pt = plottype
 		if pt == None:
 			pt = "DRAWPHASE"
@@ -201,6 +232,8 @@ class PlasmaContext():
 		self._sendplot(dv1)
 
 	def showFastPhase(self, ppart, kpic):  #data is the particle data, ppart.  kpic is array of num particles per tile
+		if self.norun:
+			return
 		if not self.isGraphing("DRAWFASTPHASE"):
 			return
 		#shape is the bounds of the histogram, [[xmin,xmax], [ymin,ymax]]
@@ -264,19 +297,27 @@ class PlasmaContext():
 			time.sleep(1)
 
 	def clearGraphList(self):
+		if self.norun:
+			return
 		ptr = ClearGraphStack()
 		self.que.put(cPickle.dumps(ptr)) 
 
 	def updateSimInfo(self,data):
+		if self.norun:
+			return
 		ptr = SimData(data)
 		self.que.put(cPickle.dumps(ptr))
 
 	def addGraph(self, codename, desc):
+		if self.norun:
+			return
 		ptr = ClearGraphStack()
 		ptr.codename = codename
 		ptr.desc = desc
 		self.que.put(cPickle.dumps(ptr)) 
 
 	def RunNow(self, state):
+		if self.norun:
+			return
 		ptr = RunNow(state)
 		self.que.put(cPickle.dumps(ptr)) 
