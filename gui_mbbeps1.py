@@ -460,7 +460,6 @@ pc.updateSimInfo({"tend":in1.tend})
 
 for ntime in xrange(nstart,nloop):
    print >> iuot, "ntime = ", ntime
-   print "Time direction is ", in1.timedirection
    """ 
    The following 4 lines process events from the GUI.
    Nothing will happen without calling getEvents

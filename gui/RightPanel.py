@@ -27,6 +27,7 @@ class RightPanel(wx.Panel):
         self.cbr.SetValue(False)
         vsizer1.Add(item=self.cbr)
         self.cbr.Bind(wx.EVT_CHECKBOX, self.OnRunDir)
+        self.cbr.Hide()
 
         #Fast Forward Feature
         ffs = wx.BoxSizer(orient=wx.HORIZONTAL)
@@ -73,7 +74,7 @@ class RightPanel(wx.Panel):
         pEvents.put(ns)  #Send the signal to update
 
     def makeButton(self):
-        button1 = wx.Button(self,wx.NewId(),"Run!")
+        button1 = wx.Button(self,wx.NewId(),"Step")
         button1.Bind(wx.EVT_BUTTON, self.OnStart )
         return button1
 
@@ -149,6 +150,10 @@ class RightPanel(wx.Panel):
         if not self.alive:
             self.Destroy()
             return
+        if self.simframe.worker.iAmRunning:
+            self.RunLongButton.SetLabel('Pause')
+        else:
+            self.RunLongButton.SetLabel('Run Continuously')
         self.RunLongButton.Bind(wx.EVT_BUTTON, self.OnStartLong)
         self.runOnceButton.Bind(wx.EVT_BUTTON, self.OnStart)
         wx.Yield()

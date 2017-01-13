@@ -88,8 +88,6 @@ class PlasmaContext():
 				readQ = False
 
 		#Run callbacks.  A signal sent from the GUI must have a signame attribute
-		if len(que) > 0:
-			print que
 		for q in que:
 			if self.callbacks.has_key(q.signame):
 				if q.signame == "EXIT":

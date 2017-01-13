@@ -255,8 +255,6 @@ initialize_menus(pc,defaultGraphs)
 newwin = in1.nplot / 4  #Number of new 4 chart windows to make
 remplt = in1.nplot % 4
 
-print in1.nplot
-
 for i in range(newwin): #Create 4 graph windows
    tmpl = defaultGraphs[0:4]
    defaultGraphs = defaultGraphs[4:]
@@ -272,14 +270,14 @@ if remplt > 0: #Create smaller window
 #sends data the GUI may want to know about the simulation
 pc.updateSimInfo({"tend":in1.tend})
 # * * * start main iteration loop * * *
-
-for ntime in xrange(nstart,nloop):
+ntime = nstart - 1
+while ntime < nloop:
+   ntime += 1
    print >> iuot, "ntime = ", ntime
    curtime = ntime*in1.dt
    pc.setTime(curtime)
    pc.getEvents(in1)
    pc.fastForward(curtime, in1)
-   print "Time direction is ", in1.timedirection
 
 # debug reset
 #  if (ntime==nloop/2):

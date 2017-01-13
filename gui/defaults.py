@@ -17,7 +17,6 @@ class DefaultsCommLink:
 	def readDefault(self,loader,windowname):
 		try:
 			md = loader.defaultDictionary[windowname]
-			print windowname,md
 		except KeyError:
 			print "Could not load defaults "+str(windowname)
 			return #could not load defaults

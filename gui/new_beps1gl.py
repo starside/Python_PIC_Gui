@@ -65,6 +65,16 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
 		EVT_NEWTIME(self, self.OnNewTime) #link up sim time
 		EVT_CLEARGRAPHSTACK(self, self.OnClearGraphStack)
 		self.windowList = [] #list of frames
+		self.InitMenu()
+
+	def InitMenu(self):
+		menubar = wx.MenuBar()
+		fileMenu = wx.Menu()
+		fitem = fileMenu.Append(wx.ID_EXIT, 'Quit', 'Exit Application')
+		menubar.Append(fileMenu, '&File')
+		self.SetMenuBar(menubar)
+		self.Bind(wx.EVT_MENU, self.OnExit, fitem)
+		self.Show(True)
 
 	def OnExit(self, event):
 		self.pEvents.put( ExitSignal() )  #Tell main thread to exit
@@ -94,18 +104,11 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
 		#Find a home for the event
 		self.OnResult(event)  #Call the result handler in the Dispatcher mixin
 
-	def OnQuit(self,event):
-		print "OnQuit"
-		if self.pipemode != None:
-			self.pipemode.close()
-			self.pEvents.close()
-			self.que.close()
 
 	def OnClearGraphStack(self,event):
 		if hasattr(event,"codename"):
 			self.dispatchers.append(GraphStack(3,event.codename, event.desc, callback = self))
 		else:
-			print "Clearing GS"
 			del self.dispatchers[:]  #Delete all objects in dispatchers, defined in GraphStack.py
 
 	def GraphStackChanged(self, num, name):

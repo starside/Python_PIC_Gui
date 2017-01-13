@@ -405,7 +405,6 @@ for ntime in xrange(nstart,nloop):
    pc.setTime(curtime)
    pc.getEvents(in1)
    pc.fastForward(curtime, in1)
-   print "Time direction is ", in1.timedirection
 
 # debug reset
 #  if (ntime==nloop/2):

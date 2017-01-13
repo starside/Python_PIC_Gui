@@ -23,7 +23,6 @@ class Dumb(LeftPanel):
 		else:  #Allow graph to change
 			for (i,g) in enumerate(self.centralDispatcher):
 				path = g.description.split("/")  #Allow 1 level of folders in menu
-				print path
 				if len(path) == 1:
 					ti = menu.Append( i+1, g.description )
 					self.Bind(wx.EVT_MENU,self.PopupHandler, ti)

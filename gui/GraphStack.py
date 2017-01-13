@@ -29,7 +29,6 @@ class GraphStack:
 				rem = i
 		if rem != None:
 			self.listenerQ.remove(rem)
-			print "Deleting Listener " + str(rem)
 			if hasattr(self.callback, "GraphStackChanged"):
 				self.callback.GraphStackChanged(self.countListeners(), self.name)
 

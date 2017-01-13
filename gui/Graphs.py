@@ -674,7 +674,7 @@ class DrawPhi( KeyList):
 		axes = fig.add_subplot(111)
 
 		#pkw, wax = ftPhikw(self.phikw_time, self.phikw, 0.2, 2.0, 10)
-		mim = axes.imshow( fres, cmap=cm.hot, interpolation='none', aspect='auto',extent=(0, k, 0, self.POmegaMax), norm=LogNorm(),origin='lower' )
+		mim = axes.imshow( fres, cmap=cm.rainbow_r, interpolation='none', aspect='auto',extent=(0, k, 0, self.POmegaMax), norm=LogNorm(),origin='lower' )
 		fig.colorbar(mim)
 		axes.set_xlabel(r"$k$")
 		axes.set_ylabel(r"$\omega$")
@@ -704,9 +704,9 @@ class DrawSimpleImage( KeyList):
 
 		#pkw, wax = ftPhikw(self.phikw_time, self.phikw, 0.2, 2.0, 10)
 		if len(self.extent) == 4:
-			mim = axes.imshow( np.transpose(self.img), cmap=cm.hot, interpolation='none', aspect='auto', norm=LogNorm(),origin='lower',extent=self.extent )
+			mim = axes.imshow( np.transpose(self.img), cmap=cm.rainbow, interpolation='none', aspect='auto', norm=LogNorm(),origin='lower',extent=self.extent )
 		else:
-			mim = axes.imshow( np.transpose(self.img), cmap=cm.hot, interpolation='none', aspect='auto', norm=LogNorm(),origin='lower')
+			mim = axes.imshow( np.transpose(self.img), cmap=cm.rainbow, interpolation='none', aspect='auto', norm=LogNorm(),origin='lower')
 		fig.colorbar(mim)
 		axes.set_xlabel(self.labl[0])
 		axes.set_ylabel(self.labl[1])
