@@ -10,7 +10,7 @@ from Dumb import *
 class NewFrame(wx.Frame, DefaultsCommLink):
 	def __init__(self, parent, loader, dispatch, layout=None, defaults=[] ):
 		"""Create the MainFrame."""
-		wx.Frame.__init__(self, parent, style=wx.DEFAULT_FRAME_STYLE|wx.FRAME_FLOAT_ON_PARENT)
+		wx.Frame.__init__(self, parent, style=wx.DEFAULT_FRAME_STYLE)
 		self.loader = loader
 		self.layoutName = ""
 		self.InitData()
@@ -38,6 +38,8 @@ class NewFrame(wx.Frame, DefaultsCommLink):
 				exit(0)
 
 		self.Bind(wx.EVT_ACTIVATE, self.OnFocus)
+		self.Bind(wx.EVT_MOVE, self.OnMove)
+		self.mainframe.activeFrame = self
 		
 
 	def InitData(self):
@@ -112,10 +114,16 @@ class NewFrame(wx.Frame, DefaultsCommLink):
 		self.loader.saveToFile()
 
 	def OnFocus(self, event):
+		self.mainframe.activeFrame = self
+		self.OnMove(None)
+
+	def OnMove(self, event):
 		border = 10
-		if event.GetActive() and not self.mainframe.rpanel.pin.GetValue():
-			(x,y,w,h) = self.GetScreenRect()
+		af = self.mainframe.activeFrame
+		if not self.mainframe.rpanel.pin.GetValue():
+			(x,y,w,h) = af.GetScreenRect()
 			self.mainframe.Move( wx.Point(x+w+border,y) )
+
 	def OnQuit(self,event):
 		if self.mainframe is not None: #remove self from windowList
 			try:

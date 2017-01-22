@@ -104,6 +104,7 @@ class LeftPanel(wx.Panel):
 		vsizer1.Add(item=self.toolbar, flag=wx.EXPAND | wx.ALL, border=0)
 		self.SetSizerAndFit(vsizer1)
 		self.slopeStack = []
+		self.slopeMousePointer = None
 		self.measuring = False
 		self.currentEvent = None
 		self.arbGraphParameters = {"axesType":"Linear-Linear"}
@@ -164,6 +165,7 @@ class LeftPanel(wx.Panel):
 		#self.axes.plot(t,s)
 		#self.axes.imshow(mpimg.imread('gui/default.png'), interpolation='nearest', aspect='auto')
 		self.mycanvas.mpl_connect('button_press_event',self.onclick)
+		self.mycanvas.mpl_connect('motion_notify_event', self.onmotion)
 		self.toolbar = wx.BoxSizer(orient=wx.HORIZONTAL)
 		self.navMenu = MyCustomToolbar(self.mycanvas)
 		self.toolbar.Add(item=self.navMenu )
@@ -254,14 +256,17 @@ class LeftPanel(wx.Panel):
 		self.axes.set_title(self.currentEvent.data.plottype, horizontalalignment='center',verticalalignment='top', transform=self.axes.transAxes, fontsize="smaller")
 		
 		self.mycanvas.draw()
-		self.slopeStack = []
-		self.measuring = False
+		if self.measuring and self.slopeMousePointer is not None:
+			self.PlotLine(self.slopeStack[0], self.slopeMousePointer)
+		#self.slopeStack = []
+		#self.measuring = False
 
 	def PlotLine(self,x1,x2):
 		self.axes.plot([x1[0],x2[0]],[x1[1],x2[1]])
 		self.mycanvas.draw()
 
 	def OnMeasureButton(self,event):
+		print self.mainframe.mainframe.worker.iAmRunning
 		if(len(self.slopeStack) == 0 and self.measuring == True):
 			self.measuring = False
 			self.slopeButton.SetValue(False)
@@ -289,6 +294,16 @@ class LeftPanel(wx.Panel):
 		self.newCP = None
 		self.DrawPlot()  #refresh changes
 
+	def onmotion(self,event):
+		if len(self.slopeStack) == 1:
+			x1 = self.slopeStack[0]
+			x2 = NP.array([event.xdata,event.ydata])
+			self.slopeMousePointer = x2
+			#self.PlotLine(x1, x2)
+			#self.slopeStack.append(x1)
+			self.measuring = True
+			self.DrawPlot()
+
 	def onclick(self,event):
 		if event.inaxes == None or self.measuring == False:
 			return
@@ -304,6 +319,7 @@ class LeftPanel(wx.Panel):
 			self.mainframe.status.SetStatusText("The slope is "+str(m) ) 
 			self.slopeStack = []
 			self.measuring = False
+			self.slopeMousePointer = None
 			self.slopeButton.SetValue(False)
 
 	def OnRecord(self,event):

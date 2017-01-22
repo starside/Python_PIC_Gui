@@ -242,6 +242,7 @@ class DrawSimple(DrawOptions, KeyList):
 		self.setAxesType(self.PaxesType)
 		for i, ydata in enumerate(self.ydata):
 			axes.plot(self.xdata[i], ydata,"-", label=self.nl[i+1] )
+			axes.set_xlim(self.xdata[i][0], self.xdata[i][-1])
 		self.updateAxes(fig,axes)
 		leg = axes.legend()
 		leg.get_frame().set_alpha(0.5)
