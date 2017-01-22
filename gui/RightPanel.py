@@ -46,7 +46,7 @@ class RightPanel(wx.Panel):
         vsizer1.Add(item=newb4)
 
         self.pin = wx.CheckBox(self, -1, "Unpin This Window?")
-        self.pin.SetValue(False)
+        self.pin.SetValue(True)
         vsizer1.Add(item=self.pin)
         
         self.SetSizer(vsizer1)

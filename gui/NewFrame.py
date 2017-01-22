@@ -78,6 +78,7 @@ class NewFrame(wx.Frame, DefaultsCommLink):
 		latem3 = layoutMenu.Append(wx.NewId(), '3 Graphs')
 		latem4 = layoutMenu.Append(wx.NewId(), '4 Graphs')
 		self.layoutItems = [latem1, latem2h, latem2v, latem3, latem4]  #Need this list to enable, disable the layouts
+		viewcbar = viewMenu.Append(wx.NewId(), "Locate Control Bar")
 		hideba = viewMenu.Append(wx.NewId(), "Hide/Show Nav bars")
 		savedef = viewMenu.Append(wx.NewId(), "Save Window Size/Position as default")
 		menubar.Append(fileMenu, '&File')
@@ -95,8 +96,15 @@ class NewFrame(wx.Frame, DefaultsCommLink):
 		self.Bind(wx.EVT_MENU, self.OnLayout4, latem4)
 		self.Bind(wx.EVT_MENU, self.ToggleNav, hideba)
 		self.Bind(wx.EVT_MENU, self.SaveDefault, savedef)
+		self.Bind(wx.EVT_MENU, self.LocateCBar, viewcbar)
 
 		self.Show(True)
+
+	def LocateCBar(self,event):
+		af = self.mainframe.activeFrame
+		(x,y,w,h) = af.GetScreenRect()
+		(mx,my,mw,mh) = self.mainframe.GetScreenRect()
+		self.mainframe.Move( wx.Point(x+w-mw,y) )
 
 	def enableLayoutMenu(self, state):
 		for lo in self.layoutItems:
