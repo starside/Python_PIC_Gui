@@ -169,10 +169,12 @@ class LeftPanel(wx.Panel):
 		self.toolbar = wx.BoxSizer(orient=wx.HORIZONTAL)
 		self.navMenu = MyCustomToolbar(self.mycanvas)
 		self.toolbar.Add(item=self.navMenu )
-		self.slopeButton = wx.ToggleButton(self,-1,"Measure Slope")  #create slope measurement button
+		slopebitmap = wx.Bitmap("./gui/slope.png", wx.BITMAP_TYPE_ANY)
+		self.slopeButton = wx.BitmapButton(self,wx.ID_ANY,bitmap=slopebitmap, size=(42,42) )  #create slope measurement button
 		self.toolbar.Add(item=self.slopeButton )
 
-		self.graphOptionsButton = wx.Button(self,-1,"Graph Options")
+		opts = wx.Bitmap("./gui/options.png", wx.BITMAP_TYPE_ANY)
+		self.graphOptionsButton = wx.BitmapButton(self,id=wx.ID_ANY, bitmap=opts, size = (42,42))
 		self.toolbar.Add(item=self.graphOptionsButton)
 
 		self.RecOnBmp = wx.Bitmap("./gui/rec.png", wx.BITMAP_TYPE_ANY)
@@ -182,7 +184,7 @@ class LeftPanel(wx.Panel):
 		self.recButton.Bind(wx.EVT_BUTTON, self.OnRecord)
 
 		self.graphOptionsButton.Bind(wx.EVT_BUTTON, self.OnOptions)
-		self.slopeButton.Bind(wx.EVT_TOGGLEBUTTON, self.OnMeasureButton)
+		self.slopeButton.Bind(wx.EVT_BUTTON, self.OnMeasureButton)
 
 		#movie writer stuff
 		"""self.FFMpegWriter = manimation.writers['ffmpeg']
@@ -266,7 +268,8 @@ class LeftPanel(wx.Panel):
 		self.mycanvas.draw()
 
 	def OnMeasureButton(self,event):
-		print self.mainframe.mainframe.worker.iAmRunning
+		if not hasattr(self.currentEvent, 'data') or self.currentEvent.data is None:
+			return
 		if(len(self.slopeStack) == 0 and self.measuring == True):
 			self.measuring = False
 			self.slopeButton.SetValue(False)
@@ -275,7 +278,7 @@ class LeftPanel(wx.Panel):
 		self.DrawPlot()
 		self.slopeStack = []
 		self.measuring = True
-		self.slopeButton.SetValue(True)
+		#self.slopeButton.SetValue(True)
 		self.mainframe.status.SetStatusText("Click the two points that define your slope")
 
 	def OnRefreshGraph(self,event):
@@ -283,10 +286,10 @@ class LeftPanel(wx.Panel):
 
 	def OnOptions(self, event): #Open options menu
 		if self.newCP == None:  #Only allow one options window at a time
-			#try: DEBUG:  Comment back in
+			try:
 				self.newCP = self.currentEvent.data.makeControlPanel(self)
-			#except AttributeError:
-			#	print "No bound control panel"
+			except AttributeError:
+				True
 
 	def OnCloseCP(self, event):
 		self.newCP.Hide()
