@@ -1,0 +1,7 @@
+Pause when click slope measure
+- Done - change measure slope buttons to images
+? slope bug
+Block run continuously
+-Done - Fix off screen problems
+-Done - Plots end at 513
+Clean up run system.  Havbe events called when running is started, and running is stopped
