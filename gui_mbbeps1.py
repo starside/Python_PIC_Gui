@@ -12,6 +12,7 @@ from libmbpush1 import *
 from fomplib import *
 from fgraf1 import *
 from dtimer import *
+from PopMenus import *
 
 # override default input data
 in1.emf = 1
@@ -34,6 +35,7 @@ from types import *  #This is required for the rightType function
 import sys
 sys.path.append('./gui')
 from ProceduralInterface import *
+from GraphicsInterface import GraphicsInterface
 
 int_type = numpy.int32
 double_type = numpy.float64
@@ -73,14 +75,13 @@ def rightType(val):
 """
 Define function that initializes menus
 """
-def initialize_menus(pc, defaultGraph):
+def initialize_menus(pc):
    # initialize all diagnostics from namelist input parameters
    # ntime = current time step
    # initialize energy diagnostic: allocates wt
-   pc.addGraph("NOPLOT","No Plot")
+   pc.addGraph("NOPLOT","No Plot", autoadd=False)
    if (in1.ntw > 0):
       pc.addGraph("ENERGY", "Energy") #Enable electron velocity
-      defaultGraphs.append("ENERGY")
 
    if in1.nts > 0:
       labels = ["Vx-x Phase Plot","Vy-x Phase Plot","Vz-x Phase Plot"]
@@ -88,11 +89,9 @@ def initialize_menus(pc, defaultGraph):
       for i in xrange(0,3):
          if ((nn % 2)==1):
             pc.addGraph("EPHASE"+str(i), "Electron/"+labels[i]) #Enable electron velocity
-            defaultGraphs.append("EPHASE"+str(i))
             if (in1.movion==1): #Ions
                if ((in1.nds==2) or (in1.nds==3)):
                   pc.addGraph("IPHASE"+str(i), "Ions/"+labels[i]) #Enable electron velocity
-                  defaultGraphs.append("IPHASE"+str(i))
          nn = int(nn/2)
       #vx-vy, vx-vz or vy-vz
       labels = ["Vx-Vy Phase Plot","Vx-Vz Phase Plot","Vy-Vz Phase Plot"]
@@ -100,90 +99,77 @@ def initialize_menus(pc, defaultGraph):
       for i in xrange(0,3):
          if ((nn % 2)==1):
             pc.addGraph("EPHASEV"+str(i), "Electron/"+labels[i]) #Enable electron velocity
-            defaultGraphs.append("EPHASEV"+str(i))
             if (in1.movion==1): #Ions
                if ((in1.nds==2) or (in1.nds==3)):
                   pc.addGraph("IPHASEV"+str(i), "Ions/"+labels[i]) #Enable electron velocity
-                  defaultGraphs.append("IPHASEV"+str(i))
          nn = int(nn/2)
 
    if (in1.movion==1):
       if (in1.ntdi > 0):
          pc.addGraph("IDENSITY", "Density/Ion Density") #Enable ion velocity
-         defaultGraphs.append("IDENSITY")
          pc.addGraph("ION DENSITY OMEGA VS MODE+", "Ion Dispersion/Ion Density Dispersion +")
-         pc.addGraph("ION DENSITY OMEGA VS MODE-", "Ion Dispersion/Ion Density Dispersion -")
+         pc.addGraph("ION DENSITY OMEGA VS MODE-", "Ion Dispersion/Ion Density Dispersion -",autoadd=False)
          pc.addGraph("ION DENSITY OMEGA VS MODE LINE", "Ion Dispersion/Ion Density Dispersion Trace")
 
    if (in1.movion==1):
       if (in1.ntji > 0):
             if ((in1.ndji==1) or (in1.ndji==3)):
-               pc.addGraph("ICURRENTD", "Ions/Ion Current Density")
-               defaultGraphs.append("ICURRENTD")
+               pc.addGraph(' ION CURRENT', "Ions/Ion Current Density")
             if ((in1.ndji==2) or (in1.ndji==3)):
                # display frequency spectrum
                pc.addGraph("ION CURRENT OMEGA VS MODEY+", "Ion Dispersion/Ion Current Dispersion Y+")
                pc.addGraph("ION CURRENT OMEGA VS MODEZ+", "Ion Dispersion/Ion Current Dispersion Z+")
-               pc.addGraph("ION CURRENT OMEGA VS MODEY-", "Ion Dispersion/Ion Current Dispersion Y-")
-               pc.addGraph("ION CURRENT OMEGA VS MODEZ-", "Ion Dispersion/Ion Current Dispersion Z-")
+               pc.addGraph("ION CURRENT OMEGA VS MODEY-", "Ion Dispersion/Ion Current Dispersion Y-",autoadd=False)
+               pc.addGraph("ION CURRENT OMEGA VS MODEZ-", "Ion Dispersion/Ion Current Dispersion Z-",autoadd=False)
 
    if (in1.ntde > 0):
       pc.addGraph("EDENSITY", "Density/Electron Density") #Enable electron velocity
-      defaultGraphs.append("EDENSITY")
 
    if (in1.ntp > 0):
       pc.addGraph("DRAWPOT", "Potential/Potential") #Enable electron velocity
       pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
-      pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -") 
-      pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace")
-      defaultGraphs.append("DRAWPOT")
+      pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -",autoadd=False)
+      pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace",autoadd=False)
 
    if (in1.ntel > 0):
       pc.addGraph("ELFIELD", "E-Field/Longitudinal E-Field")
-      defaultGraphs.append("ELFIELD")
 
    if (in1.nta > 0):
       if ((in1.nda==1) or (in1.nda==3)):
-         pc.addGraph("VECPOTENTIAL", "Vector Potential Diagnostic/Vector Potential") #Enable electron velocity
-         defaultGraphs.append("VECPOTENTIAL")
+         pc.addGraph(' VECTOR POTENTIAL', "Vector Potential Diagnostic/Vector Potential") #Enable electron velocity
       pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y+", "Vector Potential Diagnostic/Vector Potential:Y+ OMEGA vs MODE")
-      pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y-", "Vector Potential Diagnostic/Vector Potential:Y- OMEGA vs MODE")
+      pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y-", "Vector Potential Diagnostic/Vector Potential:Y- OMEGA vs MODE",autoadd=False)
       pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z+", "Vector Potential Diagnostic/Vector Potential:Z+ OMEGA vs MODE")
-      pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z-", "Vector Potential Diagnostic/Vector Potential:Z- OMEGA vs MODE") 
+      pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z-", "Vector Potential Diagnostic/Vector Potential:Z- OMEGA vs MODE",autoadd=False)
 
       pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y LINE", "Vector Potential Diagnostic/Vector Potential:Y OMEGA vs MODE Trace")
       pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z LINE", "Vector Potential Diagnostic/Vector Potential:Z OMEGA vs MODE Trace")
 
    if (in1.ntet > 0):
       pc.addGraph("TRANSVERSE E FIELD", "Transverse Electric Field/Transverse Electric Field") #Enable electron velocity
-      defaultGraphs.append("TRANSVERSE E FIELD")
       pc.addGraph("TRANSVERSE E.F. Y OMEGA VS MODE", "Transverse Electric Field/Transverse Y Electric Field, Omega vs Mode")
-      pc.addGraph("TRANSVERSE E.F. Z OMEGA VS MODE", "Transverse Electric Field/Transverse Z Electric Field, Omega vs Mode")
+      pc.addGraph("TRANSVERSE E.F. Z OMEGA VS MODE", "Transverse Electric Field/Transverse Z Electric Field, Omega vs Mode",autoadd=False)
 
       pc.addGraph("FT TRANSVERSE E.F. Y +OMEGA VS MODE", "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode")
-      pc.addGraph("FT TRANSVERSE E.F. Y -OMEGA VS MODE", "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode")
-      pc.addGraph("FT TRANSVERSE E.F. Z +OMEGA VS MODE", "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode")
-      pc.addGraph("FT TRANSVERSE E.F. Z -OMEGA VS MODE", "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode")
+      pc.addGraph("FT TRANSVERSE E.F. Y -OMEGA VS MODE", "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode",autoadd=False)
+      pc.addGraph("FT TRANSVERSE E.F. Z +OMEGA VS MODE", "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode",autoadd=False)
+      pc.addGraph("FT TRANSVERSE E.F. Z -OMEGA VS MODE", "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode",autoadd=False)
 
    if (in1.ntb > 0):
       pc.addGraph("BFIELD", "Magnetic Field") #Enable electron velocity
-      defaultGraphs.append("BFIELD")
    if (in1.ntv > 0):
       pc.addGraph("EVELOCITY", "Electron Velocity") #Enable electron velocity
-      defaultGraphs.append("EVELOCITY")
 
    if (in1.ntt > 0):
       pc.addGraph("TRAJECTORY", "Particle Trajectory") #Enable electron velocity
-      defaultGraphs.append("TRAJECTORY")
 
    if (in1.ntar > 0):
-      pc.addGraph("RADVECPOTENTIAL", "Radiative Vector Potential Diagnostic/Radiative Vector Potential") #Enable electron velocity
-      defaultGraphs.append("RADVECPOTENTIAL")
+      pc.addGraph(' RADIATIVE VPOTENTIAL', "Radiative Vector Potential Diagnostic/Radiative Vector Potential") #Enable electron velocity
 
       pc.addGraph("RADVECPOT Y +OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Y +Omega")
-      pc.addGraph("RADVECPOT Y -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Y -Omega")
+      pc.addGraph("RADVECPOT Y -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Y -Omega",autoadd=False)
       pc.addGraph("RADVECPOT Z +OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Z +Omega")
-      pc.addGraph("RADVECPOT Z -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Z -Omega")
+      pc.addGraph("RADVECPOT Z -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Z -Omega",autoadd=False)
 
 
 
@@ -272,7 +258,7 @@ pc.clearGraphList()  #remove all default graph options
 pc.callbacks["VARCHANGE"] = changeVarsCallback  #Set a callback
 pc.callbacks["RESET"] = resetCallback
 pc.callbacks["EXIT"] = exitCallback
-defaultGraphs = []
+graf2 = GraphicsInterface(pc)
 in1.timedirection = 0 #default state of the GUI.  MUST BE 0
 
 
@@ -436,23 +422,9 @@ print >> iuot, "program mbbeps1"
 """
 Initialize default windows
 """
-initialize_menus(pc,defaultGraphs)
-newwin = in1.nplot / 4  #Number of new 4 chart windows to make
-remplt = in1.nplot % 4
-
-print in1.nplot
-
-for i in range(newwin): #Create 4 graph windows
-   tmpl = defaultGraphs[0:4]
-   defaultGraphs = defaultGraphs[4:]
-   pc.newFrame("Layout4", tmpl)
-if remplt > 0: #Create smaller window
-   lon = "Layout"
-   if remplt == 2:
-      lon = lon + "2v"
-   else:
-      lon = lon + str(remplt)
-   pc.newFrame(lon,defaultGraphs)
+initialize_menus(pc)
+graf2.dt = in1.dt
+PopMenus(pc, in1)
 
 #sends data the GUI may want to know about the simulation
 pc.updateSimInfo({"tend":in1.tend})
@@ -475,20 +447,20 @@ for ntime in xrange(nstart,nloop):
 #     sb1.reset_diags13()
 #     ntime = 0; sb1.dth = 0.0
 
-# save previous current in fourier space for radiative vector potential
+    # save previous current in fourier space for radiative vector potential
    if (in1.ntar > 0):
       it = ntime/in1.ntar
       if (ntime==in1.ntar*it):
          sb1.oldcu[:] = numpy.copy(sb1.cue)
 
-# deposit electron current with OpenMP: updates ppart, kpic, cue
+    # deposit electron current with OpenMP: updates ppart, kpic, cue
    dtimer(dtime,itime,-1)
    sb1.cue.fill(0.0)
    dtimer(dtime,itime,1)
    sb1.tdjpost[0] += float(dtime)
    sb1.deposit_ecurrent13(s1.ppart,s1.kpic)
 
-# deposit ion current with OpenMP: updates pparti, kipic, cui
+    # deposit ion current with OpenMP: updates pparti, kipic, cui
    if (in1.movion==1):
       dtimer(dtime,itime,-1)
       sb1.cui.fill(0.0)
@@ -496,25 +468,24 @@ for ntime in xrange(nstart,nloop):
       sb1.tdjpost[0] += float(dtime)
       sb1.deposit_icurrent13(s1.pparti,s1.kipic)
 
-# ion current density diagnostic:
-# updates vfield=ion current, vpkwji, vwkji
+    # ion current density diagnostic:
+    # updates vfield=ion current, vpkwji, vwkji
    if (in1.movion==1):
       if (in1.ntji > 0):
          it = ntime/in1.ntji
          if (ntime==in1.ntji*it):
             sb1.icurrent_diag13(sb1.vfield,sb1.vpkwji,sb1.vwkji,ntime)
             if ((in1.ndji==1) or (in1.ndji==3)):
-# display smoothed ion current
+                # display smoothed ion current
                edenx = numpy.array(range(nx))
-               pc.showSimple(["ICURRENTD","Y", "Z"],[edenx, edenx],[sb1.vfield[0,0:nx], sb1.vfield[1,0:nx] ],"Time="+str(ntime*in1.dt)+" Ion Current")
-               graf1.dvector1(sb1.vfield,' ION CURRENT',ntime,999,0,2,
-                              nx,irc)
+               #pc.showSimple(["ICURRENTD","Y", "Z"],[edenx, edenx],[sb1.vfield[0,0:nx], sb1.vfield[1,0:nx] ],"Time="+str(ntime*in1.dt)+" Ion Current")
+               graf2.dvector1(sb1.vfield,' ION CURRENT',ntime,999,0,2,nx,irc)
                if (irc[0]==1):
                   break
                irc[0] = 0
-# ion spectral analysis
+                # ion spectral analysis
             if ((in1.ndji==2) or (in1.ndji==3)):
-# display frequency spectrum
+                # display frequency spectrum
                pc.showSimpleImage("ION CURRENT OMEGA VS MODEY+",sb1.vpkwji[0,::,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxji,in1.wmin,in1.wmax) )
                pc.showSimpleImage("ION CURRENT OMEGA VS MODEY-",sb1.vpkwji[0,::,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxji,in1.wmin,in1.wmax) )
                pc.showSimpleImage("ION CURRENT OMEGA VS MODEZ+",sb1.vpkwji[1,::,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxji,in1.wmin,in1.wmax) )
@@ -525,21 +496,21 @@ for ntime in xrange(nstart,nloop):
                      break
                irc[0] = 0
 
-# deposit charge with OpenMP: updates qe
+    # deposit charge with OpenMP: updates qe
    dtimer(dtime,itime,-1)
    s1.qe.fill(0.0)
    dtimer(dtime,itime,1)
    s1.tdpost[0] += float(dtime)
    mpush1.mpost1(s1.ppart,s1.qe,s1.kpic,in1.qme,s1.tdpost,in1.mx)
-# add guard cells: updates qe
+    # add guard cells: updates qe
    mgard1.maguard1(s1.qe,s1.tguard,nx)
 
-# electron density diagnostic: updates sfield=electron density
+    # electron density diagnostic: updates sfield=electron density
    if (in1.ntde > 0):
       it = int(ntime/in1.ntde)
       if (ntime==in1.ntde*it):
          s1.edensity_diag1(s1.sfield)
-# display smoothed electron density
+        # display smoothed electron density
          edenx = numpy.array(range(nx))
          edeny = numpy.array(s1.sfield[0:nx], copy=True)
          pc.showSimple(["EDENSITY","Electron Density"],[edenx],[ edeny ],"Time="+str(ntime*in1.dt))
@@ -548,24 +519,24 @@ for ntime in xrange(nstart,nloop):
             break
          irc[0] = 0
 
-# deposit ion charge with OpenMP: updates qi
+    # deposit ion charge with OpenMP: updates qi
    if (in1.movion==1):
       dtimer(dtime,itime,-1)
       s1.qi.fill(0.0)
       dtimer(dtime,itime,1)
       s1.tdpost[0] += float(dtime)
       mpush1.mpost1(s1.pparti,s1.qi,s1.kipic,in1.qmi,s1.tdpost,in1.mx)
-# add guard cells: updates qi
+    # add guard cells: updates qi
       mgard1.maguard1(s1.qi,sb1.tguard,nx)
 
-# ion density diagnostic: updates sfield=ion density, pkwdi, wkdi
+    # ion density diagnostic: updates sfield=ion density, pkwdi, wkdi
    if (in1.movion==1):
       if (in1.ntdi > 0):
          it = int(ntime/in1.ntdi)
          if (ntime==in1.ntdi*it):
             s1.idensity_diag1(s1.sfield,s1.pkwdi,s1.wkdi,ntime)
             if ((in1.nddi==1) or (in1.nddi==3)):
-# display smoothed ion density
+                # display smoothed ion density
                edenx = numpy.array(range(nx))
                pc.showSimple(["IDENSITY","Ion Density", "Electron Density"],[edenx, edenx],[s1.sfield[0:nx], edeny ],"Time="+str(ntime*in1.dt))
                graf1.dscaler1(s1.sfield,' ION DENSITY',ntime,999,1,nx,
@@ -573,9 +544,9 @@ for ntime in xrange(nstart,nloop):
                if (irc[0]==1):
                   break
                irc[0] = 0
-# ion spectral analysis
+                # ion spectral analysis
             if ((in1.nddi==2) or (in1.nddi==3)):
-# display frequency spectrum
+                # display frequency spectrum
                pc.showSimpleImage("ION DENSITY OMEGA VS MODE+",s1.pkwdi[::,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxdi,in1.wmin,in1.wmax) )
                pc.showSimpleImage("ION DENSITY OMEGA VS MODE-",s1.pkwdi[::,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxdi,in1.wmin,in1.wmax) )
                wax = numpy.array(range(in1.modesxdi))
@@ -586,39 +557,38 @@ for ntime in xrange(nstart,nloop):
                      break
                irc[0] = 0
 
-# add electron and ion densities: updates qe
+    # add electron and ion densities: updates qe
    mfield1.maddqei1(s1.qe,s1.qi,s1.tfield,nx)
 
-# add electron and ion current densities: updates cue
+    # add electron and ion current densities: updates cue
    if (in1.movion==1):
       mfield1.maddcuei1(sb1.cue,sb1.cui,sb1.tfield,nx)
 
-# transform charge to fourier space: updates qe
+    # transform charge to fourier space: updates qe
    isign = -1
    mfft1.mfft1r(s1.qe,isign,s1.mixup,s1.sct,s1.tfft,in1.indx)
 
-# transform current to fourier space: updates cue
+    # transform current to fourier space: updates cue
    isign = -1
    mfft1.mfft1rn(sb1.cue,isign,s1.mixup,s1.sct,s1.tfft,in1.indx)
 
-# radiative vector potential diagnostic:
-# updates vfield=radiative vector potential, vpkwr, vwkr
+    # radiative vector potential diagnostic:
+    # updates vfield=radiative vector potential, vpkwr, vwkr
    if (in1.ntar > 0):
       it = ntime/in1.ntar
       if (ntime==in1.ntar*it):
          sb1.vrpotential_diag13(sb1.vfield,sb1.vpkwr,sb1.vwkr,ntime)
          if ((in1.ndar==1) or (in1.ndar==3)):
-# display radiative vector potential
+            # display radiative vector potential
             xax = numpy.array(range(len(sb1.vfield[0,:-2])))
-            pc.showSimple(["RADVECPOTENTIAL","y","z"],[xax,xax],[sb1.vfield[0,:-2],sb1.vfield[1,:-2]],"Time="+str(ntime*in1.dt))
-            graf1.dvector1(sb1.vfield,' RADIATIVE VPOTENTIAL',ntime,999,
-                           0,2,nx,irc)
+            #pc.showSimple(["RADVECPOTENTIAL","y","z"],[xax,xax],[sb1.vfield[0,:-2],sb1.vfield[1,:-2]],"Time="+str(ntime*in1.dt))
+            graf2.dvector1(sb1.vfield,' RADIATIVE VPOTENTIAL',ntime,999,0,2,nx,irc)
             if (irc[0]==1):
                break
             irc[0] = 0
-# spectral analysis
+            # spectral analysis
          if ((in1.ndar==2) or (in1.ndar==3)):
-# display frequency spectrum
+            # display frequency spectrum
             pc.showSimpleImage("RADVECPOT Y +OMEGA",sb1.vpkwr[0,:,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxar,in1.wmin,in1.wmax))
             pc.showSimpleImage("RADVECPOT Y -OMEGA",sb1.vpkwr[0,:,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxar,in1.wmin,in1.wmax))
             pc.showSimpleImage("RADVECPOT Z +OMEGA",sb1.vpkwr[1,:,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxar,in1.wmin,in1.wmax))
@@ -631,66 +601,66 @@ for ntime in xrange(nstart,nloop):
                break
             irc[0] = 0
 
-# calculate electromagnetic fields in fourier space: updates eyz, byz
+    # calculate electromagnetic fields in fourier space: updates eyz, byz
    if ((ntime+s1.ntime0)==0):
-# initialize electromagnetic fields from darwin fields
-# calculate initial darwin magnetic field
+    # initialize electromagnetic fields from darwin fields
+    # calculate initial darwin magnetic field
       mfield1.mibpois1(sb1.cue,sb1.byz,s1.ffc,in1.ci,sb1.wb,sb1.tfield,
                        nx)
       sb1.wf[0] = 0.0
-# calculate initial darwin electric field with approximate value
+        # calculate initial darwin electric field with approximate value
       sb1.init_detfield13()
       sb1.dth = 0.5*in1.dt
    else:
       mfield1.mmaxwel1(sb1.eyz,sb1.byz,sb1.cue,s1.ffc,in1.ci,in1.dt,
                        sb1.wf,sb1.wb,sb1.tfield,nx)
 
-# calculate longitudinal force/charge in fourier space:
-# updates fxe, we
+    # calculate longitudinal force/charge in fourier space:
+    # updates fxe, we
    mfield1.mpois1(s1.qe,s1.fxe,s1.ffc,s1.we,s1.tfield,nx)
 
-# add longitudinal and transverse electric fields: updates fxyze
+    # add longitudinal and transverse electric fields: updates fxyze
    mfield1.memfield1(sb1.fxyze,s1.fxe,sb1.eyz,s1.ffc,sb1.tfield,nx)
-# copy magnetic field: updates byze
+    # copy magnetic field: updates byze
    mfield1.mbmfield1(sb1.byze,sb1.byz,s1.ffc,sb1.tfield,nx)
 
-# transform electric force to real space: updates fxyze
+    # transform electric force to real space: updates fxyze
    isign = 1
    mfft1.mfft1rn(sb1.fxyze,isign,s1.mixup,s1.sct,s1.tfft,in1.indx)
 
-# transform magnetic force to real space: updates byze
+    # transform magnetic force to real space: updates byze
    isign = 1
    mfft1.mfft1rn(sb1.byze,isign,s1.mixup,s1.sct,s1.tfft,in1.indx)
 
-# add constant to magnetic field with OpenMP: updates bxyze
+    # add constant to magnetic field with OpenMP: updates bxyze
    if (omt > 0.0):
       mfield1.mbaddext1(sb1.byze,sb1.tfield,in1.omy,in1.omz,nx)
 
-# add external traveling wave field
+    # add external traveling wave field
    ts = in1.dt*float(ntime)
    mfield1.meaddext13(sb1.fxyze,sb1.tfield,in1.amodex,in1.freq,ts,
                       in1.trmp,in1.toff,in1.el0,in1.er0,nx)
 
-# copy guard cells: updates fxyze, byze
+    # copy guard cells: updates fxyze, byze
    mgard1.mcguard1(sb1.fxyze,sb1.tguard,nx)
    mgard1.mcguard1(sb1.byze,sb1.tguard,nx)
 
-# potential diagnostic: updates sfield=potential, pkw, wk
+    # potential diagnostic: updates sfield=potential, pkw, wk
    if (in1.ntp > 0):
       it = int(ntime/in1.ntp)
       if (ntime==in1.ntp*it):
          s1.potential_diag1(s1.sfield,s1.pkw,s1.wk,ntime)
          if ((in1.ndp==1) or (in1.ndp==3)):
-# display potential
+    # display potential
             edenx = numpy.array(range(nx))
             pc.showSimple(["DRAWPOT","Potential"],[edenx],[s1.sfield[0:nx] ],"Time="+str(ntime*in1.dt)+" Potential")
             graf1.dscaler1(s1.sfield,' POTENTIAL',ntime,999,0,nx,irc)
             if (irc[0]==1):
                break
             irc[0] = 0
-# spectral analysis
+        # spectral analysis
          if ((in1.ndp==2) or (in1.ndp==3)):
-# display frequency spectrum
+            # display frequency spectrum
             pc.showSimpleImage("POTENTIAL OMEGA VS MODE+",s1.pkw[::,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxp,in1.wmin,in1.wmax) )
             pc.showSimpleImage("POTENTIAL OMEGA VS MODE-",s1.pkw[::,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxp,in1.wmin,in1.wmax) )
             wax = numpy.array(range(in1.modesxp))
@@ -701,12 +671,12 @@ for ntime in xrange(nstart,nloop):
                break
             irc[0] = 0
 
-# longitudinal efield diagnostic: updates sfield=longitudinal efield
+    # longitudinal efield diagnostic: updates sfield=longitudinal efield
    if (in1.ntel > 0):
       it = int(ntime/in1.ntel)
       if (ntime==in1.ntel*it):
          s1.elfield_diag1(s1.sfield)
-# display longitudinal efield
+        # display longitudinal efield
          try:
             edenx
          except:
@@ -728,8 +698,8 @@ for ntime in xrange(nstart,nloop):
                edenx
             except:
                edenx = numpy.array(range(nx))
-            pc.showSimple(["VECPOTENTIAL","y","z"],[edenx,edenx],[sb1.vfield[0,:nx],sb1.vfield[1,:nx]],"Time="+str(ntime*in1.dt))
-            graf1.dvector1(sb1.vfield,' VECTOR POTENTIAL',ntime,999,0,2,
+            #pc.showSimple(["VECPOTENTIAL","y","z"],[edenx,edenx],[sb1.vfield[0,:nx],sb1.vfield[1,:nx]],"Time="+str(ntime*in1.dt))
+            graf2.dvector1(sb1.vfield,' VECTOR POTENTIAL',ntime,999,0,2,
                            nx,irc)
             if (irc[0]==1):
                break
@@ -751,20 +721,20 @@ for ntime in xrange(nstart,nloop):
                break
             irc[0] = 0
 
-# transverse efield diagnostic: 
-# updates vfield=transverse efield, vpkwet, vwket
+    # transverse efield diagnostic:
+    # updates vfield=transverse efield, vpkwet, vwket
    if (in1.ntet > 0):
       it = ntime/in1.ntet
       if (ntime==in1.ntet*it):
          sb1.etfield_diag13(sb1.vfield,sb1.vpkwet,sb1.vwket,ntime)
          if ((in1.ndet==1) or (in1.ndet==3)):
-# display transverse efield
+            # display transverse efield
             try:
                edenx
             except:
                edenx = numpy.array(range(nx))
-            pc.showSimple(["TRANSVERSE E FIELD","Y","Z"],[edenx,edenx],[ sb1.vfield[0,0:nx], sb1.vfield[1,0:nx] ],"Time="+str(ntime*in1.dt))
-            graf1.dvector1(sb1.vfield,' TRANSVERSE EFIELD',ntime,999,0,
+            #pc.showSimple(["TRANSVERSE E FIELD","Y","Z"],[edenx,edenx],[ sb1.vfield[0,0:nx], sb1.vfield[1,0:nx] ],"Time="+str(ntime*in1.dt))
+            graf2.dvector1(sb1.vfield,'TRANSVERSE E FIELD',ntime,999,0,
                            2,nx,irc)
             if (irc[0]==1):
                break
@@ -796,8 +766,8 @@ for ntime in xrange(nstart,nloop):
             edenx
          except:
             edenx = numpy.array(range(nx))
-         pc.showSimple(["BFIELD","Y","Z"],[edenx,edenx],[ sb1.vfield[0,0:nx], sb1.vfield[1,0:nx] ],"Time="+str(ntime*in1.dt))
-         graf1.dvector1(sb1.vfield,' MAGNETIC FIELD',ntime,999,0,2,nx,
+         #pc.showSimple([" MAGNETIC FIELD","Y","Z"],[edenx,edenx],[ sb1.vfield[0,0:nx], sb1.vfield[1,0:nx] ],"Time="+str(ntime*in1.dt))
+         graf2.dvector1(sb1.vfield,'BFIELD',ntime,999,0,2,nx,
                         irc)
          if (irc[0]==1):
             break

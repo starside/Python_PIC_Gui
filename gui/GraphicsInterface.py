@@ -3,6 +3,7 @@ import numpy
 class GraphicsInterface:
     def __init__(self, pc):
         self.pc = pc
+        self.dt = 1
 
     def dscaler1(self,f,label,itime,isc,ist,nx,irc):
         """
@@ -50,3 +51,17 @@ class GraphicsInterface:
         phasearr[1,:,:] = ppart[iyp-1,:,:]
         phasearr[0,:,:] = ppart[ixp-1,:,:]
         self.pc.showPhase(phasearr, kpic, plottype=label )
+
+    def dvector1(self, f, label, itime, isc, ist, idm, nx, irc, axislabels=["y","z"] ):
+        edenx = range(nx)
+        w,h = numpy.shape(f)
+        assert(w == len(axislabels))
+        self.pc.showSimple([label] + axislabels, [edenx, edenx], [f[0, :nx], f[1, :nx]], "Time=" + str(itime*self.dt))
+
+
+
+"""
+pc.showSimple(["VECPOTENTIAL","y","z"],[edenx,edenx],[sb1.vfield[0,:nx],sb1.vfield[1,:nx]],"Time="+str(ntime*in1.dt))
+            graf1.dvector1(sb1.vfield,' VECTOR POTENTIAL',ntime,999,0,2, nx,irc)
+
+"""

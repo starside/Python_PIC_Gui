@@ -48,7 +48,7 @@ class RightPanel(wx.Panel):
         self.ffpoint.Bind(wx.EVT_TEXT_ENTER, self.OnFFChange)
 
         rcs = wx.BoxSizer(orient=wx.HORIZONTAL)
-        self.rcstext = wx.StaticText(self, -1, "Jump Steps: ")
+        self.rcstext = wx.StaticText(self, -1, "Jump Time: ")
         self.rcspoint = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         rcs.Add(item=self.rcstext, border=20)
         rcs.Add(item=self.rcspoint, flag=wx.EXPAND | wx.ALL)
@@ -186,8 +186,24 @@ class RightPanel(wx.Panel):
         self.simframe.worker.runCounter = 1 #the number of times to run
         self.RunLongButton.SetValue(False)
 
+    #Method called at the top of the main event loop
+    def beforeMainLoop(self):
+        self.RunLongButton.Unbind(wx.EVT_BUTTON)
+        self.runOnceButton.Unbind(wx.EVT_BUTTON)
+
+    #Method called after mainloop started
+    def afterMainLoop(self):
+        if self.simframe.worker.iAmRunning:
+            self.RunLongButton.SetLabel('Pause')
+        else:
+            self.RunLongButton.SetLabel(self.runconText)
+        self.runmode.Enable(not self.simframe.worker.iAmRunning)
+        self.RunLongButton.Bind(wx.EVT_BUTTON, self.OnStartLong)
+        self.runOnceButton.Bind(wx.EVT_BUTTON, self.OnStart)
+
     def OnStartLong(self, event):
         """Start Computation."""
+        #Check to see our current runMode
         if self.runmode.GetStringSelection() == self.lblList[1] and self.rcspoint.GetValue() is not None:
             try:
                 cv = float(self.ffpoint.GetValue())
@@ -204,9 +220,7 @@ class RightPanel(wx.Panel):
             cv += inc
             self.ffpoint.SetValue(str(cv))
             self.OnFFChange(None)
-        # Trigger the worker thread unless it's already busy
-        self.RunLongButton.Unbind(wx.EVT_BUTTON)
-        self.runOnceButton.Unbind(wx.EVT_BUTTON)
+        self.beforeMainLoop()
 
         #Toggle run state
         if hasattr(self.simframe.worker,'iAmRunning'):
@@ -214,26 +228,19 @@ class RightPanel(wx.Panel):
         else:
             self.simframe.worker.iAmRunning = True
         self.runmode.Enable(not self.simframe.worker.iAmRunning)
-        #Decide if we run or not
-        #if self.simframe.worker.iAmRunning:
-        #   #Post event to call run
-        #   wx.PostEvent(self, RunStepEvent() )
 
     def OnNewFrame(self,event):
         nf = NewFrame(self.mainframe, self.loader, self.mainframe)
         self.mainframe.windowList.append(nf)
 
+    #This is the main loop.  Instead of looping in a while, at the end of the function
+    #it posts a wxEvent to call itself again.  Since this goes in to wxPython's event
+    #queue, the gui remains responsive
     def OnRunStep(self,event):
         if not self.alive:
             self.Destroy()
             return
-        if self.simframe.worker.iAmRunning:
-            self.RunLongButton.SetLabel('Pause')
-        else:
-            self.RunLongButton.SetLabel(self.runconText)
-        self.runmode.Enable(not self.simframe.worker.iAmRunning)
-        self.RunLongButton.Bind(wx.EVT_BUTTON, self.OnStartLong)
-        self.runOnceButton.Bind(wx.EVT_BUTTON, self.OnStart)
+        self.afterMainLoop()
         wx.Yield()
         self.simframe.worker.run()
         wx.PostEvent(self, RunStepEvent() )

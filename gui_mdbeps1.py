@@ -13,6 +13,7 @@ from libmdpush1 import *
 from fomplib import *
 from fgraf1 import *
 from dtimer import *
+from PopMenus import *
 
 """
 This imports the gui code
@@ -62,13 +63,12 @@ def rightType(val):
 """
 Define function that initializes menus
 """
-def initialize_menus(pc, defaultGraphs):
+def initialize_menus(pc):
 # initialize all diagnostics from namelist input parameters
 # initialize energy diagnostic: allocates wt
-   pc.addGraph("NOPLOT","No Plot")
+   pc.addGraph("NOPLOT","No Plot", autoadd=False)
    if (in1.ntw > 0):
       pc.addGraph("ENERGY", "Energy") #Enable electron velocity
-      defaultGraphs.append("ENERGY")
 
    if in1.nts > 0:
       labels = ["Vx-x Phase Plot","Vy-x Phase Plot","Vz-x Phase Plot"]
@@ -76,11 +76,9 @@ def initialize_menus(pc, defaultGraphs):
       for i in xrange(0,3):
          if ((nn % 2)==1):
             pc.addGraph("EPHASE"+str(i), "Electron/"+labels[i]) #Enable electron velocity
-            defaultGraphs.append("EPHASE"+str(i))
             if (in1.movion==1): #Ions
                if ((in1.nds==2) or (in1.nds==3)):
                   pc.addGraph("IPHASE"+str(i), "Ions/"+labels[i]) #Enable electron velocity
-                  defaultGraphs.append("IPHASE"+str(i))
          nn = int(nn/2)
       #vx-vy, vx-vz or vy-vz
       labels = ["Vx-Vy Phase Plot","Vx-Vz Phase Plot","Vy-Vz Phase Plot"]
@@ -88,23 +86,19 @@ def initialize_menus(pc, defaultGraphs):
       for i in xrange(0,3):
          if ((nn % 2)==1):
             pc.addGraph("EPHASEV"+str(i), "Electron/"+labels[i]) #Enable electron velocity
-            defaultGraphs.append("EPHASEV"+str(i))
             if (in1.movion==1): #Ions
                if ((in1.nds==2) or (in1.nds==3)):
                   pc.addGraph("IPHASEV"+str(i), "Ions/"+labels[i]) #Enable electron velocity
-                  defaultGraphs.append("IPHASEV"+str(i))
          nn = int(nn/2)
 
 # initialize electron density diagnostic
    if (in1.ntde > 0):
       pc.addGraph("EDENSITY", "Density/Electron Density") #Enable electron velocity
-      defaultGraphs.append("EDENSITY")
 
 # initialize ion density diagnostic: allocates pkwdi, wkdi
    if (in1.movion==1):
       if (in1.ntdi > 0):
          pc.addGraph("IDENSITY", "Density/Ion Density") #Enable ion velocity
-         defaultGraphs.append("IDENSITY")
          pc.addGraph("ION DENSITY OMEGA VS MODE+", "Ion Dispersion/Ion Density Dispersion +")
          pc.addGraph("ION DENSITY OMEGA VS MODE-", "Ion Dispersion/Ion Density Dispersion -")
          pc.addGraph("ION DENSITY OMEGA VS MODE LINE", "Ion Dispersion/Ion Density Dispersion Trace")
@@ -120,24 +114,20 @@ def initialize_menus(pc, defaultGraphs):
       pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
       pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -") 
       pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace")
-      defaultGraphs.append("DRAWPOT")
 
 # initialize longitudinal efield diagnostic
    if (in1.ntel > 0):
       pc.addGraph("ELFIELD", "E-Field/Longitudinal E-Field")
-      defaultGraphs.append("ELFIELD")
 
 # initialize ion current density diagnostic: allocates vpkwji, vwkji
    if (in1.movion==1):
       if (in1.ntji > 0):
          pc.addGraph("ICURRENTD", "Ions/Ion Current Density")
-         defaultGraphs.append("ICURRENTD")
 
 # initialize darwin vector potential diagnostic: allocates vpkw, vwk
    if (in1.nta > 0):
       if ((in1.nda==1) or (in1.nda==3)):
          pc.addGraph("VECPOTENTIAL", "Vector Potential Diagnostic/Vector Potential") #Enable electron velocity
-         defaultGraphs.append("VECPOTENTIAL")
       pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y+", "Vector Potential Diagnostic/Vector Potential:Y+ OMEGA vs MODE")
       pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y-", "Vector Potential Diagnostic/Vector Potential:Y- OMEGA vs MODE")
       pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z+", "Vector Potential Diagnostic/Vector Potential:Z+ OMEGA vs MODE")
@@ -150,7 +140,6 @@ def initialize_menus(pc, defaultGraphs):
 # allocates vpkwet, vwket
    if (in1.ntet > 0):
       pc.addGraph("TRANSVERSE E FIELD", "Transverse Electric Field/Transverse Electric Field") #Enable electron velocity
-      defaultGraphs.append("TRANSVERSE E FIELD")
       pc.addGraph("TRANSVERSE E.F. Y OMEGA VS MODE", "Transverse Electric Field/Transverse Y Electric Field, Omega vs Mode")
       pc.addGraph("TRANSVERSE E.F. Z OMEGA VS MODE", "Transverse Electric Field/Transverse Z Electric Field, Omega vs Mode")
 
@@ -162,22 +151,18 @@ def initialize_menus(pc, defaultGraphs):
 # initialize darwin magnetic field diagnostic
    if (in1.ntb > 0):
       pc.addGraph("BFIELD", "Magnetic Field") #Enable electron velocity
-      defaultGraphs.append("BFIELD")
 
 # initialize velocity diagnostic
    if (in1.ntv > 0):
 # electrons: allocates fv, fvm, fvtm
       pc.addGraph("EVELOCITY", "Electron Velocity") #Enable electron velocity
-      defaultGraphs.append("EVELOCITY")
 # ions: allocates fvi, fvmi, fvtmi
       if (in1.movion==1):
          pc.addGraph("IVELOCITY", "Ions/Ion Velocity") #Enable electron velocity
-         defaultGraphs.append("IVELOCITY")
 
 # initialize trajectory diagnostic: allocates partd, fvtp, fvmtp
    if (in1.ntt > 0):
       pc.addGraph("TRAJECTORY", "Particle Trajectory") #Enable electron velocity
-      defaultGraphs.append("TRAJECTORY")
 
 #init GUI
 pc = PlasmaContext()  #Create GUI
@@ -186,7 +171,6 @@ pc.clearGraphList()  #remove all default graph options
 pc.callbacks["VARCHANGE"] = changeVarsCallback  #Set a callback
 pc.callbacks["RESET"] = resetCallback
 pc.callbacks["EXIT"] = exitCallback
-defaultGraphs = []
 in1.timedirection = 0 #default state of the GUI.  MUST BE 0
 
 # override default input data
@@ -372,23 +356,8 @@ print >> iuot, "program mdbeps1"
 """
 Initialize default windows
 """
-initialize_menus(pc,defaultGraphs)
-newwin = in1.nplot / 4  #Number of new 4 chart windows to make
-remplt = in1.nplot % 4
-
-print in1.nplot
-
-for i in range(newwin): #Create 4 graph windows
-   tmpl = defaultGraphs[0:4]
-   defaultGraphs = defaultGraphs[4:]
-   pc.newFrame("Layout4", tmpl)
-if remplt > 0: #Create smaller window
-   lon = "Layout"
-   if remplt == 2:
-      lon = lon + "2v"
-   else:
-      lon = lon + str(remplt)
-   pc.newFrame(lon,defaultGraphs)
+initialize_menus(pc)
+PopMenus(pc,in1)
 
 #sends data the GUI may want to know about the simulation
 pc.updateSimInfo({"tend":in1.tend})
