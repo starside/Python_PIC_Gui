@@ -272,7 +272,7 @@ class LeftPanel(wx.Panel):
 			return
 		if(len(self.slopeStack) == 0 and self.measuring == True):
 			self.measuring = False
-			self.slopeButton.SetValue(False)
+			#self.slopeButton.SetValue(False)
 			self.mainframe.status.SetStatusText("I await your command")
 			return
 		self.DrawPlot()
@@ -323,7 +323,7 @@ class LeftPanel(wx.Panel):
 			self.slopeStack = []
 			self.measuring = False
 			self.slopeMousePointer = None
-			self.slopeButton.SetValue(False)
+			#self.slopeButton.SetValue(False)
 
 	def OnRecord(self,event):
 		ne = RecordPanel(self)

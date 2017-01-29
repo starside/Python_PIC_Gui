@@ -21,7 +21,14 @@ class RightPanel(wx.Panel):
         self.RunLongButton = newb5  #Need to bind/unbind this button
         self.timerText = wx.StaticText(self,-1,"Simulation time: ")
         vsizer1.Add(item=self.timerText, proportion=1, flag = wx.EXPAND | wx.ALL, border=10)
+
+        self.lblList = ['Continuous', 'Time Chunks']
+        self.runmode = wx.RadioBox(self, label='Run Mode', pos=(80, 10), choices=self.lblList, majorDimension=1, style=wx.RA_SPECIFY_ROWS)
+        self.runmode.Bind(wx.EVT_RADIOBOX, self.OnRunMode)
+        vsizer1.Add(item=self.runmode)
+
         vsizer1.Add(item=newb5, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
+
 
         self.cbr = wx.CheckBox(self, -1, "Reverse Time?")
         self.cbr.SetValue(False)
@@ -40,6 +47,13 @@ class RightPanel(wx.Panel):
         vsizer1.Add(self.ffstate)
         self.ffpoint.Bind(wx.EVT_TEXT_ENTER, self.OnFFChange)
 
+        rcs = wx.BoxSizer(orient=wx.HORIZONTAL)
+        self.rcstext = wx.StaticText(self, -1, "Jump Steps: ")
+        self.rcspoint = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
+        rcs.Add(item=self.rcstext, border=20)
+        rcs.Add(item=self.rcspoint, flag=wx.EXPAND | wx.ALL)
+        vsizer1.Add(rcs, flag=wx.EXPAND | wx.ALL)
+
         vsizer1.Add(item=newb, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
         vsizer1.Add(item=newb2, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
         vsizer1.Add(item=newb3)
@@ -48,12 +62,50 @@ class RightPanel(wx.Panel):
         self.pin = wx.CheckBox(self, -1, "Unpin This Window?")
         self.pin.SetValue(True)
         vsizer1.Add(item=self.pin)
-        
         self.SetSizer(vsizer1)
+        self._updateRunMode()
 
         EVT_RUNSTEP(self, self.OnRunStep)
         wx.CallAfter( self.OnRunDir, None)  #Set reverse time variable in main code
         wx.PostEvent(self, RunStepEvent() )
+
+    def enableJumpBox(self, val=True):
+        if val:
+            self.rcstext.Show()
+            self.rcspoint.Show()
+            self.rcspoint.Show()
+        else:
+            self.rcstext.Hide()
+            self.rcspoint.Hide()
+            self.rcspoint.Hide()
+
+    def enableFFBox(self, val=True):
+        if val:
+            self.fftext.Show()
+            self.ffpoint.Show()
+            self.ffstate.Show()
+        else:
+            self.fftext.Hide()
+            self.ffpoint.Hide()
+            self.ffstate.Hide()
+
+    def _updateRunMode(self):
+        sel = self.runmode.GetStringSelection()
+        if sel == self.lblList[1]:
+            self.enableFFBox(False)
+            self.enableJumpBox(True)
+            self.runconText = "Run Chunk"
+        elif sel == self.lblList[0]:
+            self.enableFFBox(True)
+            self.enableJumpBox(False)
+            self.runconText = "Run Continuously"
+
+        self.Fit()
+
+    def OnRunMode(self,event):
+        if not self.simframe.worker.iAmRunning:
+            print self.runmode.GetStringSelection()
+            self._updateRunMode()
 
     def OnFFChange(self,event):
         cv = self.ffpoint.GetValue()
@@ -94,7 +146,8 @@ class RightPanel(wx.Panel):
         return button1  
 
     def makeRunLongButton(self):
-        button1 = wx.ToggleButton(self,wx.NewId(),"Run Continuously")
+        self.runconText = "Run Continuously"
+        button1 = wx.ToggleButton(self,wx.NewId(), self.runconText)
         button1.Bind(wx.EVT_TOGGLEBUTTON, self.OnStartLong)
         return button1
 
@@ -120,6 +173,12 @@ class RightPanel(wx.Panel):
         ie.editor.loadInput()
         ie.Show()
 
+    def StartedRunning(self):
+        True
+
+    def StoppedRunning(self):
+        True
+
     def OnStart(self, event):
         self.RunLongButton.Unbind(wx.EVT_BUTTON)
         self.runOnceButton.Unbind(wx.EVT_BUTTON)
@@ -129,14 +188,32 @@ class RightPanel(wx.Panel):
 
     def OnStartLong(self, event):
         """Start Computation."""
+        if self.runmode.GetStringSelection() == self.lblList[1] and self.rcspoint.GetValue() is not None:
+            try:
+                cv = float(self.ffpoint.GetValue())
+            except:
+                cv = None
+            try:
+                inc = float(self.rcspoint.GetValue())
+            except:
+                inc = None
+            if cv is None:
+                cv = 0
+            if inc is None:
+                inc = 0
+            cv += inc
+            self.ffpoint.SetValue(str(cv))
+            self.OnFFChange(None)
         # Trigger the worker thread unless it's already busy
         self.RunLongButton.Unbind(wx.EVT_BUTTON)
         self.runOnceButton.Unbind(wx.EVT_BUTTON)
+
         #Toggle run state
         if hasattr(self.simframe.worker,'iAmRunning'):
             self.simframe.worker.iAmRunning = not self.simframe.worker.iAmRunning #Toggle value
         else:
             self.simframe.worker.iAmRunning = True
+        self.runmode.Enable(not self.simframe.worker.iAmRunning)
         #Decide if we run or not
         #if self.simframe.worker.iAmRunning:
         #   #Post event to call run
@@ -153,7 +230,8 @@ class RightPanel(wx.Panel):
         if self.simframe.worker.iAmRunning:
             self.RunLongButton.SetLabel('Pause')
         else:
-            self.RunLongButton.SetLabel('Run Continuously')
+            self.RunLongButton.SetLabel(self.runconText)
+        self.runmode.Enable(not self.simframe.worker.iAmRunning)
         self.RunLongButton.Bind(wx.EVT_BUTTON, self.OnStartLong)
         self.runOnceButton.Bind(wx.EVT_BUTTON, self.OnStart)
         wx.Yield()

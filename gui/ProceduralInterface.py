@@ -15,6 +15,14 @@ from Signals import *
 
 import new_beps1gl
 
+class DispItem:
+	def __init__(self, value, priority):
+		self.value = value
+		self.priority = priority
+
+	def __cmp__(self, other):
+		return self.priority.__cmp__(other.priority)
+
 
 #Try the high level interface
 def initGui(q, que, td, events, outqueue):
@@ -29,6 +37,7 @@ def initGui(q, que, td, events, outqueue):
 class PlasmaContext():
 	def __init__(self):
 		manager = Manager()
+		self.defaultGraphs = []
 		self.async = manager.dict()  #synch or async mode
 		self.que = Queue()
 		self.events = Queue()
@@ -289,10 +298,11 @@ class PlasmaContext():
 		dv1 = Graphs.DrawMultiTraj(partd, itt, comp)
 		self._sendplot(dv1)
 
-	def wait(self):
+	def wait(self,obj):
 	#	self.asyncMode(1)
 		while True:
-			time.sleep(1)
+			self.getEvents(obj)
+			time.sleep(1.0/30.0)
 
 	def clearGraphList(self):
 		if self.norun:
@@ -306,12 +316,14 @@ class PlasmaContext():
 		ptr = SimData(data)
 		self.que.put(cPickle.dumps(ptr))
 
-	def addGraph(self, codename, desc):
+	def addGraph(self, codename, desc, autoadd = True, priority = 100):
 		if self.norun:
 			return
 		ptr = ClearGraphStack()
 		ptr.codename = codename
 		ptr.desc = desc
+		if autoadd:
+			self.defaultGraphs.append(DispItem(codename, priority))
 		self.que.put(cPickle.dumps(ptr)) 
 
 	def RunNow(self, state):

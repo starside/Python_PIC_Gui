@@ -10,7 +10,7 @@ from Dumb import *
 class NewFrame(wx.Frame, DefaultsCommLink):
 	def __init__(self, parent, loader, dispatch, layout=None, defaults=[] ):
 		"""Create the MainFrame."""
-		wx.Frame.__init__(self, parent, style=wx.DEFAULT_FRAME_STYLE)
+		wx.Frame.__init__(self, parent,-1,'PIC Interface.  J. Kelly & V. Decyk', style=wx.DEFAULT_FRAME_STYLE)
 		self.loader = loader
 		self.layoutName = ""
 		self.InitData()

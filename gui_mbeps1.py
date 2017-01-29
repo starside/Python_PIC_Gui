@@ -70,45 +70,35 @@ def rightType(val):
 """
 Define function that initializes menus
 """
-def initialize_menus(pc, defaultGraph):
-   pc.addGraph("NOPLOT","No Plot")
+def initialize_menus(pc):
+   pc.addGraph("NOPLOT","No Plot", autoadd=False)
    if (in1.ntde > 0):
       pc.addGraph(' EDENSITY', "Density/Electron Density") #Enable electron velocity
-      defaultGraphs.append(' EDENSITY')
    if (in1.movion==1):
       if (in1.ntdi > 0):
          pc.addGraph(' ION DENSITY', "Density/Ion Density") #Enable ion velocity
-         defaultGraphs.append(' ION DENSITY')
    if (in1.ntp > 0):
       pc.addGraph(' POTENTIAL', "Potential/Potential") #Enable electron velocity
-      defaultGraphs.append(' POTENTIAL')
       pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
-      pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -") 
+      pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -",autoadd=False)
    if (in1.ntel > 0):
       pc.addGraph(' ELFIELD', "E-Field/Longitudinal E-Field")
-      defaultGraphs.append(' ELFIELD')
    if (in1.ntv > 0):
       pc.addGraph("ELECTRON VEL", "Electron Velocity") #Enable electron velocity
-      defaultGraphs.append("ELECTRON VEL")
       if (in1.movion==1):
             if ((in1.ndv==2) or (in1.ndv==3)):
                pc.addGraph("ION VEL", "Ion Velocity") #Enable electron velocity
-               defaultGraphs.append("ION VEL")
    if (in1.ntt > 0):
       pc.addGraph("ELECTRON TRAJ", "ELECTRON Trajectory") #Enable electron velocity
-      defaultGraphs.append("ELECTRON TRAJECTORY")
    if (in1.movion==1):
       if (in1.ntdi > 0):
          pc.addGraph("ION DENSITY OMEGA VS MODE+", "Ion Dispersion/Ion Density Dispersion +")
-         pc.addGraph("ION DENSITY OMEGA VS MODE-", "Ion Dispersion/Ion Density Dispersion -")
+         pc.addGraph("ION DENSITY OMEGA VS MODE-", "Ion Dispersion/Ion Density Dispersion -",autoadd=False)
    if in1.nts > 0:
             pc.addGraph("ELECTRON Vx vs X", "Electron/Electron Phase") #Enable electron velocity
-            defaultGraphs.append("ELECTRON Vx vs X")
             pc.addGraph("ION Vx vs X", "Ion/Ion Phase") #Enable electron velocity
-            defaultGraphs.append("ION Vx vs X")
    if (in1.ntw > 0):
-      pc.addGraph("ENERGY", "Energy") #Enable electron velocity
-      defaultGraphs.append("ENERGY")
+      pc.addGraph("ENERGY", "Energy",priority=50) #Enable electron velocity
 
 #init GUI
 pc = PlasmaContext()  #Create GUI
@@ -117,7 +107,6 @@ pc.clearGraphList()  #remove all default graph options
 pc.callbacks["VARCHANGE"] = changeVarsCallback  #Set a callback
 pc.callbacks["RESET"] = resetCallback
 pc.callbacks["EXIT"] = exitCallback
-defaultGraphs = []
 in1.timedirection = 0 #default state of the GUI.  MUST BE 0
 
 graf2 = GraphicsInterface(pc)
@@ -251,27 +240,28 @@ print >> iuot, "program mbeps1"
 """
 Initialize default windows
 """
-initialize_menus(pc,defaultGraphs)
+initialize_menus(pc)
 newwin = in1.nplot / 4  #Number of new 4 chart windows to make
 remplt = in1.nplot % 4
+pc.defaultGraphs = sorted(pc.defaultGraphs)  #Sort based on priority
 
 for i in range(newwin): #Create 4 graph windows
-   tmpl = defaultGraphs[0:4]
-   defaultGraphs = defaultGraphs[4:]
+   tmpl = [x.value for x in pc.defaultGraphs[0:4] ]#temporary list of 4 windows to show
+   defaultGraphs = pc.defaultGraphs[4:] #remove already added windows from list
    pc.newFrame("Layout4", tmpl)
-if remplt > 0: #Create smaller window
+if remplt > 0: #Create smaller window, if there is not a multiple of 4 charts
    lon = "Layout"
    if remplt == 2:
       lon = lon + "2v"
    else:
       lon = lon + str(remplt)
-   pc.newFrame(lon,defaultGraphs)
+   pc.newFrame(lon,pc.defaultGraphs)
    
 #sends data the GUI may want to know about the simulation
 pc.updateSimInfo({"tend":in1.tend})
 # * * * start main iteration loop * * *
 ntime = nstart - 1
-while ntime < nloop:
+while ntime < nloop - 1:
    ntime += 1
    print >> iuot, "ntime = ", ntime
    curtime = ntime*in1.dt
@@ -279,57 +269,57 @@ while ntime < nloop:
    pc.getEvents(in1)
    pc.fastForward(curtime, in1)
 
-# debug reset
-#  if (ntime==nloop/2):
-#     s1.bread_restart1(s1.iurr)
-#     s1.reset_diags1()
+    # debug reset
+    #  if (ntime==nloop/2):
+    #     s1.bread_restart1(s1.iurr)
+    #     s1.reset_diags1()
 
-# deposit charge with OpenMP: updates qe
+   # deposit charge with OpenMP: updates qe
    dtimer(dtime,itime,-1)
    s1.qe.fill(0.0)
    dtimer(dtime,itime,1)
    s1.tdpost[0] += float(dtime)
    mpush1.mpost1(s1.ppart,s1.qe,s1.kpic,in1.qme,s1.tdpost,in1.mx)
-# add guard cells: updates qe
+   # add guard cells: updates qe
    mgard1.maguard1(s1.qe,s1.tguard,nx)
 
-# electron density diagnostic: updates sfield=electron density
+   # electron density diagnostic: updates sfield=electron density
    if (in1.ntde > 0):
       it = int(ntime/in1.ntde)
       if (ntime==in1.ntde*it):
          s1.edensity_diag1(s1.sfield)
-# display smoothed electron density
+         # display smoothed electron density
          graf2.dscaler1(s1.sfield,' EDENSITY',ntime,999,0,nx,irc)
          if (irc[0]==1):
             break
          irc[0] = 0
 
-# deposit ion charge with OpenMP: updates qi
+    # deposit ion charge with OpenMP: updates qi
    if (in1.movion==1):
       dtimer(dtime,itime,-1)
       s1.qi.fill(0.0)
       dtimer(dtime,itime,1)
       s1.tdpost[0] += float(dtime)
       mpush1.mpost1(s1.pparti,s1.qi,s1.kipic,in1.qmi,s1.tdpost,in1.mx)
-# add guard cells: updates qi
+      # add guard cells: updates qi
       mgard1.maguard1(s1.qi,s1.tguard,nx)
 
-# ion density diagnostic: updates sfield=ion density, pkwdi, wkdi
+    # ion density diagnostic: updates sfield=ion density, pkwdi, wkdi
    if (in1.movion==1):
       if (in1.ntdi > 0):
          it = int(ntime/in1.ntdi)
          if (ntime==in1.ntdi*it):
             s1.idensity_diag1(s1.sfield,s1.pkwdi,s1.wkdi,ntime)
             if ((in1.nddi==1) or (in1.nddi==3)):
-# display smoothed ion density
+                # display smoothed ion density
                graf2.dscaler1(s1.sfield,' ION DENSITY',ntime,999,1,nx,
                               irc)
                if (irc[0]==1):
                   break
                irc[0] = 0
-# ion spectral analysis
+            # ion spectral analysis
             if ((in1.nddi==2) or (in1.nddi==3)):
-# display frequency spectrum
+            # display frequency spectrum
                pc.showSimpleImage("ION DENSITY OMEGA VS MODE+",s1.pkwdi[::,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxdi,in1.wmin,in1.wmax) )
                pc.showSimpleImage("ION DENSITY OMEGA VS MODE-",s1.pkwdi[::,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxdi,in1.wmin,in1.wmax) )
                graf1.dmscaler1(s1.wkdi,'ION DENSITY OMEGA VS MODE',
@@ -338,42 +328,42 @@ while ntime < nloop:
                      break
                irc[0] = 0
 
-# add electron and ion densities: updates qe
+    # add electron and ion densities: updates qe
    mfield1.maddqei1(s1.qe,s1.qi,s1.tfield,nx)
 
-# transform charge to fourier space: updates qe
+    # transform charge to fourier space: updates qe
    isign = -1
    mfft1.mfft1r(s1.qe,isign,s1.mixup,s1.sct,s1.tfft,in1.indx)
 
-# calculate force/charge in fourier space: updates fxe, we
+    # calculate force/charge in fourier space: updates fxe, we
    mfield1.mpois1(s1.qe,s1.fxe,s1.ffc,s1.we,s1.tfield,nx)
 
-# transform force to real space: updates fxe
+    # transform force to real space: updates fxe
    isign = 1
    mfft1.mfft1r(s1.fxe,isign,s1.mixup,s1.sct,s1.tfft,in1.indx)
 
-# add external traveling wave field
+    # add external traveling wave field
    ts = in1.dt*float(ntime)
    mfield1.meaddext1(s1.fxe,s1.tfield,in1.amodex,in1.freq,ts,in1.trmp,
                      in1.toff,in1.el0,in1.er0,nx)
 
-# copy guard cells: updates fxe
+    # copy guard cells: updates fxe
    mgard1.mdguard1(s1.fxe,s1.tguard,nx)
 
-# potential diagnostic: updates sfield=potential, pkw, wk
+    # potential diagnostic: updates sfield=potential, pkw, wk
    if (in1.ntp > 0):
       it = int(ntime/in1.ntp)
       if (ntime==in1.ntp*it):
          s1.potential_diag1(s1.sfield,s1.pkw,s1.wk,ntime)
          if ((in1.ndp==1) or (in1.ndp==3)):
-# display potential
+            # display potential
             graf2.dscaler1(s1.sfield,' POTENTIAL',ntime,999,0,nx,irc)
             if (irc[0]==1):
                break
             irc[0] = 0
-# spectral analysis
+         # spectral analysis
          if ((in1.ndp==2) or (in1.ndp==3)):
-# display frequency spectrum
+            # display frequency spectrum
             pc.showSimpleImage("POTENTIAL OMEGA VS MODE+",s1.pkw[::,:,0], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxp,in1.wmin,in1.wmax) )
             pc.showSimpleImage("POTENTIAL OMEGA VS MODE-",s1.pkw[::,:,1], "Time="+str(ntime*in1.dt), extent=(0,in1.modesxp,in1.wmin,in1.wmax) )
             graf1.dmscaler1(s1.wk,'POTENTIAL OMEGA VS MODE',ntime,999,2,
@@ -382,24 +372,24 @@ while ntime < nloop:
                break
             irc[0] = 0
 
-# longitudinal efield diagnostic: updates sfield=longitudinal efield
+    # longitudinal efield diagnostic: updates sfield=longitudinal efield
    if (in1.ntel > 0):
       it = int(ntime/in1.ntel)
       if (ntime==in1.ntel*it):
          s1.elfield_diag1(s1.sfield)
-# display longitudinal efield
+         # display longitudinal efield
          graf2.dscaler1(s1.sfield,' ELFIELD',ntime,999,0,nx,irc)
          if (irc[0]==1):
             break
          irc[0] = 0
 
-# velocity diagnostic:
+    # velocity diagnostic:
    if (in1.ntv > 0):
       it = int(ntime/in1.ntv)
       if (ntime==in1.ntv*it):
-# updates ppart, kpic, fv, fvm, fvtm
+      # updates ppart, kpic, fv, fvm, fvtm
          s1.evelocity_diag1(s1.ppart,s1.kpic,s1.fv,s1.fvm,s1.fvtm)
-# display electron velocity distributions
+         # display electron velocity distributions
          if ((in1.ndv==1) or (in1.ndv==3)):
             graf2.displayfv1(s1.fv,s1.fvm,'ELECTRON VEL',ntime,in1.nmv,1,
                              irc)
@@ -407,10 +397,10 @@ while ntime < nloop:
                break
             irc[0] = 0
          if (in1.movion==1):
-# updates pparti, kipic, fvi, fvmi, fvtmi
+            # updates pparti, kipic, fvi, fvmi, fvtmi
             s1.ivelocity_diag1(s1.pparti,s1.kipic,s1.fvi,s1.fvmi,
                                s1.fvtmi)
-# display ion velocity distributions
+            # display ion velocity distributions
             if ((in1.ndv==2) or (in1.ndv==3)):
                graf2.displayfv1(s1.fvi,s1.fvmi,'ION VEL',ntime,in1.nmv,1,
                                 irc)
@@ -418,33 +408,33 @@ while ntime < nloop:
                   break
                irc[0] = 0
 
-# trajectory diagnostic: updates ppart, kpic, partd, fvtp, fvmtp
+    # trajectory diagnostic: updates ppart, kpic, partd, fvtp, fvmtp
    if (in1.ntt > 0):
       it = int(ntime/in1.ntt)
       if (ntime==in1.ntt*it):
          s1.traj_diag1(s1.ppart,s1.kpic,s1.partd,s1.fvtp,s1.fvmtp)
          if (in1.nst==3):
-# display velocity distributions
+            # display velocity distributions
             graf2.displayfv1(s1.fvtp,s1.fvmtp,'ELECTRON TRAJ',ntime,in1.nmv,
                              1,irc)
             if (irc[0]==1):
                break
             irc[0] = 0
 
-# phase space diagnostic
+    # phase space diagnostic
    if (in1.nts > 0):
       it = int(ntime/in1.nts)
       if (ntime==in1.nts*it):
-# plot electrons vx versus x
+         # plot electrons vx versus x
          if ((in1.nds==1) or (in1.nds==3)):
             graf2.dpmgrasp1(s1.ppart,s1.kpic,'ELECTRON Vx vs X',ntime,999,nx,2,
                             1,in1.ntsc,irc)
             if (irc[0]==1):
                break
             irc[0] = 0
-# ion phase space
+         # ion phase space
          if (in1.movion==1):
-# plot ions vx versus x
+            # plot ions vx versus x
             if ((in1.nds==2) or (in1.nds==3)):
                graf2.dpmgrasp1(s1.pparti,s1.kipic,'ION Vx vs X',ntime,999,nx,2,
                                1,in1.ntsc,irc)
@@ -452,27 +442,27 @@ while ntime < nloop:
                   break
                irc[0] = 0
          
-# push electrons with OpenMP: updates ppart, wke, kpic
+    # push electrons with OpenMP: updates ppart, wke, kpic
    s1.push_electrons1(s1.ppart,s1.kpic)
 
-# push ions with OpenMP: updates pparti, wki, kipic
+    # push ions with OpenMP: updates pparti, wki, kipic
    if (in1.movion==1):
       s1.push_ions1(s1.pparti,s1.kipic)
 
-# start running simulation backwards:
-# need to reverse time lag in leap-frog integration scheme
+    # start running simulation backwards:
+    # need to reverse time lag in leap-frog integration scheme
    if (in1.treverse==1):
       if (((ntime+1)==(nloop/2)) or ((ntime+1)==nloop)):
          s1.es_time_reverse1()
 
-# energy diagnostic: updates wt
+    # energy diagnostic: updates wt
    if (in1.ntw > 0):
       it = int(ntime/in1.ntw)
       if (ntime==in1.ntw*it):
          s1.energy_diag1(s1.wt,ntime,iuot)
          pc.showEnergy(numpy.array(range(ntime))*in1.dt, s1.wt, ntime, ["Total Field","Kinetic","Kinetic Ions","Total Energy"] )
 
-# restart file
+    # restart file
    if (in1.ntr > 0):
       n = ntime + 1
       it = int(n/in1.ntr)
@@ -484,7 +474,6 @@ while ntime < nloop:
          s1.tfield[0] += float(dtime)
 
 ntime = ntime + 1
-
 # loop time
 dtimer(dtime,ltime,1)
 tloop = tloop + float(dtime)
@@ -561,6 +550,7 @@ if (in1.ntp > 0):
 s1.close_diags1(s1.iudm)
 # close reset and restart files: iur, iurr, iur0
 s1.close_restart1()
+pc.wait(in1)
 # close output file
 print >> iuot, " * * * q.e.d. * * *"
 iuot.close()
