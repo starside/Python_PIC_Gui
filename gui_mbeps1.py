@@ -105,7 +105,7 @@ def initialize_menus(pc):
         pc.addGraph("ELECTRON Vx vs X", "Electron/Electron Phase")  # Enable electron velocity
         pc.addGraph("ION Vx vs X", "Ion/Ion Phase")  # Enable electron velocity
     if (in1.ntw > 0):
-        pc.addGraph("ENERGY", "Energy", priority=50)  # Enable electron velocity
+        pc.addGraph("ENERGY", "Energy", priority=150)  # Enable electron velocity
 
 
 # init GUI
@@ -257,8 +257,7 @@ PopMenus(pc, in1)
 # sends data the GUI may want to know about the simulation
 pc.updateSimInfo({"tend": in1.tend})
 # * * * start main iteration loop * * *
-ntime = nstart - 1
-while ntime < nloop - 1:
+for ntime in xrange(nstart, nloop):
     ntime += 1
     print >> iuot, "ntime = ", ntime
     curtime = ntime * in1.dt
