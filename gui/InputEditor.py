@@ -15,7 +15,7 @@ class EditorPart(stc.StyledTextCtrl):
         stc.StyledTextCtrl.__init__(self, parent, style=style)
         self.parent = parent
         self.SetMinSize((500, 500))
-        self.realTimeUpdate = ["NTS", "NTP", "NTV", "NTW", "DT", "NTPHI", "SLOWPHI", "NTT", "NTDE", "NTEL", "SLOWPHASE",
+        self.realTimeUpdate = ["NTS", "NTP", "NTV", "NTW", "NTPHI", "SLOWPHI", "NTT", "NTDE", "NTEL", "SLOWPHASE",
                                "FASTFORWARD"]
         self.presentVars = []
 

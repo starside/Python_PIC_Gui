@@ -18,9 +18,11 @@ class RightPanel(wx.Panel):
         newb2 = self.makeButtonNew()
         newb3 = self.makeInputButton()
         newb4 = self.makeResetButton()
+        newb4.Hide()
         newb5 = self.makeRunLongButton()
         self.RunLongButton = newb5  # Need to bind/unbind this button
         self.timerText = wx.StaticText(self, -1, "Simulation time: ")
+        self.displayTime = 0    #This is updated by the main app
         vsizer1.Add(item=self.timerText, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
 
         self.lblList = ['Continuous', 'Time Chunks']
@@ -30,12 +32,6 @@ class RightPanel(wx.Panel):
         vsizer1.Add(item=self.runmode)
 
         vsizer1.Add(item=newb5, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
-
-        self.cbr = wx.CheckBox(self, -1, "Reverse Time?")
-        self.cbr.SetValue(False)
-        vsizer1.Add(item=self.cbr)
-        self.cbr.Bind(wx.EVT_CHECKBOX, self.OnRunDir)
-        self.cbr.Hide()
 
         # Fast Forward Feature
         ffs = wx.BoxSizer(orient=wx.HORIZONTAL)
@@ -66,8 +62,27 @@ class RightPanel(wx.Panel):
         self.SetSizer(vsizer1)
         self._updateRunMode()
 
+        self.lastMode = None
+
+        #Build Finit state machine
+        self.fsm = FiniteStateMachine()
+        self.fsm.addStateChange('1', '2sf', 'Running')        #Define transitions
+        self.fsm.addStateChange('2sf', '1','Paused')
+        self.fsm.addStateChange('1', '3','selTC')
+        self.fsm.addStateChange('3', '1', 'selRC')
+        self.fsm.addStateChange('3', '4', 'Running')
+        self.fsm.addStateChange('4', '3', 'Paused')
+        self.fsm.addStateChange('3', '3', 'Stay')
+
+        self.fsm.defineState('1', [lambda : self.fsm1(None)])   #Define states
+        self.fsm.defineState('2sf', [lambda : self.fsm2(None)])
+        self.fsm.defineState('3', [lambda : self.fsm3(None)])
+        self.fsm.defineState('4', [lambda : self.fsm4(None)])
+        self.fsm.setState('1')                                  #Set the initial state
+        #self.fsm.runState(self.fsm.currentState)                #Execute state
+        wx.CallAfter(self.fsm.runState, self.fsm.currentState)
+
         EVT_RUNSTEP(self, self.OnRunStep)
-        wx.CallAfter(self.OnRunDir, None)  # Set reverse time variable in main code
         wx.PostEvent(self, RunStepEvent())
 
     def enableJumpBox(self, val=True):
@@ -90,6 +105,15 @@ class RightPanel(wx.Panel):
             self.ffpoint.Hide()
             self.ffstate.Hide()
 
+    def enableBoxNav(self, val=True):
+        self.rcstext.Enable(val)
+        self.rcspoint.Enable(val)
+        self.rcspoint.Enable(val)
+        self.fftext.Enable(val)
+        self.ffpoint.Enable(val)
+        self.ffstate.Enable(val)
+
+
     def _updateRunMode(self):
         sel = self.runmode.GetStringSelection()
         if sel == self.lblList[1]:
@@ -104,9 +128,12 @@ class RightPanel(wx.Panel):
         self.Fit()
 
     def OnRunMode(self, event):
-        if not self.simframe.worker.iAmRunning:
-            print self.runmode.GetStringSelection()
-            self._updateRunMode()
+        trans = None
+        if self.lblList[0] == self.runmode.GetStringSelection():
+            trans = self.fsm.pumpEvent('selRC')  # Send event to FSM
+        elif self.lblList[1] == self.runmode.GetStringSelection():
+            trans = self.fsm.pumpEvent('selTC')  # Send event to FSM
+        self.fsm.runState(trans)  # get transition
 
     def OnFFChange(self, event):
         cv = self.ffpoint.GetValue()
@@ -143,14 +170,12 @@ class RightPanel(wx.Panel):
 
     def makeResetButton(self):
         button1 = wx.Button(self, wx.NewId(), "Reset Simulation")
-        #button1.Bind(wx.EVT_BUTTON, self.simframe.OnReset)
-        button1.Bind(wx.EVT_BUTTON, self.fsm1)
+        button1.Bind(wx.EVT_BUTTON, self.fsm4)
         return button1
 
     def makeRunLongButton(self):
         self.runconText = "Run Continuously"
         button1 = wx.ToggleButton(self, wx.NewId(), self.runconText)
-        button1.Bind(wx.EVT_TOGGLEBUTTON, self.OnStartLong)
         return button1
 
     # A utitlity method to add new windows
@@ -158,75 +183,46 @@ class RightPanel(wx.Panel):
         nf = NewFrame(self.mainframe, self.loader, self.mainframe, layout=layout, defaults=defaults)
         self.mainframe.windowList.append(nf)
 
-    def OnRunDir(self, event):
-        tv = 1
-        if self.cbr.GetValue():
-            tv = 1
-        else:
-            tv = 0
-
-        ns = VarChangeSignal()
-        pEvents = self.simframe.pEvents
-        ns.var["timedirection"] = tv
-        pEvents.put(ns)  # Send the signal to update
-
     def OnOpenInput(self, event):
         ie = InputEditor(self)
         ie.editor.loadInput()
         ie.Show()
 
     def OnStart(self, event):
-        self.RunLongButton.Unbind(wx.EVT_BUTTON)
-        self.runOnceButton.Unbind(wx.EVT_BUTTON)
         self.simframe.worker.iAmRunning = True  # start the sim
         self.simframe.worker.runCounter = 1  # the number of times to run
-        self.RunLongButton.SetValue(False)
-
-    # Method called at the top of the main event loop
-    def beforeMainLoop(self):
-        self.RunLongButton.Unbind(wx.EVT_BUTTON)
-        self.runOnceButton.Unbind(wx.EVT_BUTTON)
-
-    # Method called after mainloop started
-    def afterMainLoop(self):
-        if self.simframe.worker.iAmRunning:
-            self.RunLongButton.SetLabel('Pause')
-        else:
-            self.RunLongButton.SetLabel(self.runconText)
-        self.runmode.Enable(not self.simframe.worker.iAmRunning)
-        self.RunLongButton.Bind(wx.EVT_BUTTON, self.OnStartLong)
-        self.runOnceButton.Bind(wx.EVT_BUTTON, self.OnStart)
 
     def OnStartLong(self, event):
-        """Start Computation."""
-        # Check to see our current runMode
-        if self.runmode.GetStringSelection() == self.lblList[1] and self.rcspoint.GetValue() is not None:
-            try:
-                cv = float(self.ffpoint.GetValue())
-            except:
-                cv = None
-            try:
-                inc = float(self.rcspoint.GetValue())
-            except:
-                inc = None
-            if cv is None:
-                cv = 0
-            if inc is None:
-                inc = 0
-            cv += inc
-            self.ffpoint.SetValue(str(cv))
-            self.OnFFChange(None)
-        self.beforeMainLoop()
+        """
+        Called when Run Continuously is called
+        :param event:
+        :return:
+        """
+        self.simframe.worker.iAmRunning = True
 
-        # Toggle run state
-        if hasattr(self.simframe.worker, 'iAmRunning'):
-            if self.simframe.worker.iAmRunning:
-                self.ffpoint.SetValue("0")
-                self.OnFFChange(None)
-            self.simframe.worker.iAmRunning = not self.simframe.worker.iAmRunning  # Toggle value
-        else:
-            self.simframe.worker.iAmRunning = True
-        self.runmode.Enable(not self.simframe.worker.iAmRunning)
+    def OnPause(self, event):
+        """
+        Called when the code has paused
+        :param event:
+        :return:
+        """
+        self.simframe.worker.iAmRunning = False
+
+    def OnRunChunk(self,event):
+        cv = self.displayTime
+        try:
+            inc = float(self.rcspoint.GetValue())
+        except:
+            inc = None
+        if inc is None:
+            trans = self.fsm.pumpEvent('Stay')
+            self.fsm.runState(trans)
+            return
+        cv += inc
+        self.ffpoint.SetValue(str(cv))
+        self.OnFFChange(None)
+        self.simframe.worker.iAmRunning = True
+
 
     def OnNewFrame(self, event):
         nf = NewFrame(self.mainframe, self.loader, self.mainframe)
@@ -234,18 +230,49 @@ class RightPanel(wx.Panel):
 
     #The following states are for a finite state machine
     def fsm1(self, event):
+        self.RunLongButton.Bind(wx.EVT_TOGGLEBUTTON, self.OnStartLong)
         self.runmode.Enable(True)   #Enable radio buttons
         self.runmode.SetStringSelection(self.lblList[0])
         self.enableFFBox(True)
         self.enableJumpBox(False)
         self.RunLongButton.SetLabel('Run Continuously')
+        self.enableBoxNav(True)
+        self.runOnceButton.Enable(True)
+        self.Fit()
 
     def fsm2(self, event):
+        self.RunLongButton.Bind(wx.EVT_TOGGLEBUTTON, self.OnPause)
         self.runmode.Enable(False)   #Enable radio buttons
-        self.runmode.SetStringSelection(self.lblList[1])
+        self.runmode.SetStringSelection(self.lblList[0])
         self.enableFFBox(True)
         self.enableJumpBox(False)
         self.RunLongButton.SetLabel('Pause')
+        self.enableBoxNav(False)
+        self.runOnceButton.Enable(False)
+        self.Fit()
+
+    def fsm3(self, event):
+        self.RunLongButton.Bind(wx.EVT_TOGGLEBUTTON, self.OnRunChunk)
+        self.RunLongButton.SetValue(False)
+        self.runmode.Enable(True)   #Enable radio buttons
+        self.runmode.SetStringSelection(self.lblList[1])
+        self.enableJumpBox(True)
+        self.enableFFBox(False)
+        self.RunLongButton.SetLabel('Run Chunk')
+        self.enableBoxNav(True)
+        self.runOnceButton.Enable(True)
+        self.Fit()
+
+    def fsm4(self, event):
+        self.RunLongButton.Bind(wx.EVT_TOGGLEBUTTON, self.OnPause)
+        self.runmode.Enable(False)   #Enable radio buttons
+        self.runmode.SetStringSelection(self.lblList[1])
+        self.enableJumpBox(True)
+        self.enableFFBox(False)
+        self.RunLongButton.SetLabel('Pause')
+        self.enableBoxNav(False)
+        self.runOnceButton.Enable(False)
+        self.Fit()
 
 
     # This is the main loop.  Instead of looping in a while, at the end of the function
@@ -255,7 +282,77 @@ class RightPanel(wx.Panel):
         if not self.alive:
             self.Destroy()
             return
-        self.afterMainLoop()
+        #Generate toggle run state event
+        if self.lastMode is None:
+            self.lastMode = self.simframe.worker.iAmRunning
+        if self.simframe.worker.iAmRunning != self.lastMode:
+            if self.simframe.worker.iAmRunning:
+                trans = self.fsm.pumpEvent('Running')
+            else:
+                trans = self.fsm.pumpEvent('Paused')
+            self.fsm.runState(trans)  # get transition
+        self.lastMode = self.simframe.worker.iAmRunning
+
+        #Run a time step
         wx.Yield()
         self.simframe.worker.run()
         wx.PostEvent(self, RunStepEvent())
+
+class FiniteStateMachine:
+    def __init__(self):
+        self.nodes = dict()  #Matrix of transitions
+        self.states = dict() #State definitions
+        self.currentState = None
+
+    def defineState(self,name, funclist):
+        """
+        Takes a list of functions to call, with no arguments
+        :param funclist:
+        :return:
+        """
+        self.states[name] = funclist
+
+    def addStateChange(self, state1, state2, event):
+        """
+        Adds a transition path from state1 to state2, triggered by event.
+        This is not bi-directional, as in it does not add a pth from state2 to state1
+        :param state1:
+        :param state2:
+        :param event:
+        :return:
+        """
+        if state1 not in self.nodes:
+            self.nodes[state1] = dict()
+        self.nodes[state1][event] = state2
+
+    def setState(self, state):
+        """
+        Sets the current state to state
+        :param state:
+        :return:
+        """
+        if state in self.states:
+            self.currentState = state
+        else:
+            raise('state must be defined before it is set as current')
+
+    def pumpEvent(self, event):
+        """
+        Determine if there is a transition to a new event, and return it
+        :param event:
+        :return:
+        """
+        if self.currentState:
+            s = self.nodes[self.currentState]
+            if event in s:
+                return s[event]
+        return None
+
+    def runState(self, state):
+        if state is None:
+            return
+        if state in self.states:
+            self.currentState = state
+            funclist = self.states[state]
+            for f in funclist:
+                f()

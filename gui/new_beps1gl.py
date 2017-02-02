@@ -41,7 +41,7 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
 
     def __init__(self, parent, id, loader, pipemode=None, que=None, timedir=None, events=None, outq=None):
         """Create the MainFrame."""
-        wx.Frame.__init__(self, parent, id, 'Control Panel.  Close to Exit',
+        wx.Frame.__init__(self, parent, id, 'Control Panel',
                           style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
         self.loader = loader
         self.loader.loadFromFile()
@@ -94,6 +94,7 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
             self.rpanel.timerText.SetLabel("Time is " + str(event.time) + " of " + str(te))
         else:
             self.rpanel.timerText.SetLabel("Time is " + str(event.time))
+        self.rpanel.displayTime = float(event.time)
 
     def OnReset(self, event):
         self.pEvents.put(ResetSignal())
