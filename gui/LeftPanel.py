@@ -208,7 +208,10 @@ class LeftPanel(wx.Panel):
             # self.axes = self.figure.add_subplot(111)
             self.currentEvent = event
             self.currentEvent.data._PV = self.persistentVars  # Gives the plot a simple dictionary to save persistent vars
-            self.DrawPlot()
+            try:
+                self.DrawPlot()
+            except ValueError:
+                True #Probably trying to plot something negative in an image
             # Save movie frame
             if self.recordVideo:
                 print "Writing " + str(self.currentEvent.data.simTime)

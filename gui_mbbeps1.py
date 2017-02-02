@@ -125,7 +125,7 @@ def initialize_menus(pc):
             if ((in1.ndji == 2) or (in1.ndji == 3)):
                 # display frequency spectrum
                 pc.addGraph("ION CURRENT OMEGA VS MODEY+", "Ion Dispersion/Ion Current Dispersion Y+")
-                pc.addGraph("ION CURRENT OMEGA VS MODEZ+", "Ion Dispersion/Ion Current Dispersion Z+")
+                pc.addGraph("ION CURRENT OMEGA VS MODEZ+", "Ion Dispersion/Ion Current Dispersion Z+", autoadd=False)
                 pc.addGraph("ION CURRENT OMEGA VS MODEY-", "Ion Dispersion/Ion Current Dispersion Y-", autoadd=False)
                 pc.addGraph("ION CURRENT OMEGA VS MODEZ-", "Ion Dispersion/Ion Current Dispersion Z-", autoadd=False)
 
@@ -149,14 +149,14 @@ def initialize_menus(pc):
         pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y-",
                     "Vector Potential Diagnostic/Vector Potential:Y- OMEGA vs MODE", autoadd=False)
         pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z+",
-                    "Vector Potential Diagnostic/Vector Potential:Z+ OMEGA vs MODE")
+                    "Vector Potential Diagnostic/Vector Potential:Z+ OMEGA vs MODE", autoadd=False)
         pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z-",
                     "Vector Potential Diagnostic/Vector Potential:Z- OMEGA vs MODE", autoadd=False)
 
         pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y LINE",
                     "Vector Potential Diagnostic/Vector Potential:Y OMEGA vs MODE Trace")
         pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z LINE",
-                    "Vector Potential Diagnostic/Vector Potential:Z OMEGA vs MODE Trace")
+                    "Vector Potential Diagnostic/Vector Potential:Z OMEGA vs MODE Trace", autoadd=False)
 
     if (in1.ntet > 0):
         pc.addGraph("TRANSVERSE E FIELD",
@@ -167,7 +167,7 @@ def initialize_menus(pc):
                     "Transverse Electric Field/Transverse Z Electric Field, Omega vs Mode", autoadd=False)
 
         pc.addGraph("FT TRANSVERSE E.F. Y +OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode")
+                    "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode", autoadd=False)
         pc.addGraph("FT TRANSVERSE E.F. Y -OMEGA VS MODE",
                     "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode", autoadd=False)
         pc.addGraph("FT TRANSVERSE E.F. Z +OMEGA VS MODE",
@@ -190,7 +190,8 @@ def initialize_menus(pc):
         pc.addGraph("RADVECPOT Y +OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Y +Omega")
         pc.addGraph("RADVECPOT Y -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Y -Omega",
                     autoadd=False)
-        pc.addGraph("RADVECPOT Z +OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Z +Omega")
+        pc.addGraph("RADVECPOT Z +OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Z +Omega",
+                    autoadd=False)
         pc.addGraph("RADVECPOT Z -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Z -Omega",
                     autoadd=False)
 

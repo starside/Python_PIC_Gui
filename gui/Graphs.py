@@ -736,14 +736,15 @@ class DrawSimpleImage(KeyList):
         fig.clf()
         axes = fig.add_subplot(111)
 
-        # pkw, wax = ftPhikw(self.phikw_time, self.phikw, 0.2, 2.0, 10)
-        if len(self.extent) == 4:
+        try:
             mim = axes.imshow(np.transpose(self.img), cmap=cm.rainbow, interpolation='none', aspect='auto',
-                              norm=LogNorm(), origin='lower', extent=self.extent)
-        else:
+                                  norm=LogNorm(), origin='lower')
+            fig.colorbar(mim)
+        except:
             mim = axes.imshow(np.transpose(self.img), cmap=cm.rainbow, interpolation='none', aspect='auto',
-                              norm=LogNorm(), origin='lower')
-        fig.colorbar(mim)
+                              origin='lower')
+            fig.colorbar(mim)
+
         axes.set_xlabel(self.labl[0])
         axes.set_ylabel(self.labl[1])
         axes.annotate(self.text, xy=(0.0, 1.05), xycoords='axes fraction')
