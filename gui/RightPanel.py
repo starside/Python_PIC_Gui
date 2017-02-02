@@ -143,7 +143,8 @@ class RightPanel(wx.Panel):
 
     def makeResetButton(self):
         button1 = wx.Button(self, wx.NewId(), "Reset Simulation")
-        button1.Bind(wx.EVT_BUTTON, self.simframe.OnReset)
+        #button1.Bind(wx.EVT_BUTTON, self.simframe.OnReset)
+        button1.Bind(wx.EVT_BUTTON, self.fsm1)
         return button1
 
     def makeRunLongButton(self):
@@ -230,6 +231,22 @@ class RightPanel(wx.Panel):
     def OnNewFrame(self, event):
         nf = NewFrame(self.mainframe, self.loader, self.mainframe)
         self.mainframe.windowList.append(nf)
+
+    #The following states are for a finite state machine
+    def fsm1(self, event):
+        self.runmode.Enable(True)   #Enable radio buttons
+        self.runmode.SetStringSelection(self.lblList[0])
+        self.enableFFBox(True)
+        self.enableJumpBox(False)
+        self.RunLongButton.SetLabel('Run Continuously')
+
+    def fsm2(self, event):
+        self.runmode.Enable(False)   #Enable radio buttons
+        self.runmode.SetStringSelection(self.lblList[1])
+        self.enableFFBox(True)
+        self.enableJumpBox(False)
+        self.RunLongButton.SetLabel('Pause')
+
 
     # This is the main loop.  Instead of looping in a while, at the end of the function
     # it posts a wxEvent to call itself again.  Since this goes in to wxPython's event
