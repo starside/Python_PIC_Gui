@@ -47,6 +47,7 @@ class RightPanel(wx.Panel):
         rcs = wx.BoxSizer(orient=wx.HORIZONTAL)
         self.rcstext = wx.StaticText(self, -1, "Jump Time: ")
         self.rcspoint = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
+        self.rcspoint.SetValue('1')
         rcs.Add(item=self.rcstext, border=20)
         rcs.Add(item=self.rcspoint, flag=wx.EXPAND | wx.ALL)
         vsizer1.Add(rcs, flag=wx.EXPAND | wx.ALL)
