@@ -4,6 +4,7 @@ import numpy as NP
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib
+from distutils import spawn
 import matplotlib.cm as cm
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LogNorm
@@ -131,11 +132,11 @@ class LeftPanel(wx.Panel):
         if (not self.recordVideo) and record:  # If record was off and changed to on
             # self.movieWriter.setup(self.figure, self.movieFileName, self.dpi)
             fps = 15
-            # 'mjpeg'
-            self.moviePipe = Popen(
-                ['ffmpeg', '-f', 'image2pipe', '-framerate', '24', '-vcodec', 'png', '-i', '-', '-c:v', 'mpeg4', '-r',
-                 '24', '-y', self.movieFileName], stdin=PIPE)
             self.recordingSize = self.mycanvas.GetSize()
+            self.moviePipe = Popen(
+                ['ffmpeg', '-f', 'rawvideo','-pix_fmt','argb','-s:v',str(self.recordingSize[0])+'x' +
+                    str(self.recordingSize[1]) ,'-framerate', '24', '-i', '-', '-c:v', 'mpeg4', '-r',
+                    '24', '-y', self.movieFileName], stdin=PIPE)
             # Prevent frame resizing while recording
             self.mainframe.lockFrame()
         if self.recordVideo and not record:  # Turned off record
@@ -193,11 +194,6 @@ class LeftPanel(wx.Panel):
         self.graphOptionsButton.Bind(wx.EVT_BUTTON, self.OnOptions)
         self.slopeButton.Bind(wx.EVT_BUTTON, self.OnMeasureButton)
 
-        # movie writer stuff
-        """self.FFMpegWriter = manimation.writers['ffmpeg']
-        self.metadata = dict(title='Movie Test', artist='Matplotlib', comment='Movie support!')
-        self.movieWriter = self.FFMpegWriter(fps=1, metadata=self.metadata)	"""
-
     def OnResult(self, event):
         """Show Result status."""
         if event.data is None:
@@ -214,24 +210,10 @@ class LeftPanel(wx.Panel):
                 True #Probably trying to plot something negative in an image
             # Save movie frame
             if self.recordVideo:
-                print "Writing " + str(self.currentEvent.data.simTime)
-                # self.movieWriter.grab_frame()
+                #print "Writing " + str(self.currentEvent.data.simTime)
                 self.movieDim = self.mycanvas.get_width_height()
                 imdata = self.mycanvas.tostring_argb()
-                ars = NP.fromstring(imdata, dtype=NP.uint8)
-                for i, b in enumerate(ars):
-                    if i % 4 == 0:
-                        t = NP.array(ars[i:i + 4], copy=True)
-                        ars[i:i + 4] = t[::-1]
-                w, h = self.movieDim
-                png = NP.zeros(w * h * 4, dtype=NP.uint8)
-                newpngsize = NP.array(0, dtype=NP.uint32)
-                libmpush1.mfft1.testencode(png, newpngsize, ars, w, h)
-                print newpngsize, NP.size(png)
-                self.moviePipe.stdin.write(png[0:newpngsize].tostring())
-                # im = Image.fromstring('RGBA', self.movieDim, self.mycanvas.tostring_argb())
-                # im = im.resize(self.recordingSize)
-                # im.save(self.moviePipe.stdin, 'PNG')  #Was JPEG
+                self.moviePipe.stdin.write(imdata)
 
     def OnChangeGraph(self, event):
         try:
@@ -339,6 +321,10 @@ class LeftPanel(wx.Panel):
     # self.slopeButton.SetValue(False)
 
     def OnRecord(self, event):
+        if spawn.find_executable('ffmpeg') is None:
+            wx.MessageBox('Download and install ffmpeg to create movies.  It is free!')
+            return
+
         ne = RecordPanel(self)
 
         # Returns true if the graph is frozen (cannot switch to a new graph type)

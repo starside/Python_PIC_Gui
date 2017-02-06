@@ -52,7 +52,7 @@ class Dumb(LeftPanel):
             self.DrawPlot()
 
     def setGraphByName(self, name):  # set the graph to display by name
-        self.movieFileName = name + ".mp4"
+        self.movieFileName = "moviename.mp4"
         for g in self.centralDispatcher:
             g.RemoveListener(self)
         for g in self.centralDispatcher:

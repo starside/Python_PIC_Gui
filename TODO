@@ -5,4 +5,6 @@ Block run continuously
 -Done - Fix off screen problems
 -Done - Plots end at 513
 Clean up run system.  Havbe events called when running is started, and running is stopped
-Fix broken graph 11
+? Fix broken graph 11
+FF and Run chunks is off by 1 time step
+Check that objects are duplicated if sent to multiple windows at the same time
