@@ -322,7 +322,7 @@ class LeftPanel(wx.Panel):
 
     def OnRecord(self, event):
         if spawn.find_executable('ffmpeg') is None:
-            wx.MessageBox('Download and install ffmpeg to create movies.  It is free!')
+            wx.MessageBox('Download and install ffmpeg to create movies.  It is free!  On Ubuntu based Linux, type: sudo apt-get install ffmpeg')
             return
 
         ne = RecordPanel(self)
