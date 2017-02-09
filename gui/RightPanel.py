@@ -52,8 +52,8 @@ class RightPanel(wx.Panel):
         rcs.Add(item=self.rcspoint, flag=wx.EXPAND | wx.ALL)
         vsizer1.Add(rcs, flag=wx.EXPAND | wx.ALL)
 
-        vsizer1.Add(item=newb, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
-        vsizer1.Add(item=newb2, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
+        vsizer1.Add(item=newb, proportion=1, flag=wx.EXPAND | wx.ALL, border=2)
+        vsizer1.Add(item=newb2, proportion=1, flag=wx.EXPAND | wx.ALL, border=2)
         vsizer1.Add(item=newb3)
         vsizer1.Add(item=newb4)
 
