@@ -738,11 +738,11 @@ class DrawSimpleImage(KeyList):
 
         try:
             mim = axes.imshow(np.transpose(self.img), cmap=cm.rainbow, interpolation='none', aspect='auto',
-                                  norm=LogNorm(), origin='lower')
+                                  norm=LogNorm(), origin='lower', extent=self.extent)
             fig.colorbar(mim)
         except:
             mim = axes.imshow(np.transpose(self.img), cmap=cm.rainbow, interpolation='none', aspect='auto',
-                              origin='lower')
+                              origin='lower', extent=self.extent)
             fig.colorbar(mim)
 
         axes.set_xlabel(self.labl[0])
