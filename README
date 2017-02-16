@@ -1,0 +1,65 @@
+1D OpenMP Particle-in-Cell (PIC) BEPS1 codes
+by Viktor K. Decyk and Joshua Kelly, UCLA
+copyright 1994-2017, regents of the university of california
+
+These codes are part of a set of 1d PIC codes for educational use.  They
+are designed for Linux using OpenMP but will also compile for Mac OS X.
+OpenMP is used for parallelization.
+
+A Software License for use of this code is in the document:
+../Documents/License(CommercialReservation)
+
+A description of the design of these codes and its components is in the
+document:
+../Documents/BEPS1Design.pdf
+
+A description of the capabilities of these codes and its components is
+in the document:
+../Documents/EduBEPS1C.pdf
+
+Details about the mathematical equations and units used in this code is
+given in the document:
+../Documents/UPICModels.pdf.
+
+The makefile is setup to use gcc and gfortran with Linux.  It should
+also work with MacOS X.
+
+There are 3 Python scripts for electrostatic, electromagnetic, and
+darwin models, called mbeps1.py, mbbeps1.py, and mdbeps1.py,
+respectively.  They require 3 dynamic libraries, libmpush1.so,
+libmbpush1.so, and libmdpush1.so, respectively, which are located in
+mbeps1.source.
+
+To compile these libraries in the current (mbeps1) directory, execute:
+
+make
+
+To execute, one first needs to copy an input file from the Examples
+directory to the current directory.  The files for the electrostatic
+code are in the Examples/ES directory, those for the electromagnetic
+code are in the Examples/EM directory, and those for the darwin code
+are in the Examples/Darwin directory.  To run the electrostatic code
+with the plasma wave example, type:
+
+cp Examples/ES/input1.plasma input1
+ 
+To execute, then type:
+
+python program_name
+
+where program_name is either: mbeps1.py, mbbeps1.py, or mdbeps1.py
+
+There are also 3 Fortran codes for electrostatic, electromagnetic, and
+darwin models, called mbeps1, mbbeps1, and mdbeps1, respectively.
+They do not have a GUI.  To compile them, execute:
+
+make fortran
+
+To execute, type the name of the executable:
+
+./program_name
+
+where program_name is either: mbeps1, mbbeps1, or mdbeps1
+
+For more details about compilation, see mbeps1.source/README
+

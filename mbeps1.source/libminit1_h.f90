@@ -86,6 +86,25 @@
       end interface
 !
       interface
+         subroutine VRDISTR1(part,vtx,vdx,ci,jstart,npx,idimp,nop)
+         implicit none
+         integer, intent(in) :: jstart, npx, idimp, nop
+         real, intent(in) :: vtx, vdx, ci
+         real, dimension(idimp,nop), intent(inout) :: part
+         end subroutine
+      end interface
+!
+      interface
+         subroutine VRDISTR1H(part,vtx,vty,vtz,vdx,vdy,vdz,ci,jstart,npx&
+     &,idimp,nop)
+         implicit none
+         integer, intent(in) :: jstart, npx, idimp, nop
+         real, intent(in) :: vtx, vty, vtz, vdx, vdy, vdz, ci
+         real, dimension(idimp,nop), intent(inout) :: part
+         end subroutine
+      end interface
+!
+      interface
          subroutine WDISTR1(part,vtx,vdx,jstart,npx,idimp,nop)
          implicit none
          integer, intent(in) :: jstart, npx, idimp, nop

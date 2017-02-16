@@ -18,10 +18,13 @@
 !            calls IVCSPECT1
 ! mvpdist1 calculates 1 component velocity distribution, velocity
 !          moments, and entropy with segmented particle array
-!          calls VPDIST1
+!          calls VPDIST1 or VPDIST13
+! merpdist1 calculates 1d energy distribution for relativistic particles
+!           with segmented particle array
+!           calls ERPDIST1
 ! mvdist1 calculates 1 component velocity distribution, velocity
 !         moments, and entropy with standard particle array
-!         calls VPDIST1
+!         calls VPDIST1 or VDIST13
 ! settraj1 sets test charge distribution by setting a particle id in
 !          particle location 3 or 5
 !          calls STPTRAJ1 or STPTRAJ13
@@ -34,7 +37,7 @@
 !           calls STPBEAM1 or STPBEAM13
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: november 28, 2016
+! update: january 7, 2017
 !
       use libmdiag1_h
       implicit none
@@ -271,6 +274,36 @@
       end subroutine
 !
 !-----------------------------------------------------------------------
+      subroutine merpdist1(ppart,kpic,sfv,ci,wk,tdiag,nmv)
+! calculates 1d energy distribution for relativistic particles
+! with segmented particle array
+      integer, intent(in) :: nmv
+      real, intent(in) :: ci
+      real, intent(inout) :: wk, tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      integer, dimension(:), intent(in) :: kpic
+      real, dimension(:,:,:), intent(inout) :: sfv
+! local data
+      integer :: idimp, nppmx, nmvf, idimv, mx1
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      idimp = size(ppart,1); nppmx = size(ppart,2)
+      nmvf = size(sfv,1); idimv = size(sfv,2)
+      mx1 = size(kpic,1)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+      if (idimv==1) then
+         call ERPDIST1(ppart,kpic,sfv,ci,wk,idimp,nppmx,mx1,nmv,nmvf)
+      else if (idimv==3) then
+         call ERPDIST13(ppart,kpic,sfv,ci,wk,idimp,nppmx,mx1,nmv,nmvf)
+      endif
+! record time
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
       subroutine mvdist1(part,fv,fvm,tdiag,np,nmv)
 ! calculates 1d velocity distribution, velocity moments, and entropy
 ! with standard particle array
@@ -299,21 +332,24 @@
 !
 !-----------------------------------------------------------------------
       subroutine setptraj1(ppart,kpic,iprobt,nst,vtx,vtsx,dvtx,np,nprobt&
-     &)
+     &,irc)
 ! sets test charge distribution by setting a particle id in particle
 ! location 3 or 5
 ! nst = type of test particle distribution
 !   1 = uniformly distribution in real space
 !   2 = uniform distribution in velocity space
 !   3 = velocity slice at vtsx +- dvtx/2
+! nprobt = number of test charges whose trajectories will be stored.
+! irc = (0,1) = (no,yes) error condition exists
       real, dimension(:,:,:), intent(inout) :: ppart
       integer, dimension(:), intent(in) :: kpic
       integer, dimension(:), intent(inout) :: iprobt
       integer, intent(in) :: nst, np
-      integer, intent(inout) :: nprobt
+      integer, intent(inout) :: nprobt, irc
       real, intent(in) :: vtx, vtsx, dvtx
 ! local data
       integer :: idimp, mx1, nppmx
+      irc = 0
       idimp = size(ppart,1); nppmx = size(ppart,2)
       mx1 = size(kpic,1)
 ! call low level procedure
@@ -325,19 +361,22 @@
      &mx1,np,nprobt)
       else
          write (*,*) 'setptraj1 error: idimp=', idimp
-         stop
+         irc = 1
       endif
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine mfnptraj1(ppart,kpic,nprobt)
+      subroutine mfnptraj1(ppart,kpic,nprobt,irc)
 ! this finds tagged particles in ppart
+! nprobt = number of test charges whose trajectories will be stored.
+! irc = (0,1) = (no,yes) error condition exists
       implicit none
-      integer, intent(inout) :: nprobt
+      integer, intent(inout) :: nprobt, irc
       real, dimension(:,:,:), intent(in) :: ppart
       integer, dimension(:), intent(in) :: kpic
 ! local data
       integer :: idimp, nppmx, mx1
+      irc = 0
 ! extract dimensions
       idimp = size(ppart,1); nppmx = size(ppart,2)
       mx1 = size(kpic,1)
@@ -348,14 +387,16 @@
          call FNPTRAJ1(ppart,kpic,idimp,nppmx,mx1,nprobt)
       else
          write (*,*) 'mfnptraj1 error: idimp=', idimp
-         stop
+         irc = 1
       endif
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine mptraj1(ppart,kpic,partt,tdiag)
+      subroutine mptraj1(ppart,kpic,partt,tdiag,irc)
 ! this copies tagged particles in ppart to array partt
+! irc = (0,1) = (no,yes) error condition exists
       implicit none
+      integer, intent(inout) :: irc
       real, intent(inout) :: tdiag
       real, dimension(:,:,:), intent(in) :: ppart
       integer, dimension(:), intent(in) :: kpic
@@ -364,6 +405,7 @@
       integer :: idimp, nppmx, mx1, nprobt
       integer, dimension(4) :: itime
       double precision :: dtime
+      irc = 0
 ! extract dimensions
       idimp = size(ppart,1); nppmx = size(ppart,2)
       mx1 = size(kpic,1); nprobt = size(partt,2)
@@ -376,7 +418,7 @@
          call PTRAJ1(ppart,kpic,partt,idimp,nppmx,mx1,nprobt)
       else
          write (*,*) 'mptraj1 error: idimp=', idimp
-         stop
+         irc = 1
       endif
 ! record time
       call dtimer(dtime,itime,1)
@@ -384,14 +426,17 @@
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine setmbeam1(part,npx)
+      subroutine setmbeam1(part,npx,irc)
 ! marks beam particles by setting a particle id in particle location
 ! 3 or 5
+! irc = (0,1) = (no,yes) error condition exists
       integer, intent(in) :: npx
+      integer, intent(inout) :: irc
       real, dimension(:,:), intent(inout) :: part
 ! local data
       integer :: idimp, nop
       idimp = size(part,1); nop = size(part,2)
+      irc = 0
 ! call low level procedure
       if (idimp > 4) then
          call STPBEAM13(part,npx,idimp,nop)
@@ -399,7 +444,7 @@
          call STPBEAM1(part,npx,idimp,nop)
       else
          write (*,*) 'setbeamc1 error: idimp=', idimp
-         stop
+         irc = 1
       endif
       end subroutine
 !

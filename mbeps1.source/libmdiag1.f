@@ -10,6 +10,9 @@
 !         and entropy, for segmented particle array
 ! VPDIST13 calculates 3 component velocity distribution, velocity moments,
 !          and entropy, for segmented particle array
+! ERPDIST1 calculates 1d energy distribution for relativistic particles
+! ERPDIST13 calculates 1-2/2d energy distribution for relativistic
+!           particles
 ! VDIST1 calculates 1 component velocity distribution, velocity moments,
 !        and entropy for standard particle array
 ! VDIST13 calculates 3 component velocity distribution, velocity
@@ -28,7 +31,7 @@
 !           id in particle location 5
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: november 23, 2016
+! update: january 7, 2017
 !-----------------------------------------------------------------------
       subroutine CSPECT1(fc,wm,pkw,t0,dt,nt,iw,modesx,ntd,iwd,modesxd)
 ! this subroutine performs frequency analysis of complex time series,
@@ -267,7 +270,7 @@
 ! for 1d code, this subroutine calculates 1d velocity distribution,
 ! velocity moments, and entropy
 ! particles stored segmented array
-! input: all except fvm, output: fv, fvm
+! input: all except fvm, output: sfv, fvm
 ! ppart(2,n,m) = velocity vx of particle n in tile m
 ! kpic = number of particles per tile
 ! sfv = distribution function particles in each velocity range in tile
@@ -367,7 +370,7 @@
 ! for 1-2/2d code, this subroutine calculates 3d velocity distribution,
 ! velocity moments, and entropy
 ! particles stored segmented array
-! input: all except fvm, output: fv, fvm
+! input: all except fvm, output: sfv, fvm
 ! ppart(2,n,m) = velocity vx of particle n in tile m
 ! ppart(3,n,m) = velocity vy of particle n in tile m
 ! ppart(4,n,m) = velocity vz of particle n in tile m
@@ -522,6 +525,157 @@
       fvm(2,3) = sumvy
       if (sumvz.gt.0.0d0) sumvz = -sumvz2/sumvz + dlog(sumvz)
       fvm(3,3) = sumvz
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine ERPDIST1(ppart,kpic,sfv,ci,wk,idimp,nppmx,mx1,nmv,nmvf)
+! for 1d code, this subroutine calculates 1d energy distribution
+! for relativistic particles
+! particles stored segmented array
+! input: all except wk, output: sfv, wk
+! ppart(2,n,m) = momentum px of particle n in tile m
+! kpic = number of particles per tile
+! sfv = distribution function particles in each velocity range in tile
+! maximum energy (used for scaling) is contained in first element sfv.
+! ci = reciprocal of velocity of light
+! wk = total energy is contained in distribution
+! idimp = size of phase space = 2
+! nppmx = maximum number of particles in tile
+! mx1 = (system length in x direction - 1)/mx + 1
+! nmvf = dimension of fv
+! the number of velocity bins used is 2*nmv + 1, nmvf >= 2*nmv+2
+      implicit none
+      integer idimp, nppmx, mx1, nmv, nmvf
+      real ci, wk
+      real ppart, sfv
+      dimension ppart(idimp,nppmx,mx1)
+      dimension sfv(nmvf,mx1+1)
+      integer kpic
+      dimension kpic(mx1)
+! local data
+      integer j, k, npp, nvx
+      real ci2, anmv, svx, px, p2
+      double precision sumpx, ssumpx, sum1
+      ci2 = ci*ci
+! velocity scaling, same scaling used for all tiles
+      anmv = real(nmv)
+      svx = anmv/sfv(1,mx1+1)
+! zero out distribution
+      do 20 k = 1, mx1+1
+      do 10 j = 2, nmvf
+      sfv(j,k) = 0.0
+   10 continue
+   20 continue
+! count particles in each velocity region
+      anmv = 2.0
+      sumpx = 0.0d0
+! loop over tiles
+!$OMP PARALLEL DO
+!$OMP& PRIVATE(j,k,npp,nvx,px,p2,ssumpx) REDUCTION(+:sumpx) 
+      do 40 k = 1, mx1
+      npp = kpic(k)
+      ssumpx = 0.0d0
+! loop over particles in tile
+      do 30 j = 1, npp
+      px = ppart(2,j,k)
+      p2 = px*px
+      px = p2/(1.0 + sqrt(1.0 + p2*ci2))
+      nvx = px*svx + anmv
+      ssumpx = ssumpx + px
+      if ((nvx.ge.2).and.(nvx.le.nmvf)) sfv(nvx,k) = sfv(nvx,k) + 1.0
+   30 continue
+! calculate global sums
+      sumpx = sumpx + ssumpx
+   40 continue
+!$OMP END PARALLEL DO
+! calculate global distribution
+      do 60 j = 2, nmvf
+      sum1 = 0.0d0
+      do 50 k = 1, mx1
+      sum1 = sum1 + sfv(j,k)
+   50 continue
+      sfv(j,mx1+1) = sum1
+   60 continue
+! return energy
+      wk = sumpx
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine ERPDIST13(ppart,kpic,sfv,ci,wk,idimp,nppmx,mx1,nmv,nmvf&
+     &)
+! for 1-2/2d code, this subroutine calculates 3d energy distribution,
+! for relativistic particles
+! particles stored segmented array
+! input: all except wk, output: sfv, wk
+! ppart(2,n,m) = momentum px of particle n in tile m
+! ppart(3,n,m) = momentum py of particle n in tile m
+! ppart(4,n,m) = momentum pz of particle n in tile m
+! kpic = number of particles per tile
+! sfv = distribution function particles in each velocity range in tile
+! maximum energy (used for scaling) is contained in first element sfv.
+! ci = reciprocal of velocity of light
+! wk = total energy is contained in distribution
+! idimp = size of phase space = 4
+! nppmx = maximum number of particles in tile
+! mx1 = (system length in x direction - 1)/mx + 1
+! nmvf = dimension of fv
+! the number of velocity bins used is 2*nmv + 1, nmvf >= 2*nmv+2
+      implicit none
+      integer idimp, nppmx, mx1, nmv, nmvf
+      real ci, wk
+      real ppart, sfv
+      dimension ppart(idimp,nppmx,mx1)
+      dimension sfv(nmvf,mx1+1)
+      integer kpic
+      dimension kpic(mx1)
+! local data
+      integer j, k, npp, nvx
+      real ci2, anmv, svx, px, py, pz, p2
+      double precision sumpx, ssumpx, sum1
+      ci2 = ci*ci
+! velocity scaling, same scaling used for all tiles
+      anmv = real(nmv)
+      svx = anmv/sfv(1,mx1+1)
+! zero out distribution
+      do 20 k = 1, mx1+1
+      do 10 j = 2, nmvf
+      sfv(j,k) = 0.0
+   10 continue
+   20 continue
+! count particles in each velocity region
+      anmv = 2.0
+      sumpx = 0.0d0
+! loop over tiles
+!$OMP PARALLEL DO
+!$OMP& PRIVATE(j,k,npp,nvx,px,py,pz,p2,ssumpx) REDUCTION(+:sumpx)     
+      do 40 k = 1, mx1
+      npp = kpic(k)
+      ssumpx = 0.0d0
+! loop over particles in tile
+      do 30 j = 1, npp
+      px = ppart(2,j,k)
+      py = ppart(3,j,k)
+      pz = ppart(4,j,k)
+      p2 = px*px + py*py + pz*pz
+      px = p2/(1.0 + sqrt(1.0 + p2*ci2))
+      nvx = px*svx + anmv
+      ssumpx = ssumpx + px
+      if ((nvx.ge.2).and.(nvx.le.nmvf)) sfv(nvx,k) = sfv(nvx,k) + 1.0
+   30 continue
+! calculate global sums
+      sumpx = sumpx + ssumpx
+   40 continue
+!$OMP END PARALLEL DO
+! calculate global distribution
+      do 60 j = 2, nmvf
+      sum1 = 0.0d0
+      do 50 k = 1, mx1
+      sum1 = sum1 + sfv(j,k)
+   50 continue
+      sfv(j,mx1+1) = sum1
+   60 continue
+! return energy
+      wk = sumpx
       return
       end
 !-----------------------------------------------------------------------

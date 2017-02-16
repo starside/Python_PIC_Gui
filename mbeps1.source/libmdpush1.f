@@ -2,6 +2,7 @@
 ! Fortran Library for depositing time derivative of current
 ! 1-2/2D OpenMP PIC Codes:
 ! FWPMINMX1 calculates maximum and minimum plasma frequency
+! FWPTMINMX1 calculates maximum and minimum total plasma frequency
 ! GDJPPOST1L calculates particle momentum flux and acceleration
 !            density using linear interpolation
 ! GDCJPPOST1L calculates particle momentum flux, acceleration density
@@ -14,7 +15,7 @@
 ! ASCFGUARD1L add scaled vector field to extended periodic field
 ! written by Viktor K. Decyk, UCLA
 ! copyright 2016, regents of the university of california
-! update: july 29, 2016
+! update: february 1, 2017
 !-----------------------------------------------------------------------
       subroutine FWPMINMX1(qe,qbme,wpmax,wpmin,nx,nxe)
 ! calculates maximum and minimum plasma frequency.  assumes guard cells
@@ -40,7 +41,31 @@
    10 continue
       return
       end
-
+!-----------------------------------------------------------------------
+      subroutine FWPTMINMX1(qe,qi,qbme,qbmi,wpmax,wpmin,nx,nxe)
+! calculates maximum and minimum total plasma frequency.  assumes guard
+! cells have already been added
+! qe/qi = charge density for electrons/ions
+! qbme/qbmi = charge/mass ratio for electrons/ions
+! wpmax/wpmin = maximum/minimum plasma frequency
+! nx = system length in x direction
+! nxe = first dimension of charge arrays, nxe must be >= nx
+      implicit none
+      real qe, qi, qbme, qbmi, wpmax, wpmin
+      integer nx, nxe
+      dimension qe(nxe), qi(nxe)
+c local data
+      integer j
+      real at1
+      wpmax = qbme*qe(1) + qbmi*qi(1)
+      wpmin = wpmax
+      do 10 j = 1, nx
+      at1 = qbme*qe(j) + qbmi*qi(j)
+      wpmax = max(wpmax,at1)
+      wpmin = min(wpmin,at1)
+   10 continue
+      return
+      end
 !-----------------------------------------------------------------------
       subroutine GDJPPOST1L(ppart,fxyz,byz,dcu,amu,kpic,omx,qm,qbm,dt,  &
      &idimp,nppmx,nx,mx,nxv,mx1)

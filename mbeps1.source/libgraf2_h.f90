@@ -30,11 +30,11 @@
       interface
          subroutine CONTUR(f,lf,label,isc,ist,nx,ny,nxv,chr,nc,irc)
          implicit none
-         integer , intent(in):: isc, ist, nx, ny, nxv, nc
+         integer, intent(in):: isc, ist, nx, ny, nxv, nc
          integer, intent(inout) :: irc
          character(len=*), intent(in) :: label, chr
          real, dimension(nxv,ny), intent(in) :: f
-         integer, dimension(nxv,ny) :: lf
+         integer, dimension(nxv,ny), intent(inout) :: lf
          end subroutine
       end interface
 !

@@ -45,6 +45,8 @@
 #CCOPTS = -O3 -std=c99
 #CCOPTS = -O3 -Wall -std=c99
 
+#FF03 = -Tf
+
 #LEGACY =
 
 # Makefile Intel compiler with Linux
@@ -66,6 +68,8 @@
 #CCOPTS = -O3 -std=c99
 #CCOPTS = -O3 -no-vec -Wall -std=c99
 
+#FF03 = -Tf
+
 #LEGACY =
 
 # Makefile gfortran compiler with Linux
@@ -85,6 +89,7 @@ PCC = f2py --compiler=unix
 OPTS90 = -O3
 #OPTS90 = -O3 -fdefault-real-8 -fdefault-double-8
 #OPTS90 = -O3 -fbounds-check -fdefault-real-8 -fdefault-double-8 -Wall -std=f95
+#OPTS90 = -O3 -fbounds-check -fdefault-real-8 -fdefault-double-8 -Wall -std=f2003
 
 CCOPTS = -O3 -std=c99
 #CCOPTS = -O3 -Wall -std=c99
@@ -210,7 +215,7 @@ EMPYOBJS = pymbpush1.o pymcurd1.o
 
 EDPYOBJS = pymdpush1.o
 
-# Python graphics
+# Python Graphics
 
 #Tektronix
 #GMODSRC = modgraf1.f90 libt1.f90
@@ -353,14 +358,14 @@ modmfield1.o : modmfield1.f90 libmfield1_h.o
 modmdiag1.o : modmdiag1.f90 libmdiag1_h.o
 	$(MPFC) $(OPTS90) -o modmdiag1.o -c modmdiag1.f90
 
-msimul1.o : msimul1.f90 $(ESMODS)
-	$(MPFC) $(OPTS90) -o msimul1.o -c msimul1.f90
+msimul1.o : msimul1.f03 $(ESMODS)
+	$(MPFC) $(OPTS90) -o msimul1.o -c $(FF03) msimul1.f03
 
-mbsimul1.o : mbsimul1.f90 msimul1.o $(EMMODS)
-	$(MPFC) $(OPTS90) -o mbsimul1.o -c mbsimul1.f90
+mbsimul1.o : mbsimul1.f03 msimul1.o $(EMMODS)
+	$(MPFC) $(OPTS90) -o mbsimul1.o -c $(FF03) mbsimul1.f03
 
-mdsimul1.o : mdsimul1.f90 mbsimul1.o $(EDMODS)
-	$(MPFC) $(OPTS90) -o mdsimul1.o -c mdsimul1.f90
+mdsimul1.o : mdsimul1.f03 mbsimul1.o $(EDMODS)
+	$(MPFC) $(OPTS90) -o mdsimul1.o -c $(FF03) mdsimul1.f03
 
 mbeps1.o : mbeps1.f90 msimul1.o modgraf1.o omplib.o
 	$(MPFC) $(OPTS90) -o mbeps1.o -c mbeps1.f90

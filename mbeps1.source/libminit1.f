@@ -15,6 +15,10 @@
 !         with drift for 1d code
 ! VDISTR1H calculates initial particle velocities with maxwellian
 !          velocity with drift for 1-2/2d code
+! VRDISTR1 initial particle momenta with maxwell-juttner distribution
+!          with drift for 1d code
+! VRDISTR1H calculates initial particle momenta with maxwell-juttner
+!           distribution with drift for 1-2/2d code
 ! WDISTR1 calculates initial particle velocity with waterbag velocity
 !         distribution with drift for 1d code
 ! WDISTR1H calculates initial particle velocities with waterbag velocity
@@ -38,7 +42,7 @@
 !          for a gaussian density profile with no background density
 ! written by Viktor K. Decyk, UCLA
 ! copyright 2016, regents of the university of california
-! update: november 12, 2016
+! update: january 21, 2017
 !-----------------------------------------------------------------------
       subroutine NEXTRAN1(nextrand,ndim,np)
 ! for 1d code, this subroutine skips over nextrand groups of random
@@ -403,6 +407,128 @@
       part(2,j+js) = vtx*ranorm()
       part(3,j+js) = vty*ranorm()
       part(4,j+js) = vtz*ranorm()
+   10 continue
+! add correct drift
+      dsum1 = 0.0d0
+      dsum2 = 0.0d0
+      dsum3 = 0.0d0
+      do 20 j = 1, npx
+      dsum1 = dsum1 + part(2,j+js)
+      dsum2 = dsum2 + part(3,j+js)
+      dsum3 = dsum3 + part(4,j+js)
+   20 continue
+      sum1 = dsum1
+      sum2 = dsum2
+      sum3 = dsum3
+      at1 = 1.0/real(npx)
+      sum1 = at1*real(dsum1) - vdx
+      sum2 = at1*real(dsum2) - vdy
+      sum3 = at1*real(dsum3) - vdz
+      do 30 j = 1, npx
+      part(2,j+js) = part(2,j+js) - sum1
+      part(3,j+js) = part(3,j+js) - sum2
+      part(4,j+js) = part(4,j+js) - sum3
+   30 continue
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine VRDISTR1(part,vtx,vdx,ci,jstart,npx,idimp,nop)
+! for 1d code, this subroutine calculates initial particle
+! momentum with maxwell-juttner distribution with drift
+! for relativistic particles
+! f(p) = exp(-(gamma-1)*(m0c**2)/kT), where gamma = sqrt(1+(p/m0c)**2)
+! since (gamma-1)*(m0c**2) = (p**2/m0)/(gamma+1), we can write
+! f(p) = exp(-pt**2/2), where pt**2 = p**2/((gamma+1)/2)*m0*kT
+! since pt is normally distributed, we can use a gaussian random number
+! to calculate it.  We then solve the pt**2 equation to obtain:
+! (p/m0)**2 = ((pt*vth)**2)*(1 + (pt/4c)**2),
+! where vth = sqrt(kT/m0) is the thermal velocity.  This equation is
+! satisfied if we set the individual components j as follows:
+! pj/m0 = ptj*vth*sqrt(1 + (pt/4c)**2)
+! part(2,n) = momentum px of particle n
+! vtx = thermal velocity of electrons in x direction
+! vdx = drift momenum of beam electrons in x direction
+! ci = reciprocal of velocity of light
+! jstart = starting location in particle array
+! npx = number of particles distributed in x direction
+! idimp = size of phase space = 2
+! nop = maximum number of particles
+! ranorm = gaussian random number with zero mean and unit variance
+      implicit none
+      integer jstart, npx, idimp, nop
+      real part, vtx, vdx, ci
+      dimension part(idimp,nop)
+! local data
+      integer j, js
+      real ci4, pt, sum1
+      double precision dsum1
+      double precision ranorm
+      js = jstart - 1
+      if ((js+npx).gt.nop) return
+      ci4 = 0.25*ci*ci
+! maxwell-juttner velocity distribution
+      do 10 j = 1, npx
+      pt = vtx*ranorm()
+      part(2,j+js) = pt*sqrt(1.0 + pt*pt*ci4)
+   10 continue
+! add correct drift
+      dsum1 = 0.0d0
+      do 20 j = 1, npx
+      dsum1 = dsum1 + part(2,j+js)
+   20 continue
+      sum1 = real(dsum1)/real(npx) - vdx
+      do 30 j = 1, npx
+      part(2,j+js) = part(2,j+js) - sum1
+   30 continue
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine VRDISTR1H(part,vtx,vty,vtz,vdx,vdy,vdz,ci,jstart,npx,  &
+     &idimp,nop)
+! for 1-2/2d code, this subroutine calculates initial particle
+! momenta with maxwell-juttner velocity distribution with drift
+! for relativistic particles
+! f(p) = exp(-(gamma-1)*(m0c**2)/kT), where gamma = sqrt(1+(p/m0c)**2)
+! since (gamma-1)*(m0c**2) = (p**2/m0)/(gamma+1), we can write
+! f(p) = exp(-pt**2/2), where pt**2 = p**2/((gamma+1)/2)*m0*kT
+! since pt is normally distributed, we can use a gaussian random number
+! to calculate it.  We then solve the pt**2 equation to obtain:
+! (p/m0)**2 = ((pt*vth)**2)*(1 + (pt/4c)**2),
+! where vth = sqrt(kT/m0) is the thermal velocity.  This equation is
+! satisfied if we set the individual components j as follows:
+! pj/m0 = ptj*vth*sqrt(1 + (pt/4c)**2)
+! part(2,n) = momentum px of particle n
+! part(3,n) = momentum py of particle n
+! part(4,n) = momentum pz of particle n
+! vtx/vty/vtz = thermal velocity of electrons in x/y/z direction
+! vdx/vdy/vdz = drift momentum of beam electrons in x/y/z direction
+! ci = reciprocal of velocity of light
+! jstart = starting location in particle array
+! npx = number of particles distributed in x direction
+! idimp = size of phase space = 4
+! nop = maximum number of particles
+! ranorm = gaussian random number with zero mean and unit variance
+      implicit none
+      integer jstart, npx, idimp, nop
+      real part, vtx, vty, vtz, vdx, vdy, vdz, ci
+      dimension part(idimp,nop)
+! local data
+      integer j, js
+      real ci4, ptx, pty, ptz, pt2, at1, sum1, sum2, sum3
+      double precision dsum1, dsum2, dsum3
+      double precision ranorm
+      js = jstart - 1
+      if ((js+npx).gt.nop) return
+      ci4 = 0.25*ci*ci
+! maxwell-juttner velocity distribution
+      do 10 j = 1, npx
+      ptx = vtx*ranorm()
+      pty = vty*ranorm()
+      ptz = vtz*ranorm()
+      pt2 = ptx*ptx + pty*pty + ptz*ptz
+      part(2,j+js) = ptx*sqrt(1.0 + pt2*ci4)
+      part(3,j+js) = pty*sqrt(1.0 + pt2*ci4)
+      part(4,j+js) = ptz*sqrt(1.0 + pt2*ci4)
    10 continue
 ! add correct drift
       dsum1 = 0.0d0

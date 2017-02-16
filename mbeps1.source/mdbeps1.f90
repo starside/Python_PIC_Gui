@@ -116,9 +116,6 @@
             call maguard1(qi,tguard,nx)
          endif
 !
-! calculate shift constant for iteration: update wpm, q2m0
-         call calc_shift13(iuot)
-!
 ! initialize ions: updates pparti, kipic, cui
 ! pparti = tiled on particle arrays
 ! kipic = number of ions in each tile
@@ -126,6 +123,9 @@
          if (movion==1) then
             call init_ions13()
          endif
+!
+! calculate shift constant for iteration: update wpm, q2m0
+         call calc_shift13(iuot)
 !
 ! initialize darwin electric field
          cus = 0.0
@@ -213,6 +213,18 @@
      &ipbc,relativity,.false.,irc)
 ! add guard cells: updates cue
       call macguard1(cue,tguard,nx)
+!
+! electron current density diagnostic: updates vfield
+      if (ntje > 0) then
+         it = ntime/ntje
+         if (ntime==ntje*it) then
+            call ecurrent_diag13(vfield)
+! display smoothed electron current
+            call dvector1(vfield,' ELECTRON CURRENT',ntime,999,0,2,nx,  &
+     &irc)
+            if (irc==1) exit; irc = 0
+         endif
+      endif
 !
 ! deposit ion current with OpenMP: updates cui
       if (movion==1) then

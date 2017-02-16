@@ -5,6 +5,8 @@
 ! Fortran90 wrappers to 1d OpenMP PIC library libmdpush1.f
 ! mfwpminx1 calculates maximum and minimum plasma frequency
 !           calls FWPMINMX1
+! mfwptminx1 calculates maximum and minimum total plasma frequency
+!            calls FWPTMINMX1
 ! mgdjpost1 calculates particle momentum flux and acceleration density
 !           calls GDJPPOST1L
 ! mgdcjpost1 calculates particle momentum flux, acceleration density
@@ -26,7 +28,7 @@
 !             calls mpgrdcjpost2 or mpgdcjpost2
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: august 4, 2016
+! update: february 1, 2017
 !
       use libmdpush1_h
       implicit none
@@ -47,6 +49,22 @@
       nxe = size(qe,1)
 ! call low level procedure
       call FWPMINMX1(qe,qbme,wpmax,wpmin,nx,nxe)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mfwptminx1(qe,qi,qbme,qbmi,wpmax,wpmin,nx)
+! calculates maximum and minimum total plasma frequency
+      implicit none
+      integer, intent(in) :: nx
+      real, intent(in) :: qbme, qbmi
+      real, intent(inout) :: wpmax, wpmin
+      real, dimension(:), intent(in) :: qe, qi
+! local data
+      integer :: nxe
+! extract dimensions
+      nxe = size(qe,1)
+! call low level procedure
+      call FWPTMINMX1(qe,qi,qbme,qbmi,wpmax,wpmin,nx,nxe)
       end subroutine
 !
 !-----------------------------------------------------------------------

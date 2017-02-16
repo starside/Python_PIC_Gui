@@ -36,7 +36,7 @@
 ! GPPOST1L calculates particle charge density using linear interpolation
 ! written by Viktor K. Decyk, UCLA
 ! copyright 2016, regents of the university of california
-! update: december 17, 2016
+! update: january 21, 2017
 !-----------------------------------------------------------------------
       subroutine PPMOVIN1L(part,ppart,kpic,nppmx,idimp,nop,mx,mx1,irc)
 ! this subroutine sorts particles by x grid in tiles of mx and copies
@@ -87,7 +87,7 @@
       subroutine PPCOPYOUT1(part,ppart,kpic,np,nop,nppmx,idimp,mx1,irc)
 ! for 1d code, this subroutine copies segmented particle data ppart to
 ! the linear array part
-! input: all except part, output: part, np
+! input: all except part, irc, output: part, np, irc
 ! part(i,j) = i-th coordinate for particle j
 ! ppart(i,j,k) = i-th coordinate for particle j in tile k
 ! kpic = number of particles per tile
@@ -130,7 +130,7 @@
 ! for 1d code, this subroutine copies linear array part to
 ! segmented particle data ppart, assuming kpic values are known
 ! used in resizing segmented particle array ppart if overflow occurs
-! input: all except ppart, output: ppart, irc
+! input: all except ppart, irc, output: ppart, irc
 ! part(i,j) = i-th coordinate for particle j
 ! ppart(i,j,k) = i-th coordinate for particle j in tile k
 ! kpic = number of particles per tile
@@ -191,7 +191,7 @@
       integer noff, npp, j, k, ist, nn
       real edgelx, edgerx, dx
 ! loop over tiles
-!$OMP PARALLEL DO PRIVATE(j,k,noff,npp,nn,ist,edgelx,edgerx,dx)
+! !$OMP PARALLEL DO PRIVATE(j,k,noff,npp,nn,ist,edgelx,edgerx,dx)
       do 20 k = 1, mx1
       noff = mx*(k - 1)
       npp = kpic(k)
@@ -208,7 +208,7 @@
       if (ist.gt.0) irc = k
    10 continue
    20 continue
-!$OMP END PARALLEL DO
+! !$OMP END PARALLEL DO
       return
       end
 !-----------------------------------------------------------------------

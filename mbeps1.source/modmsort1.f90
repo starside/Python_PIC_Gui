@@ -11,11 +11,13 @@
 !          calls PPORDERF1L
 ! wmporder1 generic procedure to perform particle reordering into tiles
 !           calls mporder1 or morderf1
+! mprsncl1 restores initial values of address offset ncl
+!          calls PPRSNCL1L
 ! mprstor1 restores particle coordinates from ppbuff
 !          calls PPRSTOR1L
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: december 17, 2016
+! update: january 30, 2017
 !
       use libmsort1_h
       implicit none
@@ -53,11 +55,11 @@
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine morderf1(ppart,ppbuff,kpic,ncl,ihole,tsort,nx,irc2)
+      subroutine morderf1(ppart,ppbuff,kpic,ncl,ihole,tsort,nx,mx,irc2)
 ! performs particle reordering into tiles,
 ! does not create list of particles which are leaving tile
       implicit none
-      integer, intent(in) :: nx
+      integer, intent(in) :: nx, mx
       real, intent(inout) :: tsort
       real, dimension(:,:,:), intent(inout) :: ppart
       real, dimension(:,:,:), intent(inout) :: ppbuff
@@ -76,7 +78,7 @@
 ! initialize timer
       call dtimer(dtime,itime,-1)
 ! call low level procedure
-      call PPORDERF1L(ppart,ppbuff,kpic,ncl,ihole,idimp,nppmx,nx,mx1,   &
+      call PPORDERF1L(ppart,ppbuff,kpic,ncl,ihole,idimp,nppmx,nx,mx,mx1,&
      &npbmx,ntmax,irc2)
 ! record time
       call dtimer(dtime,itime,1)
@@ -100,7 +102,7 @@
       integer, dimension(2), intent(inout) :: irc2
 ! do not calculate list of particles leaving tile
       if (plist) then
-         call morderf1(ppart,ppbuff,kpic,ncl,ihole,tsort,nx,irc2)
+         call morderf1(ppart,ppbuff,kpic,ncl,ihole,tsort,nx,mx,irc2)
 ! calculate list of particles leaving tile
       else
          call mporder1(ppart,ppbuff,kpic,ncl,ihole,tsort,nx,mx,irc2)
@@ -108,6 +110,27 @@
       if (irc2(1) /= 0) then
          write (*,*) 'info:wmporder1 overflow: irc2=', irc2
       endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mprsncl1(ncl,tsort)
+! restores initial values of address offset ncl
+      implicit none
+      real, intent(inout) :: tsort
+      integer, dimension(:,:), intent(inout) :: ncl
+! local data
+      integer :: mx1
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      mx1 = size(ncl,2)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+! call low level procedure
+      call PPRSNCL1L(ncl,mx1)
+! record time
+      call dtimer(dtime,itime,1)
+      tsort = tsort + real(dtime)
       end subroutine
 !
 !-----------------------------------------------------------------------

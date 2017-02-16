@@ -15,7 +15,7 @@
 !          calls FFT1R2X or FFT1R3X
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: october 10, 2016
+! update: january 9, 2017
 !
       use libmfft1_h
       implicit none
@@ -149,7 +149,6 @@
          enddo
       else
          write (*,*) 'mfft1cr f too small: nxd, 2*n = ', nxd, 2*n
-         stop
       endif
 ! call low level procedure
       call FFT1RXX(f,t,isign,mixup,sct,indx,nxd,nxhd)
@@ -180,10 +179,8 @@
       nxhd = size(mixup,1)
       if (m /= ndim) then
          write (*,*) 'mfft1crn invalid vectors: ndim, m = ', ndim, m
-         stop
       else if (nxd.lt.(2*n)) then
          write (*,*) 'mfft1crn f too small: nxd, 2*n = ', nxd, 2*n
-         stop
       endif
 ! check if required size of buffer has increased
       if (szt < ndim*nxhd) then

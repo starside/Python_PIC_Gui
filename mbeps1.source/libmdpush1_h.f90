@@ -14,6 +14,16 @@
       end interface
 !
       interface
+         subroutine FWPTMINMX1(qe,qi,qbme,qbmi,wpmax,wpmin,nx,nxe)
+         implicit none
+         integer, intent(in) :: nx, nxe
+         real, intent(in) :: qbme, qbmi
+         real, intent(inout) :: wpmax, wpmin
+         real, dimension(nxe), intent(in) :: qe, qi
+         end subroutine
+      end interface
+!
+      interface
          subroutine GDJPPOST1L(ppart,fxyz,byz,dcu,amu,kpic,omx,qm,qbm,dt&
      &,idimp,nppmx,nx,mx,nxv,mx1)
          implicit none

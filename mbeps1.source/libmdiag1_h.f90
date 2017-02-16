@@ -68,6 +68,32 @@
       end interface
 !
       interface
+         subroutine ERPDIST1(ppart,kpic,sfv,ci,wk,idimp,nppmx,mx1,nmv,  &
+     &nmvf)
+         implicit none
+         integer, intent(in) :: idimp, nppmx, mx1, nmv, nmvf
+         real, intent(in) :: ci
+         real, intent(inout) :: wk
+         real, dimension(idimp,nppmx,mx1), intent(in) :: ppart
+         integer, dimension(mx1), intent(in) :: kpic
+         real, dimension(nmvf,mx1+1), intent(inout) :: sfv
+         end subroutine
+      end interface
+!
+      interface
+         subroutine ERPDIST13(ppart,kpic,sfv,ci,wk,idimp,nppmx,mx1,nmv, &
+     &nmvf)
+         implicit none
+         integer, intent(in) :: idimp, nppmx, mx1, nmv, nmvf
+         real, intent(in) :: ci
+         real, intent(inout) :: wk
+         real, dimension(idimp,nppmx,mx1), intent(in) :: ppart
+         integer, dimension(mx1), intent(in) :: kpic
+         real, dimension(nmvf,mx1+1), intent(inout) :: sfv
+         end subroutine
+      end interface
+!
+      interface
          subroutine VDIST1(part,fv,fvm,idimp,np,nmv,nmvf)
          integer, intent(in) :: idimp, np, nmv, nmvf
          real, dimension(idimp,np), intent(in) :: part

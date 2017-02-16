@@ -21,6 +21,12 @@
 ! mvdistr1h calculates initial particle velocities with maxwellian
 !           velocity with drift for 1-2/2d code
 !           calls VDISTR1H
+! mvrdistr1 calculates initial particle momentum with maxwell-juttner
+!           distribution with drift for 1d code
+!           calls VRDISTR1
+! mvrdistr1h calculates initial particle momenta with maxwell-juttner
+!            distribution with drift for 1-2/2d code
+!            calls VRDISTR1H
 ! mwdistr1 calculates initial particle velocities with waterbag velocity
 !          distribution with drift for 1d code
 !          calls WDISTR1
@@ -30,13 +36,13 @@
 ! mdblkp1 finds the maximum number of particles in each tile
 !         calls PPDBLKP2L
 ! wmvdistr1 generic procedure to initialize particle velocities in 1d
-!           calls mvdistr1 or mwdistr1
+!           calls mvdistr1, mvrdistr1  or mwdistr1
 ! wmvdistr1h generic procedure to initialize particle velocities in 1-2/2d
-!            calls mvdistr1h or mwdistr1h
+!            calls mvdistr1h, mvrdistr1h or mwdistr1h
 ! fprecision determines if default reals are actually doubles
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: november 12, 2016
+! update: january 5, 2017
 !
       use libminit1_h
       implicit none
@@ -54,14 +60,17 @@
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine mudistr1(part,nstart,npx,nx,ipbc)
+      subroutine mudistr1(part,nstart,npx,nx,ipbc,irc)
 ! calculates initial particle co-ordinates in 1d or 1-2/2d
 ! with uniform density
+! irc = (0,1) = (no,yes) error condition exists
       implicit none
       integer, intent(in) :: nstart, npx, nx, ipbc
+      integer, intent(inout) :: irc
       real, dimension(:,:), intent(inout) :: part
 ! local data
       integer :: idimp, nop, nt
+      irc = 0
 ! extract dimensions
       idimp = size(part,1); nop = size(part,2)
       nt = nstart + npx - 1
@@ -70,13 +79,13 @@
          call UDISTR1(part,nstart,npx,idimp,nop,nx,ipbc)
       else
          write (*,*) 'mudistr1 overflow: nt, nop =', nt, nop
-         stop
+         irc = 1
       endif
       end subroutine
 !
 !-----------------------------------------------------------------------
       subroutine mfdistr1(part,ampx,scalex,shiftx,nstart,npx,nx,ipbc,   &
-     &ndpro)
+     &ndpro,irc)
 ! calculates initial particle co-ordinates in 1d
 ! with various density profiles
 ! ndprof = profile type (uniform=0,linear=1,sinusoidal=2,gaussian=3,
@@ -84,8 +93,10 @@
 ! ampdx = amplitude of density compared to uniform in x
 ! scaledx = scale length for spatial coordinate in x
 ! shiftdx = shift of spatial coordinate in x
+! irc = (0,N) = (no,yes) error condition exists
       implicit none
       integer, intent(in) :: nstart, npx, nx, ipbc, ndpro
+      integer, intent(inout) :: irc
       real, intent(in) :: ampx, scalex, shiftx
       real, dimension(:,:), intent(inout) :: part
 ! local data
@@ -95,6 +106,7 @@
       double precision, external :: DEDISTR1
 ! extract dimensions
       idimp = size(part,1); nop = size(part,2)
+      irc = 0
       ierr = 0
       nt = nstart + npx - 1
       dmpx = dble(ampx)
@@ -103,7 +115,7 @@
       dshiftx = dble(shiftx)
       if (nt > nop) then
          write (*,*) 'mfdistr1 overflow: nt, nop =', nt, nop
-         stop
+         irc = 1
       endif
 ! call low level procedure
       select case(ndpro)
@@ -135,13 +147,13 @@
 ! check error
       if (ierr /= 0) then
          write (*,*) 'mfdistr1 error: ndpro, ierr=', ndpro, ierr
-         stop
+         irc = ierr
       endif
       end subroutine 
 !
 !-----------------------------------------------------------------------
       subroutine mgfdistr1(part,ampx,scalex,shiftx,xmin,xmax,nstart,npx,&
-     &nx,ndpro)
+     &nx,ndpro,irc)
 ! calculates initial particle co-ordinates in 1d
 ! with various density profiles
 ! where co-ordinates are restricted to xmin <= x < xmax
@@ -150,8 +162,10 @@
 ! ampdx = amplitude of density compared to uniform in x
 ! scaledx = scale length for spatial coordinate in x
 ! shiftdx = shift of spatial coordinate in x
+! irc = (0,N) = (no,yes) error condition exists
       implicit none
       integer, intent(in) :: nstart, npx, nx, ndpro
+      integer, intent(inout) :: irc
       real, intent(in) :: ampx, scalex, shiftx, xmin, xmax
       real, dimension(:,:), intent(inout) :: part
 ! local data
@@ -161,6 +175,7 @@
       double precision, external :: DHDISTR1, DEDISTR1
 ! extract dimensions
       idimp = size(part,1); nop = size(part,2)
+      irc = 0
       ierr = 0
       nt = nstart + npx - 1
       dmpx = dble(ampx)
@@ -169,7 +184,7 @@
       dshiftx = dble(shiftx)
       if (nt > nop) then
          write (*,*) 'mgfdistr1 overflow: nt, nop =', nt, nop
-         stop
+         irc = 1
       endif
 ! call low level procedure
       select case(ndpro)
@@ -205,20 +220,23 @@
 ! check error
       if (ierr /= 0) then
          write (*,*) 'mgfdistr1 error: ndpro, ierr=', ndpro, ierr
-         stop
+         irc = ierr
       endif
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine mvdistr1(part,nstart,vtx,vdx,npx)
+      subroutine mvdistr1(part,nstart,vtx,vdx,npx,irc)
 ! calculates initial particle velocities in 1d
 ! with maxwellian velocity with drift
+! irc = (0,1) = (no,yes) error condition exists
       implicit none
       integer, intent(in) :: nstart, npx
+      integer, intent(inout) :: irc
       real, intent(in) :: vtx, vdx
       real, dimension(:,:), intent(inout) :: part
 ! local data
       integer :: idimp, nop, nt
+      irc = 0
 ! extract dimensions
       idimp = size(part,1); nop = size(part,2)
       nt = nstart + npx - 1
@@ -227,20 +245,23 @@
          call VDISTR1(part,vtx,vdx,nstart,npx,idimp,nop)
       else
          write (*,*) 'mvdistr1 overflow: nt, nop =', nt, nop
-         stop
+         irc = 1
       endif
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine mvdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,npx)
+      subroutine mvdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,npx,irc)
 ! calculates initial particle velocities in 1-2/2d
 ! with maxwellian velocity with drift
+! irc = (0,1) = (no,yes) error condition exists
       implicit none
       integer, intent(in) :: nstart, npx
+      integer, intent(inout) :: irc
       real, intent(in) :: vtx, vty, vtz, vdx, vdy, vdz
       real, dimension(:,:), intent(inout) :: part
 ! local data
       integer :: idimp, nop, nt
+      irc = 0
 ! extract dimensions
       idimp = size(part,1); nop = size(part,2)
       nt = nstart + npx - 1
@@ -250,20 +271,75 @@
      &)
       else
          write (*,*) 'mvdistr1h overflow: nt, nop =', nt, nop
-         stop
+         irc = 1
       endif
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine mwdistr1(part,nstart,vtx,vdx,npx)
-! calculates initial particle velocities in 1d
-! with waterbag velocity distribution with drift
+      subroutine mvrdistr1(part,nstart,vtx,vdx,ci,npx,irc)
+! calculates initial particle momenta in 1d
+! with maxwell-juttner distribution with drift
+! irc = (0,1) = (no,yes) error condition exists
       implicit none
       integer, intent(in) :: nstart, npx
+      integer, intent(inout) :: irc
+      real, intent(in) :: vtx, vdx, ci
+      real, dimension(:,:), intent(inout) :: part
+! local data
+      integer :: idimp, nop, nt
+      irc = 0
+! extract dimensions
+      idimp = size(part,1); nop = size(part,2)
+      nt = nstart + npx - 1
+! call low level procedure
+      if (nt <= nop) then
+         call VRDISTR1(part,vtx,vdx,ci,nstart,npx,idimp,nop)
+      else
+         write (*,*) 'mvrdistr1 overflow: nt, nop =', nt, nop
+         irc = 1
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mvrdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,ci,npx, &
+     &irc)
+! calculates initial particle momenta in 1-2/2d
+! with maxwell-juttner distribution with drift
+! irc = (0,1) = (no,yes) error condition exists
+      implicit none
+      integer, intent(in) :: nstart, npx
+      integer, intent(inout) :: irc
+      real, intent(in) :: vtx, vty, vtz, vdx, vdy, vdz, ci
+      real, dimension(:,:), intent(inout) :: part
+! local data
+      integer :: idimp, nop, nt
+      irc = 0
+! extract dimensions
+      idimp = size(part,1); nop = size(part,2)
+      nt = nstart + npx - 1
+! call low level procedure
+      if (nt <= nop) then
+         call VRDISTR1H(part,vtx,vty,vtz,vdx,vdy,vdz,ci,nstart,npx,idimp&
+     &,nop)
+      else
+         write (*,*) 'mvrdistr1h overflow: nt, nop =', nt, nop
+         irc = 1
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mwdistr1(part,nstart,vtx,vdx,npx,irc)
+! calculates initial particle velocities in 1d
+! with waterbag velocity distribution with drift
+! irc = (0,1) = (no,yes) error condition exists
+      implicit none
+      integer, intent(in) :: nstart, npx
+      integer, intent(inout) :: irc
       real, intent(in) :: vtx, vdx
       real, dimension(:,:), intent(inout) :: part
 ! local data
       integer :: idimp, nop, nt
+      irc = 0
 ! extract dimensions
       idimp = size(part,1); nop = size(part,2)
       nt = nstart + npx - 1
@@ -272,20 +348,23 @@
          call WDISTR1(part,vtx,vdx,nstart,npx,idimp,nop)
       else
          write (*,*) 'mwdistr1 overflow: nt, nop =', nt, nop
-         stop
+         irc = 1
       endif
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine mwdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,npx)
+      subroutine mwdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,npx,irc)
 ! calculates initial particle velocities in 1-2/2d
 ! with waterbag velocity distribution with drift
+! irc = (0,1) = (no,yes) error condition exists
       implicit none
       integer, intent(in) :: nstart, npx
+      integer, intent(inout) :: irc
       real, intent(in) :: vtx, vty, vtz, vdx, vdy, vdz
       real, dimension(:,:), intent(inout) :: part
 ! local data
       integer :: idimp, nop, nt
+      irc = 0
 ! extract dimensions
       idimp = size(part,1); nop = size(part,2)
       nt = nstart + npx - 1
@@ -295,7 +374,7 @@
      &)
       else
          write (*,*) 'mwdistr1h overflow: nt, nop =', nt, nop
-         stop
+         irc = 1
       endif
       end subroutine
 !
@@ -317,42 +396,57 @@
 ! check for errors
       if (irc /= 0) then
          write (*,*) 'mdblkp1 error, irc=', irc
-         stop
       endif
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine wmvdistr1(part,nstart,vtx,vdx,npx,nvdist)
+      subroutine wmvdistr1(part,nstart,vtx,vdx,ci,npx,nvdist,relativity,&
+     &irc)
 ! generic procedure to initialize particle velocities in 1d
       implicit none
-      integer, intent(in) :: nstart, npx, nvdist
-      real, intent(in) :: vtx, vdx
+      integer, intent(in) :: nstart, npx, nvdist, relativity
+      integer, intent(inout) :: irc
+      real, intent(in) :: vtx, vdx, ci
       real, dimension(:,:), intent(inout) :: part
-! maxwellian distribution
+! equilibrium distribution
       if (nvdist==1) then
-         call mvdistr1(part,nstart,vtx,vdx,npx)
+! maxwell-juttner distribution
+         if (relativity==1) then
+            call mvrdistr1(part,nstart,vtx,vdx,ci,npx,irc)
+! maxwellian distribution
+         else
+            call mvdistr1(part,nstart,vtx,vdx,npx,irc)
+         endif
 ! waterbag distribution
       else if (nvdist==2) then
-          call mwdistr1(part,nstart,vtx,vdx,npx)
+          call mwdistr1(part,nstart,vtx,vdx,npx,irc)
       else
          write (*,*) 'wmvdistr1: invalid nvdist = ', nvdist
       endif
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine wmvdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,npx,    &
-     &nvdist)
+      subroutine wmvdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,ci,npx, &
+     &nvdist,relativity,irc)
 ! generic procedure to initialize particle velocities in 1-2/2d
       implicit none
-      integer, intent(in) :: nstart, npx, nvdist
-      real, intent(in) :: vtx, vty, vtz, vdx, vdy, vdz
+      integer, intent(in) :: nstart, npx, nvdist, relativity
+      integer, intent(inout) :: irc
+      real, intent(in) :: vtx, vty, vtz, vdx, vdy, vdz, ci
       real, dimension(:,:), intent(inout) :: part
-! maxwellian distribution
+! equilibrium distribution
       if (nvdist==1) then
-         call mvdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,npx)
+! maxwell-juttner distribution
+         if (relativity==1) then
+            call mvrdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,ci,npx, &
+     &irc)
+! maxwellian distribution
+         else
+            call mvdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,npx,irc)
+         endif
 ! waterbag distribution
       else if (nvdist==2) then
-          call mwdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,npx)
+          call mwdistr1h(part,nstart,vtx,vty,vtz,vdx,vdy,vdz,npx,irc)
       else
          write (*,*) 'wmvdistr1h: invalid nvdist = ', nvdist
       endif

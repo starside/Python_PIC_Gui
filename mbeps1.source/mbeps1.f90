@@ -173,7 +173,7 @@
 ! add guard cells: updates qe
       call maguard1(qe,tguard,nx)
 !
-! electron density diagnostic: updates sfield
+! electron density diagnostic: updates sfield=electron density
       if (ntde > 0) then
          it = ntime/ntde
          if (ntime==ntde*it) then
@@ -195,7 +195,7 @@
          call maguard1(qi,tguard,nx)
       endif
 !
-! ion density diagnostic: updates sfield, pkwdi, wkdi
+! ion density diagnostic: updates sfield=ion density, pkwdi, wkdi
       if (movion==1) then
          if (ntdi > 0) then
             it = ntime/ntdi
@@ -239,7 +239,7 @@
 ! copy guard cells: updates fxe
       call mdguard1(fxe,tguard,nx)
 !
-! potential diagnostic: updates sfield, pkw, wk
+! potential diagnostic: updates sfield=potential, pkw, wk
       if (ntp > 0) then
          it = ntime/ntp
          if (ntime==ntp*it) then
@@ -258,7 +258,7 @@
          endif
       endif
 !
-! longitudinal efield diagnostic: updates sfield
+! longitudinal efield diagnostic: updates sfield=longitudinal efield
       if (ntel > 0) then
          it = ntime/ntel
          if (ntime==ntel*it) then

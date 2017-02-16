@@ -220,6 +220,19 @@
       tdjpost = tdjpost + real(dtime)
       call deposit_ecurrent13(ppart,kpic)
 !
+! electron current density diagnostic:
+! updates vfield=electron current
+      if (ntje > 0) then
+         it = ntime/ntje
+         if (ntime==ntje*it) then
+            call ecurrent_diag13(vfield)
+! display smoothed electron current
+            call dvector1(vfield,' ELECTRON CURRENT',ntime,999,0,2,nx,  &
+     &irc)
+            if (irc==1) exit; irc = 0
+         endif
+      endif
+!
 ! deposit ion current with OpenMP: updates pparti, kipic, and cuie
       if (movion==1) then
          call dtimer(dtime,itime,-1)
@@ -229,7 +242,8 @@
          call deposit_icurrent13(pparti,kipic)
       endif
 !
-! ion current density diagnostic: updates vfield, vpkwji, vwkji
+! ion current density diagnostic:
+! updates vfield=ion current, vpkwji, vwkji
       if (movion==1) then
          if (ntji > 0) then
             it = ntime/ntji
@@ -261,7 +275,7 @@
 ! add guard cells: updates qe
       call maguard1(qe,tguard,nx)
 !
-! electron density diagnostic: updates sfield
+! electron density diagnostic: updates sfield=electron density
       if (ntde > 0) then
          it = ntime/ntde
          if (ntime==ntde*it) then
@@ -283,7 +297,7 @@
          call maguard1(qi,tguard,nx)
       endif
 !
-! ion density diagnostic: updates sfield, pkwdi, wkdi
+! ion density diagnostic: updates sfield=ion density, pkwdi, wkdi
       if (movion==1) then
          if (ntdi > 0) then
             it = ntime/ntdi
@@ -320,7 +334,8 @@
       isign = -1
       call mfft1rn(cue,isign,mixup,sct,tfft,indx)
 !
-! radiative vector potential diagnostic: updates vfield, vpkwr, vwkr
+! radiative vector potential diagnostic:
+! updates vfield=radiative vector potential, vpkwr, vwkr
       if (ntar > 0) then
          it = ntime/ntar
          if (ntime==ntar*it) then
@@ -382,7 +397,7 @@
       call mcguard1(fxyze,tguard,nx)
       call mcguard1(byze,tguard,nx)
 !
-! potential diagnostic: updates sfield, pkw, wk
+! potential diagnostic: updates sfield=potential, pkw, wk
       if (ntp > 0) then
          it = ntime/ntp
          if (ntime==ntp*it) then
@@ -402,7 +417,7 @@
          endif
       endif
 !
-! longitudinal efield diagnostic: updates sfield
+! longitudinal efield diagnostic: updates sfield=longitudinal efield
       if (ntel > 0) then
          it = ntime/ntel
          if (ntime==ntel*it) then
@@ -413,7 +428,7 @@
          endif
       endif
 !
-! vector potential diagnostic: updates vfield, vpkw, vwk
+! vector potential diagnostic:updates vfield=vector potential, vpkw, vwk
       if (nta > 0) then
          it = ntime/nta
          if (ntime==nta*it) then
@@ -434,7 +449,8 @@
          endif
       endif
 !
-! transverse efield diagnostic: updates vfield, vpkwet, vwket
+! transverse efield diagnostic:
+! updates vfield=transverse efield, vpkwet, vwket
       if (ntet > 0) then
          it = ntime/ntet
          if (ntime==ntet*it) then
@@ -455,7 +471,7 @@
          endif
       endif
 !
-! magnetic field diagnostic: updates vfield
+! magnetic field diagnostic: updates vfield=bfield
       if (ntb > 0) then
          it = ntime/ntb
          if (ntime==ntb*it) then

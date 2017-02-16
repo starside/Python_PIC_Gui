@@ -7,7 +7,7 @@
 ! writnml1 write final diagnostic metafile to unit iudm
 ! written by viktor k. decyk, ucla
 ! copyright 2011, regents of the university of california
-! update: november 12, 2016
+! update: january 13, 2017
 !
       implicit none
 !
@@ -32,7 +32,7 @@
 ! ndim = number of velocity dimensions = 1 or 3
       integer :: ndim = 3
 ! nvdist = velocity distribution type
-! nvdist = (1,2) = (maxwellian,waterbag) distribution
+! nvdist = (1,2) = (maxwellian/juttner,waterbag) distribution
       integer :: nvdist = 1
 ! treverse = (0,1) = (no,yes) reverse simulation at end back to start
       integer :: treverse = 0
@@ -120,7 +120,8 @@
 !
 ! Energy Diagnostic Parameters:
 ! ntw = number of time steps between energy diagnostic
-      integer :: ntw = 1
+! ndw = (0,1) = (no,yes) = print energy values in output file
+      integer :: ntw = 1, ndw = 1
 !
 ! Electron Density Diagnostic Parameters:
 ! ntde = number of time steps between electron density diagnostic
@@ -209,7 +210,7 @@
      &vty, vtz, vx0, vy0, vz0, vdx, vdy, vdz, vtdx, vtdy, vtdz,         &
      &relativity, ci, xtras, ndim, nvdist, treverse, tend, dt, ax,      &
      &nextrand, mzf, ndprof, ampdx, scaledx, shiftdx, amodex, freq,     &
-     &trmp, toff, el0, er0, ntw, ntde, modesxde, nderec, ntp, ndp,      &
+     &trmp, toff, el0, er0, ntw, ndw, ntde, modesxde, nderec, ntp, ndp, &
      &modesxp, nprec, ntel, modesxel, nelrec, wmin, wmax, dw, ntv, ndv, &
      &nmv, nts, nds, nsxv, nsvv, ntsc, ntt, nst, nprobt, vtsx, dvtx,    &
      &movion, emf, nustrt, ntr, idrun0, nplot, nvp, monitor
@@ -218,6 +219,13 @@
 ! External Magnetic Field Parameters:
 ! omx/omy/omz = magnetic field electron cyclotron frequency in x/y/z 
       real :: omx = 0.0, omy = 0.0, omz = 0.0
+!
+! Electron Current Diagnostic Parameters:
+! ntje = number of time steps between ion current diagnostic
+! modesxje = number of modes in x to keep for ion current diagnostic
+! njerec = current record number for ion current writes
+!          (0 for beginnning of file, -1 to disable writes)
+      integer :: ntje = 0, modesxje = 41, njerec = -1
 !
 ! Vector Potential Diagnostic Parameters:
 ! nta = number of time steps between vector potential diagnostic
@@ -261,9 +269,9 @@
       real :: wrmin = 0.0, wrmax = 8.0, dwr = 0.01
 !
 ! define namelist
-      namelist /input1b/ omx, omy, omz, nta, nda, modesxa, narec, ntet, &
-     &ndet, modesxet, netrec, ntb, modesxb, nbrec, ntar, ndar, modesxar,&
-     &narrec, wrmin, wrmax, dwr
+      namelist /input1b/ omx, omy, omz, ntje, modesxje, njerec, nta,    &
+     &nda, modesxa, narec, ntet, ndet, modesxet, netrec, ntb, modesxb,  &
+     &nbrec, ntar, ndar, modesxar, narrec, wrmin, wrmax, dwr
 !
 ! Darwin Namelist
 ! ndc = number of corrections in darwin iteration
@@ -356,6 +364,13 @@
 ! define namelist
       namelist /el1d/ idrun, indx, ntel, modesxel, nelrec, t0, tend, dt,&
      &ceng, felname
+!
+! Namelist output for electron current diagnostic
+! fjename = file name for electron current diagnostic
+      character(len=32) :: fjename = 'vcurek1.0'
+! define namelist
+      namelist /vcure1d/ idrun, indx, ntje, modesxje, ndim, omx, omy,   &
+     &omz, ci, njerec, t0, tend, dt, ceng, fjename
 !
 ! Namelist output for vector potential diagnostic
 ! faname = file name for vector potential diagnostic
@@ -460,6 +475,11 @@
       if (ntel > 0) then
          write (iudm,el1d)
       endif
+! electron current diagnostic
+      if (ntje > 0) then
+         ceng = 0.0
+         write (iudm,vcure1d)
+      endif
 ! vector potential diagnostic
       if (nta > 0) then
          write (iudm,vpot1d)
@@ -485,7 +505,7 @@
             write (iudm,deni1d)
          endif
 ! ion current diagnostic
-         if (ntdi > 0) then
+         if (ntji > 0) then
             ceng = 0.0
             write (iudm,vcuri1d)
          endif
