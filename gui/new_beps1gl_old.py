@@ -589,7 +589,7 @@ class NewFrame(wx.Frame):
             toDie.Hide()
             for d in self.stf.dispatchers:
                 d.RemoveListener(toDie)
-            print "Destroying " + str(toDie)
+            #print "Destroying " + str(toDie)
             toDie.Destroy()
 
     def _AddDisplay(self):

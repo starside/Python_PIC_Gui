@@ -52,7 +52,6 @@ class NewFrame(wx.Frame, DefaultsCommLink):
             toDie.Hide()
             for d in self.stf.dispatchers:
                 d.RemoveListener(toDie)
-            print "Destroying " + str(toDie)
             toDie.Destroy()
 
     def _AddDisplay(self):
@@ -135,7 +134,6 @@ class NewFrame(wx.Frame, DefaultsCommLink):
         if self.mainframe is not None:  # remove self from windowList
             try:
                 self.mainframe.windowList.remove(self)
-                print "Removed Frame"
             except ValueError:
                 print "Could not remove frame from window list.  This should never happen!"
                 exit(0)
