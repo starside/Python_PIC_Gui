@@ -18,6 +18,7 @@ import libmpush1
 import os, sys
 
 from Events import *
+import Graphs
 
 
 # class for the frame handling
@@ -122,6 +123,8 @@ class LeftPanel(wx.Panel):
         self.moviePipe = None
         self.newframe = parent
         self.persistentVars = dict()
+
+        self.DrawWaitingPlot()
 
         EVT_CLOSEOP(self, self.OnCloseCP)
         EVT_REFRESHGRAPH(self, self.OnRefreshGraph)
@@ -232,16 +235,12 @@ class LeftPanel(wx.Panel):
             self.currentEvent.data._PV
         except AttributeError:
             self.currentEvent.data._PV = self.persistentVars
-        self.axes.cla()
+        #self.axes.cla()
+        self.resetGraph()
         try:
             self.currentEvent.data.setParams(self.arbGraphParameters)  # pass paramters to plot
         except AttributeError:
             True
-            # self.currentEvent.data.setAxesType(self.arbGraphParameters["axesType"])
-
-            # self.figure.delaxes(self.axes)
-            # self.figure.clf()
-            # self.axes = self.figure.add_subplot(111)
 
         rax = self.currentEvent.data.drawPlot(self.figure, self.axes)
         if rax != None:  # This allows the graph to reconfigure its own axes, instead of allowing the panel to handle it
@@ -252,6 +251,18 @@ class LeftPanel(wx.Panel):
         self.mycanvas.draw()
         if self.measuring and self.slopeMousePointer is not None:
             self.PlotLine(self.slopeStack[0], self.slopeMousePointer)
+
+    def DrawWaitingPlot(self):
+        self.resetGraph()
+        if not hasattr(self, 'staticImage'):
+            self.staticImage = NP.random.random((50,50))
+        wg = Graphs.DrawSimpleImage("Waiting for data...", self.staticImage, "Waiting for data...", extent=None)
+        rax = wg.drawPlot(self.figure, self.axes)
+        if rax != None:  # This allows the graph to reconfigure its own axes, instead of allowing the panel to handle it
+            self.axes = rax
+        self.mycanvas.draw()
+
+
 
     # self.slopeStack = []
     # self.measuring = False
