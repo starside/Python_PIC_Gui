@@ -72,11 +72,6 @@ class PipeSimulation():
                         self._notify_window.OnExitPhase2)  # Redirect running loop to an exit callback
 
     def dataPath(self, temp_obj):
-        # Is the sim running?
-        # if not self.iAmRunning:
-        #	time.sleep(0.1)  #Introduce a 1/10 second delay in pausing/unpausing.  This is so
-        #	return 1
-        # Try to set curTime
         try:
             self.curTime = temp_obj._tackOnTime
         except:

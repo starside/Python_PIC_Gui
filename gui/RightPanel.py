@@ -153,6 +153,13 @@ class RightPanel(wx.Panel):
         pEvents = self.simframe.pEvents
         ns.var["fastforward"] = cvf
         pEvents.put(ns)  # Send the signal to update
+        #return True
+
+    def _StopFF(self):
+        ns = VarChangeSignal()
+        pEvents = self.simframe.pEvents
+        ns.var["fastforward"] = 0
+        pEvents.put(ns)  # Send the signal to update
 
     def makeButton(self):
         button1 = wx.Button(self, wx.NewId(), "Step")
@@ -220,9 +227,13 @@ class RightPanel(wx.Panel):
             self.fsm.runState(trans)
             return
         cv += inc
+        if cv > self.simframe.worker.simdata['tend']:
+            cv = self.simframe.worker.simdata['tend']
         self.ffpoint.SetValue(str(cv))
         self.OnFFChange(None)
+        self.ffpoint.SetValue(str(cv))
         self.simframe.worker.iAmRunning = True
+        #self.RunLongButton.SetValue(self.simframe.worker.iAmRunning)
 
 
     def OnNewFrame(self, event):
@@ -290,6 +301,7 @@ class RightPanel(wx.Panel):
             if self.simframe.worker.iAmRunning:
                 trans = self.fsm.pumpEvent('Running')
             else:
+                self._StopFF()
                 trans = self.fsm.pumpEvent('Paused')
             self.fsm.runState(trans)  # get transition
         self.lastMode = self.simframe.worker.iAmRunning

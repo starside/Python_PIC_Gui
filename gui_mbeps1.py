@@ -263,7 +263,7 @@ for ntime in xrange(nstart, nloop):
     curtime = ntime * in1.dt
     pc.setTime(curtime)
     pc.getEvents(in1)
-    pc.fastForward(curtime, in1)
+    pc.fastForward(curtime + in1.dt, in1)
 
     # debug reset
     #  if (ntime==nloop/2):
