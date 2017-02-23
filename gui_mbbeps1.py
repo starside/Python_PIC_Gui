@@ -162,12 +162,12 @@ def initialize_menus(pc):
         pc.addGraph("TRANSVERSE E FIELD",
                     "Transverse Electric Field/Transverse Electric Field")  # Enable electron velocity
         pc.addGraph("TRANSVERSE E.F. Y OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Y Electric Field, Omega vs Mode")
+                    "Transverse Electric Field/Transverse Y Electric Field, Omega vs Mode", autoadd=False)
         pc.addGraph("TRANSVERSE E.F. Z OMEGA VS MODE",
                     "Transverse Electric Field/Transverse Z Electric Field, Omega vs Mode", autoadd=False)
 
         pc.addGraph("FT TRANSVERSE E.F. Y +OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode", autoadd=False)
+                    "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode")
         pc.addGraph("FT TRANSVERSE E.F. Y -OMEGA VS MODE",
                     "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode", autoadd=False)
         pc.addGraph("FT TRANSVERSE E.F. Z +OMEGA VS MODE",
