@@ -1,7 +1,7 @@
  &input1
  IDRUN = 999
  INDX =   9, NPX =   18432, NPXB = 0
- NTW = 1
+ NTW = 10
  NTDE = 5
  NTP = 5, NDP = 3
  NTEL = 5

@@ -230,12 +230,12 @@ class NewFrame(wx.Frame, DefaultsCommLink):
             cps = self.GetSize()
             self.SetMinSize(cps)
             self.SetMaxSize(cps)
-            self.sizeLocked += 1  # Add a new lock
+        self.sizeLocked += 1  # Add a new lock
 
     def unlockFrame(self):
         if hasattr(self, "sizeLocked"):
             if self.sizeLocked > 0:
                 self.sizeLocked += -1
-            else:
+            if self.sizeLocked <= 0:
                 self.SetMinSize(self.oldSize[0])
                 self.SetMaxSize(self.oldSize[1])
