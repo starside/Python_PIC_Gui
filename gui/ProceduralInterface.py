@@ -37,21 +37,38 @@ def initGui(q, que, td, events, outqueue):
 
 
 class PlasmaContext():
-    def __init__(self):
-        manager = Manager()
+    def __init__(self, *args):
+        assert(len(args) == 6)
         self.defaultGraphs = []
-        self.async = manager.dict()  # synch or async mode
-        self.que = Queue()
-        self.events = Queue()
-        self.timeDir = None  # Value('i',0) #Shared memory
-        self.parent_conn, self.child_conn = Pipe()
         self.norun = False
-        self.p = Process(target=initGui, args=(self.parent_conn, self.que, self.timeDir, self.events, self.async))
-        self.p.daemon = True
-        self.p.start()
+        #read in comm channels
+        self.async = args[5]  # synch or async mode
+        self.que = args[2]
+        self.events = args[4]
+        self.timeDir = args[3] 
+        self.parent_conn = args[1]
+        self.child_conn = args[0]
+        
         self.curTime = 0
         self.graphEnabled = True
         self.callbacks = dict()
+
+    @staticmethod
+    def runMain(func):
+        #create bidirectional comm channels
+        manager = Manager()
+        async = manager.dict()  # synch or async mode
+        que = Queue()
+        events = Queue()
+        timeDir = None 
+        parent_conn, child_conn = Pipe()
+        #run the simulation code in child process
+        p = Process(target=func, args=(child_conn, parent_conn, que, timeDir, events, async))
+        #p.daemon = True
+        p.start()
+        #run gui in parent process
+        initGui(parent_conn, que, timeDir, events, async)
+
 
     # Low Level method to communicate with gui thread
     def _sendplot(self, obj):
@@ -135,7 +152,7 @@ class PlasmaContext():
 
     # Set aync or sync mode
     # def asyncMode(self,mode):
-    #	self.async.value = mode
+    #   self.async.value = mode
 
     # Set the global time in the control panel
     def setTime(self, time):
@@ -148,7 +165,7 @@ class PlasmaContext():
         self.que.put(cPickle.dumps(obj))
 
     # if self.async.value == 0:  #In synchronous mode
-    #	self.child_conn.recv()
+    #   self.child_conn.recv()
 
     def pause(self):
         if self.norun:
@@ -301,7 +318,7 @@ class PlasmaContext():
         self._sendplot(dv1)
 
     def wait(self, obj):
-        #	self.asyncMode(1)
+        #   self.asyncMode(1)
         while True:
             self.getEvents(obj)
             time.sleep(1.0 / 30.0)
