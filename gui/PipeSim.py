@@ -82,12 +82,8 @@ class PipeSimulation():
         # Python Changes
         self.fC += 1
         postCount = 1
-        # if self.pipe.poll(self._pollrate):  #If there is data for us
-        # temp_obj = self.pipe.recv()
-        # wx.PostEvent(self._notify_window, ResultEvent(temp_obj, self.curTime))
-        # print self.fC
+
         # see if we need to read data from queue
-        # if not self.que.empty():
         if len(self.myq) == 0 and len(self.guiq) == 0:
             try:
                 rdo = cPickle.loads(self.que.get())
@@ -111,7 +107,7 @@ class PipeSimulation():
                 self.controlPath(temp_obj)
                 time.sleep(1.0 / 30.0)
                 if self.iAmRunning:  # The will cause getEvents to block unless iAmRunning is True
-                    self.pipe.send("GoR")
+                    self.pipe.put("GoR")
                     self.guiq.remove(temp_obj)
 
                     # Read queue myq.  This que can be paused
@@ -119,6 +115,6 @@ class PipeSimulation():
             temp_obj = self.myq[0]
             self.myq.remove(temp_obj)
             self.dataPath(temp_obj)
-            self.pipe.send("Go")
+            self.pipe.put("Go")
 
         return postCount

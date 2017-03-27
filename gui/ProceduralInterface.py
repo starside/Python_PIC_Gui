@@ -61,18 +61,17 @@ class PlasmaContext():
         que = Queue()
         events = Queue()
         timeDir = None 
-        parent_conn, child_conn = Pipe()
+        child_conn = Queue()
         #run the simulation code in child process
-        p = Process(target=func, args=(child_conn, parent_conn, que, timeDir, events, async))
+        p = Process(target=func, args=(child_conn, child_conn, que, timeDir, events, async))
         #p.daemon = True
         p.start()
         #run gui in parent process
-        initGui(parent_conn, que, timeDir, events, async)
+        initGui(child_conn, que, timeDir, events, async)
 
 
     # Low Level method to communicate with gui thread
     def _sendplot(self, obj):
-        # self.parent_conn.send(obj)
         if self.norun:
             return
         if self.graphEnabled:
@@ -81,7 +80,7 @@ class PlasmaContext():
             except:
                 True
             self.que.put(cPickle.dumps(obj))
-            self.child_conn.recv()
+            self.child_conn.get()
 
     def _sendplotasync(self, obj):
         if self.norun:
@@ -126,7 +125,6 @@ class PlasmaContext():
 
     def exit(self):
         self.child_conn.close()
-        self.parent_conn.close()
         self.que.close()
         self.que.join_thread()
         self.p.join()
@@ -163,9 +161,6 @@ class PlasmaContext():
         obj = SetFrameTime(time)
         obj._tackOnTime = self.curTime  # Just sloppily glue the time on the object
         self.que.put(cPickle.dumps(obj))
-
-    # if self.async.value == 0:  #In synchronous mode
-    #   self.child_conn.recv()
 
     def pause(self):
         if self.norun:
