@@ -21,3 +21,9 @@ clobber: rclobber
 
 rclobber:
 	make clobber -C mbeps1.source
+
+mac : python
+	py2applet --make-setup macLoader.py
+	python setup.py py2app
+	cp -R dist/macLoader.app .
+	
