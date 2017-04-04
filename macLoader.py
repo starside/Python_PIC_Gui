@@ -9,6 +9,8 @@ import numpy
 import wx
 import wx.stc
 import f90nml
+import platform
+import shutil
 from types import *  # This is required for the rightType function
 
 import Cocoa
@@ -18,7 +20,7 @@ sys.path.append(path)
 class MyFrame(wx.Frame):
     def __init__(self, parent, title):
         wx.Frame.__init__(self, parent, -1, title,
-                          pos=(150, 150), size=(400, 220))    
+                          pos=(150, 150), size=(400, 260))    
 
         # Now create the Panel to put the other controls on.
         panel = wx.Panel(self)
@@ -27,7 +29,7 @@ class MyFrame(wx.Frame):
         text = wx.StaticText(panel, -1, "Which program do you want to run?")
         text.SetFont(wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD))
         text.SetSize(text.GetBestSize())
-        lbl = ["gui_mbeps1.py","gui_mbbeps1.py","gui_mdbeps1.py"]
+        lbl = ["gui_mbeps1.py","gui_mbbeps1.py","gui_mdbeps1.py","mygui.py"]
         self.scripts = lbl
         self.rbox = wx.RadioBox(panel, -1, choices=lbl, majorDimension=1)
         sbox = wx.StaticBox(panel, -1, "Description")
@@ -52,6 +54,7 @@ class MyFrame(wx.Frame):
         self.rbox.Bind(wx.EVT_RADIOBOX, self.OnRadio)
         button.Bind(wx.EVT_BUTTON, self.OnButton)
         self.updateDesc()
+        self.checkEnvironment()
 
     def OnButton(self, event):
     	global efile
@@ -63,11 +66,30 @@ class MyFrame(wx.Frame):
     	self.updateDesc()
 
     def updateDesc(self):
-    	desc = ["Electrostatic Code", "Electromagnetic Code", "Darwin Code"]
+    	desc = ["Electrostatic Code", "Electromagnetic Code", "Darwin Code", "A custom file you can create and run"]
     	sel = self.rbox.GetSelection()
     	self.desc.SetLabel(desc[sel])
     	self.desc.Wrap(self.wrapLen)
     	self.panel.Layout()
+
+    def checkEnvironment(self):
+        pth = '/Users/starside/test6/Python_PIC_Gui' #os.path.dirname(Cocoa.NSBundle.mainBundle().bundlePath())
+        pth += '/mbeps1.source/'
+        requiredFiles = ['dtimer', 'fgraf1', 'fomplib', 'libmbpush1', 'libmbpush1', 'libmdpush1', 'libmpush1']
+        extensions = ['.so']
+        thismac = platform.mac_ver()[0]
+        depbase = './deps'
+        if not os.path.exists(depbase): #No point in continuing if cannot find libs
+            return
+        if os.path.exists(depbase + '/' + thismac): #Use libs built for this specific mac version
+            depbase = depbase + '/' + thismac + '/'
+        else:
+            depbase = depbase + '/' #Use generic binaries and hope it works
+        for rf in requiredFiles:    #Copy missing binary libraries to soure directory
+            for x in extensions:
+                if not os.path.exists(pth + rf + x):
+                    print "Copying " + depbase + rf + x +' to ' + pth + rf + x
+                    shutil.copyfile(depbase + rf + x, pth + rf + x)
 
 
 class MyApp(wx.App):
