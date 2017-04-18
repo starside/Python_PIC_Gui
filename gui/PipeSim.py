@@ -62,6 +62,10 @@ class PipeSimulation():
             self.runCounter += -1
             if self.runCounter < 0:
                 self.runCounter = -1
+        elif temp_obj == "RUNONCE":
+            if self.iAmRunning == False:
+                self.runCounter = 1
+                self.iAmRunning = True
         elif temp_obj == "PAUSE":
             self.iAmRunning = False
             self._notify_window.rpanel.RunLongButton.SetValue(False)

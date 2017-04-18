@@ -463,6 +463,8 @@ def main(*args):
         The following 4 lines process events from the GUI.
         Nothing will happen without calling getEvents
         """
+        if ntime == nstart:
+            pc.runOnce()
         curtime = ntime * in1.dt
         pc.setTime(curtime)
         pc.getEvents(in1)

@@ -96,6 +96,12 @@ class PlasmaContext():
         to.defaults = defaults
         self.que.put(cPickle.dumps(to))
 
+    def runOnce(self):
+        #This really should directly press the step button
+        if self.norun:
+            return
+        self._sendplot("RUNONCE")
+
     # process events, such as callbacks and variable changes from the GUI
     def getEvents(self, obj, pause=True):
         if self.norun:

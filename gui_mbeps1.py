@@ -258,9 +258,10 @@ def main(*args):
     pc.updateSimInfo({"tend": in1.tend})
     # * * * start main iteration loop * * *
     for ntime in xrange(nstart, nloop):
-        ntime += 1
         print >> iuot, "ntime = ", ntime
         curtime = ntime * in1.dt
+        if ntime == nstart:
+            pc.runOnce()
         pc.setTime(curtime)
         pc.getEvents(in1)
         pc.fastForward(curtime + in1.dt, in1)
@@ -282,7 +283,7 @@ def main(*args):
         # electron density diagnostic: updates sfield=electron density
         if (in1.ntde > 0):
             it = int(ntime / in1.ntde)
-            if (ntime == in1.ntde * it):
+            if (ntime == in1.ntde * it) or ntime:
                 s1.edensity_diag1(s1.sfield)
                 # display smoothed electron density
                 graf2.dscaler1(s1.sfield, ' EDENSITY', ntime, 999, 0, nx, irc)
@@ -473,6 +474,9 @@ def main(*args):
                 s1.dwrite_restart1(s1.iur)
                 dtimer(dtime, itime, 1)
                 s1.tfield[0] += float(dtime)
+
+
+        
 
     ntime = ntime + 1
     # loop time
