@@ -32,7 +32,11 @@ mac : python
 	python setup.py py2app
 	mkdir dist/macLoader.app/Contents/Resources/deps/
 	mkdir dist/macLoader.app/Contents/Resources/deps/$(MACVER)
+	mkdir dist/macLoader.app/Contents/Resources/deps/runtime
+	mkdir dist/macLoader.app/Contents/Resources/deps/$(MACVER)/runtime
 	cp mbeps1.source/*.so dist/macLoader.app/Contents/Resources/deps/
 	cp mbeps1.source/*.so dist/macLoader.app/Contents/Resources/deps/$(MACVER)
+	python checkdepends.py dist/macLoader.app/Contents/Resources/deps/$(MACVER)/runtime
+	python checkdepends.py dist/macLoader.app/Contents/Resources/deps/runtime
 	cp -R dist/macLoader.app .
 	

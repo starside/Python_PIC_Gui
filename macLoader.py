@@ -73,12 +73,12 @@ class MyFrame(wx.Frame):
     	self.panel.Layout()
 
     def checkEnvironment(self):
-        pth = '/Users/starside/test6/Python_PIC_Gui' #os.path.dirname(Cocoa.NSBundle.mainBundle().bundlePath())
+        pth = os.path.dirname(Cocoa.NSBundle.mainBundle().bundlePath())
         pth += '/mbeps1.source/'
         requiredFiles = ['dtimer', 'fgraf1', 'fomplib', 'libmbpush1', 'libmbpush1', 'libmdpush1', 'libmpush1']
         extensions = ['.so']
         thismac = platform.mac_ver()[0]
-        depbase = './deps'
+        depbase = os.getcwd() + '/deps'
         if not os.path.exists(depbase): #No point in continuing if cannot find libs
             return
         if os.path.exists(depbase + '/' + thismac): #Use libs built for this specific mac version
@@ -90,6 +90,27 @@ class MyFrame(wx.Frame):
                 if not os.path.exists(pth + rf + x):
                     print "Copying " + depbase + rf + x +' to ' + pth + rf + x
                     shutil.copyfile(depbase + rf + x, pth + rf + x)
+        #Now copy required runtime libraries to ~/lib
+        runtimedir = os.path.expanduser('~/lib')
+        if not os.path.exists(runtimedir):  #Make ~/lib
+            try:
+                os.makedirs(runtimedir)
+            except:
+                print "Could not create " + runtimedir + ".  This could be a problem if you do not have the runtimes installed for Fortran"
+                return
+        if os.path.exists(depbase+'runtime'):  #Copy runtimes to ~/lib
+            #Copy all .dylib files to ~/lib
+            allfiles = os.listdir(depbase+'runtime')
+            for f in allfiles:
+                fext = f.split('.')[-1] #get file extension
+                if fext == 'dylib':
+                    try:
+                        shutil.copyfile(depbase + 'runtime/' + f, runtimedir + '/' + f)
+                    except:
+                        print "Could not copy " + depbase + 'runtime/' + f + " to " + runtimedir
+        else:
+            print 'Could not find runtime files in .app.  Something went wrong, but there is a chance the program will still work'
+
 
 
 class MyApp(wx.App):
