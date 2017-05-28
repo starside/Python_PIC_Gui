@@ -38,17 +38,17 @@ class RecordPanel(wx.Frame):
 
         self.cbox2 = wx.CheckBox(self, -1, "Overwrite Existing Movie File")
         self.cbox2.SetValue(overwrite)
-        self.sizer.Add(item=self.cbox2)
+        self.sizer.Add(self.cbox2)
 
         lbl1 = wx.StaticText(self, label="Movie File Name:")
         self.saveName = wx.TextCtrl(self, size=(140, -1), value=text)
-        hs1.Add(item=lbl1)
-        hs1.Add(item=self.saveName)
+        hs1.Add(lbl1)
+        hs1.Add(self.saveName)
 
         self.cbox1 = wx.CheckBox(self, -1, "Check to begin recording")
         self.cbox1.SetValue(rec)
-        self.sizer.Add(item=self.cbox1)
-        self.sizer.Add(item=hs1)
+        self.sizer.Add(self.cbox1)
+        self.sizer.Add(hs1)
 
         self.SetSizerAndFit(self.sizer)
 
@@ -104,8 +104,8 @@ class LeftPanel(wx.Panel):
         wx.Panel.__init__(self, parent, -1, wx.DefaultPosition, wx.DefaultSize)
         vsizer1 = wx.BoxSizer(orient=wx.VERTICAL)
         self.createGraph()
-        vsizer1.Add(item=self.mycanvas, proportion=1, flag=wx.EXPAND | wx.ALL, border=0)
-        vsizer1.Add(item=self.toolbar, flag=wx.EXPAND | wx.ALL, border=0)
+        vsizer1.Add(self.mycanvas, proportion=1, flag=wx.EXPAND | wx.ALL, border=0)
+        vsizer1.Add(self.toolbar, flag=wx.EXPAND | wx.ALL, border=0)
         self.SetSizerAndFit(vsizer1)
         self.slopeStack = []
         self.slopeMousePointer = None
@@ -175,21 +175,21 @@ class LeftPanel(wx.Panel):
         self.mycanvas.mpl_connect('motion_notify_event', self.onmotion)
         self.toolbar = wx.BoxSizer(orient=wx.HORIZONTAL)
         self.navMenu = MyCustomToolbar(self.mycanvas)
-        self.toolbar.Add(item=self.navMenu)
+        self.toolbar.Add(self.navMenu)
         slopebitmap = wx.Bitmap("./gui/slope.png", wx.BITMAP_TYPE_ANY)
         self.slopeButton = wx.BitmapButton(self, wx.ID_ANY, bitmap=slopebitmap,
                                            size=(42, 42))  # create slope measurement button
-        self.toolbar.Add(item=self.slopeButton)
+        self.toolbar.Add(self.slopeButton)
 
         opts = wx.Bitmap("./gui/options.png", wx.BITMAP_TYPE_ANY)
         self.graphOptionsButton = wx.BitmapButton(self, id=wx.ID_ANY, bitmap=opts, size=(42, 42))
-        self.toolbar.Add(item=self.graphOptionsButton)
+        self.toolbar.Add(self.graphOptionsButton)
 
         self.RecOnBmp = wx.Bitmap("./gui/rec.png", wx.BITMAP_TYPE_ANY)
         self.RecOffBmp = wx.Bitmap("./gui/recoff.png", wx.BITMAP_TYPE_ANY)
         self.recButton = wx.BitmapButton(self, id=wx.ID_ANY, bitmap=self.RecOffBmp,
                                          size=(self.RecOffBmp.GetWidth() + 10, self.RecOnBmp.GetHeight() + 10))
-        self.toolbar.Add(item=self.recButton)
+        self.toolbar.Add(self.recButton)
         self.recButton.Bind(wx.EVT_BUTTON, self.OnRecord)
 
         self.graphOptionsButton.Bind(wx.EVT_BUTTON, self.OnOptions)

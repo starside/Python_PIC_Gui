@@ -51,7 +51,7 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
 
         self.rpanel = RightPanel(self, self)  # create interface
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.Add(item=self.rpanel, proportion=1, flag=wx.ALL | wx.EXPAND, border=2)
+        self.sizer.Add(self.rpanel, proportion=1, flag=wx.ALL | wx.EXPAND, border=2)
         self.Bind(wx.EVT_CLOSE, self.OnExit)
         self.SetSizerAndFit(self.sizer)
 

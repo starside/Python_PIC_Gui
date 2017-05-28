@@ -23,23 +23,23 @@ class RightPanel(wx.Panel):
         self.RunLongButton = newb5  # Need to bind/unbind this button
         self.timerText = wx.StaticText(self, -1, "Simulation time: ")
         self.displayTime = 0    #This is updated by the main app
-        vsizer1.Add(item=self.timerText, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
+        vsizer1.Add(self.timerText, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
 
         self.lblList = ['Continuous', 'Time Chunks']
         self.runmode = wx.RadioBox(self, label='Run Mode', pos=(80, 10), choices=self.lblList, majorDimension=1,
                                    style=wx.RA_SPECIFY_ROWS)
         self.runmode.Bind(wx.EVT_RADIOBOX, self.OnRunMode)
-        vsizer1.Add(item=self.runmode)
+        vsizer1.Add(self.runmode)
 
-        vsizer1.Add(item=newb5, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
+        vsizer1.Add(newb5, proportion=1, flag=wx.EXPAND | wx.ALL, border=10)
 
         # Fast Forward Feature
         ffs = wx.BoxSizer(orient=wx.HORIZONTAL)
         self.fftext = wx.StaticText(self, -1, "Fast Forward to: ")
         self.ffpoint = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.ffstate = wx.StaticText(self, -1, "")
-        ffs.Add(item=self.fftext, border=20)
-        ffs.Add(item=self.ffpoint, flag=wx.EXPAND | wx.ALL)
+        ffs.Add(self.fftext, border=20)
+        ffs.Add(self.ffpoint, flag=wx.EXPAND | wx.ALL)
         vsizer1.Add(ffs, flag=wx.EXPAND | wx.ALL)
         vsizer1.Add(self.ffstate)
         self.ffpoint.Bind(wx.EVT_TEXT_ENTER, self.OnFFChange)
@@ -48,18 +48,18 @@ class RightPanel(wx.Panel):
         self.rcstext = wx.StaticText(self, -1, "Jump Time: ")
         self.rcspoint = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         self.rcspoint.SetValue('1')
-        rcs.Add(item=self.rcstext, border=20)
-        rcs.Add(item=self.rcspoint, flag=wx.EXPAND | wx.ALL)
+        rcs.Add(self.rcstext, border=20)
+        rcs.Add(self.rcspoint, flag=wx.EXPAND | wx.ALL)
         vsizer1.Add(rcs, flag=wx.EXPAND | wx.ALL)
 
-        vsizer1.Add(item=newb, proportion=1, flag=wx.EXPAND | wx.ALL, border=2)
-        vsizer1.Add(item=newb2, proportion=1, flag=wx.EXPAND | wx.ALL, border=2)
-        vsizer1.Add(item=newb3)
-        vsizer1.Add(item=newb4)
+        vsizer1.Add(newb, proportion=1, flag=wx.EXPAND | wx.ALL, border=2)
+        vsizer1.Add(newb2, proportion=1, flag=wx.EXPAND | wx.ALL, border=2)
+        vsizer1.Add(newb3)
+        vsizer1.Add(newb4)
 
         self.pin = wx.CheckBox(self, -1, "Unpin This Window?")
         self.pin.SetValue(True)
-        vsizer1.Add(item=self.pin)
+        vsizer1.Add(self.pin)
         self.SetSizer(vsizer1)
         self._updateRunMode()
 
