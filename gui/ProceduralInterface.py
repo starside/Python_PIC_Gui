@@ -15,8 +15,6 @@ from Signals import *
 
 import new_beps1gl
 
-from profme import *
-
 
 class DispItem:
     def __init__(self, value, priority):

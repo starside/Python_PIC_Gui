@@ -5,7 +5,6 @@
 import sys
 import math
 import numpy
-from profme import *
 
 sys.path.append('./mbeps1.source')
 from libmpush1 import *

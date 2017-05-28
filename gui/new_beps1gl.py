@@ -1,7 +1,6 @@
 import sys, os
 from lib import *
 import numpy as NP
-import matplotlib.pyplot as plt
 import time
 
 import wx
