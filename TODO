@@ -1,3 +1,7 @@
+-Fixed energy plot in gui_mbeps1.py.  Need to apply the same fix to the other codes.
+Energy still broken on debug script
+Fix stop record button to be more intuitive
+
 Figure oput why energy plot is slow
 Resize feature is broken after running movie
 Put help things on buttons

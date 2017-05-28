@@ -207,6 +207,7 @@ class RightPanel(wx.Panel):
         :return:
         """
         self.simframe.worker.iAmRunning = True
+        self.OnFFChange(None)
 
     def OnPause(self, event):
         """

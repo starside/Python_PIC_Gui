@@ -5,6 +5,7 @@
 import sys
 import math
 import numpy
+from profme import *
 
 sys.path.append('./mbeps1.source')
 from libmpush1 import *
@@ -286,7 +287,7 @@ def main(*args):
             if (ntime == in1.ntde * it) or ntime:
                 s1.edensity_diag1(s1.sfield)
                 # display smoothed electron density
-                graf2.dscaler1(s1.sfield, ' EDENSITY', ntime, 999, 0, nx, irc)
+                graf2.dscaler1(s1.sfield, ' EDENSITY', in1.dt*ntime, 999, 0, nx, irc, title='Electron Density vs X')
                 if (irc[0] == 1):
                     break
                 irc[0] = 0
@@ -309,8 +310,8 @@ def main(*args):
                     s1.idensity_diag1(s1.sfield, s1.pkwdi, s1.wkdi, ntime)
                     if ((in1.nddi == 1) or (in1.nddi == 3)):
                         # display smoothed ion density
-                        graf2.dscaler1(s1.sfield, ' ION DENSITY', ntime, 999, 1, nx,
-                                       irc)
+                        graf2.dscaler1(s1.sfield, ' ION DENSITY', in1.dt*ntime, 999, 1, nx,
+                                       irc, title='Ion Density vs X')
                         if (irc[0] == 1):
                             break
                         irc[0] = 0
@@ -318,9 +319,9 @@ def main(*args):
                     if ((in1.nddi == 2) or (in1.nddi == 3)):
                         # display frequency spectrum
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE+", s1.pkwdi[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax))
+                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), title='Ion Density Omega vs Mode +')
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE-", s1.pkwdi[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax))
+                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax),  title='Ion Density Omega vs Mode -')
                         graf1.dmscaler1(s1.wkdi, 'ION DENSITY OMEGA VS MODE',
                                         ntime, 999, 1, in1.modesxdi, s1.cwk, irc)
                         if (irc[0] == 1):
@@ -356,7 +357,7 @@ def main(*args):
                 s1.potential_diag1(s1.sfield, s1.pkw, s1.wk, ntime)
                 if ((in1.ndp == 1) or (in1.ndp == 3)):
                     # display potential
-                    graf2.dscaler1(s1.sfield, ' POTENTIAL', ntime, 999, 0, nx, irc)
+                    graf2.dscaler1(s1.sfield, ' POTENTIAL', ntime*in1.dt, 999, 0, nx, irc, title='Potential vs X')
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
@@ -364,9 +365,9 @@ def main(*args):
                 if ((in1.ndp == 2) or (in1.ndp == 3)):
                     # display frequency spectrum
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE+", s1.pkw[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax))
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), title="Potential: Omega vs Mode +")
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE-", s1.pkw[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax))
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), title="Potential: Omega vs Mode -")
                     graf1.dmscaler1(s1.wk, 'POTENTIAL OMEGA VS MODE', ntime, 999, 2,
                                     in1.modesxp, s1.cwk, irc)
                     if (irc[0] == 1):
@@ -379,7 +380,7 @@ def main(*args):
             if (ntime == in1.ntel * it):
                 s1.elfield_diag1(s1.sfield)
                 # display longitudinal efield
-                graf2.dscaler1(s1.sfield, ' ELFIELD', ntime, 999, 0, nx, irc)
+                graf2.dscaler1(s1.sfield, ' ELFIELD', in1.dt*ntime, 999, 0, nx, irc, title='Longitudinal E-Field')
                 if (irc[0] == 1):
                     break
                 irc[0] = 0
@@ -393,7 +394,7 @@ def main(*args):
                 # display electron velocity distributions
                 if ((in1.ndv == 1) or (in1.ndv == 3)):
                     graf2.displayfv1(s1.fv, s1.fvm, 'ELECTRON VEL', ntime, in1.nmv, 1,
-                                     irc)
+                                     irc, title='Electron Velicity Histogram')
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
@@ -404,7 +405,7 @@ def main(*args):
                     # display ion velocity distributions
                     if ((in1.ndv == 2) or (in1.ndv == 3)):
                         graf2.displayfv1(s1.fvi, s1.fvmi, 'ION VEL', ntime, in1.nmv, 1,
-                                         irc)
+                                         irc, title="Ion Velocity Histogram")
                         if (irc[0] == 1):
                             break
                         irc[0] = 0
@@ -417,7 +418,7 @@ def main(*args):
                 if (in1.nst == 3):
                     # display velocity distributions
                     graf2.displayfv1(s1.fvtp, s1.fvmtp, 'ELECTRON TRAJ', ntime, in1.nmv,
-                                     1, irc)
+                                     1, irc, title='Electron Trajectory vs X')
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
@@ -461,8 +462,8 @@ def main(*args):
             it = int(ntime / in1.ntw)
             if (ntime == in1.ntw * it):
                 s1.energy_diag1(s1.wt, ntime, iuot)
-                pc.showEnergy(numpy.array(range(ntime)) * in1.dt, s1.wt, ntime,
-                              ["Total Field", "Kinetic", "Kinetic Ions", "Total Energy"])
+                pc.showEnergy(in1.ntw*numpy.array(range(it)) * in1.dt, s1.wt, it,
+                              ["Total Field", "Kinetic", "Kinetic Ions", "Total Energy"], title='Energy vs Time')
 
                 # restart file
         if (in1.ntr > 0):

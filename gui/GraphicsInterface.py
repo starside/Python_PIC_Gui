@@ -6,7 +6,7 @@ class GraphicsInterface:
         self.pc = pc
         self.dt = 1
 
-    def dscaler1(self, f, label, itime, isc, ist, nx, irc):
+    def dscaler1(self, f, label, itime, isc, ist, nx, irc, title=None):
         """
         ! displays 1d scalar field in real space
         ! f = 1d scalar field in real space
@@ -29,9 +29,9 @@ class GraphicsInterface:
         pc = self.pc
         edenx = numpy.array(range(nx))
         edeny = numpy.array(f[0:nx])
-        pc.showSimple([label, label], [edenx], [edeny], "Time=" + str(itime))
+        pc.showSimple([label, label], [edenx], [edeny], "Time=" + str(itime), title=title)
 
-    def displayfv1(self, fv, fvm, label, itime, nmv, idt, irc):
+    def displayfv1(self, fv, fvm, label, itime, nmv, idt, irc, title=None):
         """
         ! displays velocity distribution functions
         ! fv = velocity distribution
@@ -44,7 +44,7 @@ class GraphicsInterface:
         """
         w, h = numpy.shape(fv)
         s = ["x", "y", "z"]
-        self.pc.showVelocity(fv, s[:h], fvm=fvm, plottype=label)
+        self.pc.showVelocity(fv, s[:h], fvm=fvm, plottype=label, title=title)
 
     def dpmgrasp1(self, ppart, kpic, label, itime, isc, nx, iyp, ixp, ntsc, irc):
         a, b, c = numpy.shape(ppart)

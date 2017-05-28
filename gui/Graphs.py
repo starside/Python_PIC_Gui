@@ -226,7 +226,7 @@ class DrawElectronDensity(DrawOptions, KeyList):
 
 
 class DrawSimple(DrawOptions, KeyList):
-    def __init__(self, name, xdata, ydata, text, graphoptions=None):
+    def __init__(self, name, xdata, ydata, text, graphoptions=None, title=None):
         DrawOptions.__init__(self)
         self.setupKeylist(DrawOptions.defaultKeylist)
         self.graphoptions = graphoptions
@@ -248,18 +248,29 @@ class DrawSimple(DrawOptions, KeyList):
             self.xdata = xdata
         self.text = text
         self.plottype = self.nl[0]
+        self.title = title
 
     def drawPlot(self, fig, axes):
+        if 'ylimits' not in self._PV:    #Set default limits on y axis
+            self._PV['ylimits'] = (0, 0)
         self.syncParameters()
         self.setAxesType(self.PaxesType)
         for i, ydata in enumerate(self.ydata):
             axes.plot(self.xdata[i], ydata, "-", label=self.nl[i + 1])
             axes.set_xlim(self.xdata[i][0], self.xdata[i][-1])
+            #Set limits on Y data to only move on powers of 2
+            (oldbottom, oldtop) = self._PV['ylimits']
+            (bottom, top) = axisPowerOfTwo(ydata)
+            ylim = (min(bottom, oldbottom), max(top, oldtop))
+            axes.set_ylim(ylim)
+            self._PV['ylimits'] = ylim
         self.updateAxes(fig, axes)
         leg = axes.legend()
         leg.get_frame().set_alpha(0.5)
         axes.annotate(self.text, xy=(0.0, 1.05), xycoords='axes fraction')
-
+        if self.title is None:
+            self.title = self.plottype
+        axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
         # self.drawTime(fig, axes, self.text )
         # well defined axis here
 
@@ -285,7 +296,7 @@ class DrawScaler(DrawOptions, KeyList):
 
 
 class DrawVelocity(DrawOptions, KeyList):
-    def __init__(self, ydata, labels, simtime=None, fvm=None):
+    def __init__(self, ydata, labels, simtime=None, fvm=None, title=None):
         DrawOptions.__init__(self)
         self.setupKeylist(DrawOptions.defaultKeylist)
         # self.ydata = [ydata]
@@ -303,6 +314,7 @@ class DrawVelocity(DrawOptions, KeyList):
         vmin = -vmax
         self.xax = NP.linspace(vmin, vmax, NP.size(self.ydata[0][1:]))
         self.fvm = [fvm]
+        self.title = title
 
     def drawPlot(self, fig, axes):
         try:
@@ -323,6 +335,9 @@ class DrawVelocity(DrawOptions, KeyList):
         self.drawTime(fig, axes, extText)
         self.scaleYAxis(fig, axes, ydata[1:], 2.0)
         axes.legend()
+        if self.title is None:
+            self.title = self.plottype
+        axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
 
 
 class DrawPotential(DrawOptions, KeyList):
@@ -339,6 +354,7 @@ class DrawPotential(DrawOptions, KeyList):
         axes.set_xlim(0, len(self.ydata) - 1)
         axes.plot(self.ydata)
         self.drawTime(fig, axes)
+        axes.set_title("Potential vs X", horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
 
         # well defined axis here
 
@@ -422,10 +438,45 @@ class DrawEnergyControlPanel(BaseControlPanel):
         wx.PostEvent(self.stf, RefreshGraphEvent())
 
 
+def _upperpowerof2(x):
+    x = int(abs(x))
+    c = 0
+    while(x) > 0:
+        c += 1
+        x = x >> 1
+    return 2**c
+
+def _lowerpowerof2(x):
+    x = int(abs(x))
+    c = -1
+    while(x) > 0:
+        c += 1
+        x = x >> 1
+    return int(2**c)
+
+def upperpowerof2(x):
+    if x < 0:
+        return -1*_lowerpowerof2(x)
+    else:
+        return _upperpowerof2(x)
+
+def lowerpowerof2(x):
+    if x < 0:
+        return -1*_upperpowerof2(x)
+    else:
+        return _lowerpowerof2(x)
+
+
+def axisPowerOfTwo(data):
+    minv = np.amin(data)
+    maxv = np.amax(data)
+    return (lowerpowerof2(minv), upperpowerof2(maxv))
+
+
 class DrawEnergy(DrawOptions):
     eind = {"Kinetic": 1, "Total": 3, "Potential": 0, "Off": -1}  # Selection to index
 
-    def __init__(self, data, itw, labels, timeindex=-1):
+    def __init__(self, data, itw, labels, timeindex=-1, title=None):
         self.edata = data
         self.itw = itw
         self.plottype = "ENERGY"
@@ -434,6 +485,7 @@ class DrawEnergy(DrawOptions):
         if len(labels) != len(data[0]):
             print "Length of lables(", len(labels), ") is not equal to length of energy data(", len(data[0]), ")"
             exit(0)
+        self.title = title
 
     def drawPlot(self, fig, axes):
         # Set default values if they do not exist
@@ -445,34 +497,30 @@ class DrawEnergy(DrawOptions):
             self._PV["Axis-Type"] = "Linear-Linear"
             # Draw Default plot
         self.updateAxes3(fig, axes, self._PV["Axis-Type"])
-        """try:
-            si = self.labels.index(self._PV["Energy_Type0"])
-            axes.plot(self.itw[0:self.timeindex], self.edata[0:self.timeindex, si],"x")
-        except ValueError: #Off not in list
-            True"""
-
         for i, l in enumerate(self.labels):
             try:
                 lbl = self._PV["Energy_Type" + str(i)]
                 si = self.labels.index(lbl)
-                axes.plot(self.itw[0:self.timeindex], self.edata[0:self.timeindex, si], "x", label=lbl)
+                xdata = self.itw[0:self.timeindex]
+                ydata = self.edata[0:self.timeindex, si]
+                axes.plot(xdata, ydata, "x", label=lbl)
+                [top, bottom] = axisPowerOfTwo(ydata)
+                axes.set_ylim([bottom, top])
             except ValueError:  # Off not in list
                 True
 
-                # Draw optional overlays
-        """print self._PV["Energy_Type2"]
-        if DrawEnergy.eind[ self._PV["Energy_Type2"] ] != -1:
-            si = DrawEnergy.eind[self._PV["Energy_Type2"]]
-            axes.plot(self.itw[0:self.timeindex], self.edata[0:self.timeindex, si],"x")
-        if DrawEnergy.eind[ self._PV["Energy_Type3"] ] != -1:
-            si = DrawEnergy.eind[self._PV["Energy_Type3"]]
-            axes.plot(self.itw[0:self.timeindex], self.edata[0:self.timeindex, si],"x")"""
-
-        # self.scaleYAxis(fig,axes, self.edata[0:self.timeindex], 0.1)
         self.drawTime(fig, axes)
         axes.legend()
         axes.set_xlabel("Time")
         axes.set_ylabel("Energy")
+        if self.timeindex == 0:
+            axes.set_xlim([0,1])
+        else:
+            axes.set_xlim([0, np.amax(self.itw[0:self.timeindex])])
+        #Set title
+        if self.title is None:
+            self.title = self.plottype
+        axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
 
     def makeControlPanel(self, parentWindow):  # Default options
         temp = DrawEnergyControlPanel(parentWindow, self._PV, self.labels)
@@ -480,11 +528,12 @@ class DrawEnergy(DrawOptions):
 
 
 class DrawPhase(DrawOptions):
-    def __init__(self, data):
+    def __init__(self, data, title=None):
         # DrawOptions.__init__(self)
         self.vel = data[1]
         self.pos = data[0]
         self.plottype = "DRAWPHASE"
+        self.title = title
 
     def drawPlot(self, fig, axes):
         la = len(self.pos) - 1
@@ -492,6 +541,10 @@ class DrawPhase(DrawOptions):
         axes.set_xlim(NP.amin(self.pos), NP.amax(self.pos))
         axes.plot(self.pos, self.vel, ',b')
         self.drawTime(fig, axes)
+        #Set title
+        if self.title is None:
+            self.title = self.plottype
+        axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
 
 
 # (self, partd, itt, comp)
@@ -663,7 +716,7 @@ class PhiControlPanel(BaseControlPanel):
 
 
 class DrawPhi(KeyList):
-    def __init__(self, data, dt, omn=100):
+    def __init__(self, data, dt, omn=100, title=None):
         self.dt = dt
         self.phikw_time = data[0]
         self.phikw = data[1]
@@ -672,6 +725,7 @@ class DrawPhi(KeyList):
 
         self.setupKeylist(PhiControlPanel.defaultKeylist)  # This specifies the defaults
         self.omegaN = omn
+        self.title = title
 
     def drawPlot(self, fig, axes):
         self.syncParameters()  # This syncronized the parameters for the plot
@@ -713,6 +767,10 @@ class DrawPhi(KeyList):
             "Time Slice: " + str(self.phikw_time[lb] * self.dt) + " to " + str(self.phikw_time[ub - 1] * self.dt),
             xy=(0.0, 1.05), xycoords='axes fraction')
 
+        #Set title
+        if self.title is None:
+            self.title = self.plottype
+        axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
         # If you crearted new axes, return
         return axes
 
@@ -721,12 +779,13 @@ class DrawPhi(KeyList):
 
 
 class DrawSimpleImage(KeyList):
-    def __init__(self, name, data, text, labl=["", ""], extent=()):
+    def __init__(self, name, data, text, labl=["", ""], extent=(), title=None):
         self.text = text
         self.plottype = name
         self.img = data
         self.labl = labl
         self.extent = extent
+        self.title = title
 
     def drawPlot(self, fig, axes):
         (t, k) = np.shape(self.img)
@@ -748,6 +807,9 @@ class DrawSimpleImage(KeyList):
         axes.set_xlabel(self.labl[0])
         axes.set_ylabel(self.labl[1])
         axes.annotate(self.text, xy=(0.0, 1.05), xycoords='axes fraction')
+        if self.title is None:
+            self.title = self.plottype
+        axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
 
         # If you crearted new axes, return
         return axes

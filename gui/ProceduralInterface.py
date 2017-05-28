@@ -15,6 +15,8 @@ from Signals import *
 
 import new_beps1gl
 
+from profme import *
+
 
 class DispItem:
     def __init__(self, value, priority):
@@ -79,7 +81,8 @@ class PlasmaContext():
                 obj._tackOnTime = self.curTime  # Just sloppily glue the time on the object
             except:
                 True
-            self.que.put(cPickle.dumps(obj))
+            iv = cPickle.dumps(obj)
+            self.que.put(iv)
             self.child_conn.get()
 
     def _sendplotasync(self, obj):
@@ -196,7 +199,7 @@ class PlasmaContext():
             return
 
     # Plottype is optional.  Use it to rename the dv1 plottype
-    def showVelocity(self, data, labels, fvm=None, plottype=None):
+    def showVelocity(self, data, labels, fvm=None, plottype=None, title=None):
         if self.norun:
             return
         pt = plottype
@@ -204,7 +207,7 @@ class PlasmaContext():
             pt = "DRAWVELOCITY"
         if not self.isGraphing(pt):
             return
-        dv1 = Graphs.DrawVelocity(data, labels, fvm=fvm)
+        dv1 = Graphs.DrawVelocity(data, labels, fvm=fvm, title=title)
         if plottype is not None:
             dv1.plottype = plottype
         self._sendplot(dv1)
@@ -217,24 +220,24 @@ class PlasmaContext():
         dv1 = Graphs.DrawPotential(data)
         self._sendplot(dv1)
 
-    def showEnergy(self, time, data, maxtimeindex, labels):
+    def showEnergy(self, time, data, maxtimeindex, labels, title=None):
         if self.norun:
             return
         if not self.isGraphing("ENERGY"):
             return
-        dv1 = Graphs.DrawEnergy(data, time, labels, timeindex=maxtimeindex)
+        dv1 = Graphs.DrawEnergy(data, time, labels, timeindex=maxtimeindex, title=title)
         self._sendplot(dv1)
 
-    def showSimple(self, name, xdata, ydata, text, graphoptions=None):
+    def showSimple(self, name, xdata, ydata, text, graphoptions=None, title=None):
         if self.norun:
             return
         if not self.isGraphing(name[0]):
             return
-        dv1 = Graphs.DrawSimple(name, xdata, ydata, text, graphoptions=graphoptions)
+        dv1 = Graphs.DrawSimple(name, xdata, ydata, text, graphoptions=graphoptions, title=title)
         self._sendplot(dv1)
 
     def showPhase(self, ppart, kpic,
-                  plottype=None):  # data is the particle data, ppart.  kpic is array of num particles per tile
+                  plottype=None, title=None):  # data is the particle data, ppart.  kpic is array of num particles per tile
         if self.norun:
             return
         pt = plottype
@@ -253,7 +256,7 @@ class PlasmaContext():
             xvInTile[1, isum:kk + isum] = ppart[1, 0:kk, k]
             isum += kk
 
-        dv1 = Graphs.DrawPhase(xvInTile)  # copy the data
+        dv1 = Graphs.DrawPhase(xvInTile, title=title)  # copy the data
         if plottype != None:
             dv1.plottype = plottype
         self._sendplot(dv1)
@@ -297,19 +300,19 @@ class PlasmaContext():
         dv1 = Graphs.DrawScaler(name, data, nx, time)
         self._sendplot(dv1)
 
-    def showPhi(self, time, phi, dta, dt, plottype=None, omn=100):
+    def showPhi(self, time, phi, dta, dt, plottype=None, omn=100, title=None):
         if not self.isGraphing("DRAWPHI"):
             return
         if len(phi) > 0:
-            dv1 = Graphs.DrawPhi([np.array(time), phi, dta], dt, omn=omn)
+            dv1 = Graphs.DrawPhi([np.array(time), phi, dta], dt, omn=omn, title=title)
             if plottype != None:
                 dv1.plottype = plottype
             self._sendplot(dv1)
 
-    def showSimpleImage(self, name, data, text, extent=(), labl=("", "")):
+    def showSimpleImage(self, name, data, text, extent=(), labl=("", ""), title=None):
         if not self.isGraphing(name):
             return
-        dv1 = Graphs.DrawSimpleImage(name, data, text, extent=extent, labl=labl)
+        dv1 = Graphs.DrawSimpleImage(name, data, text, extent=extent, labl=labl, title=title)
         self._sendplot(dv1)
 
     def showMultiTrajectory(self, partd, itt, comp):
