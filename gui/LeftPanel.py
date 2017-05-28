@@ -1,7 +1,6 @@
 import wx
 import wx.stc as stc
 import numpy as NP
-import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib
 from distutils import spawn

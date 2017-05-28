@@ -2,7 +2,6 @@ import sys
 from types import *
 import numpy as np
 import f90nml
-import matplotlib.pyplot as plt
 
 # import pyfft1mod as pfm
 
@@ -106,8 +105,3 @@ if __name__ == "__main__":
     print wm
     tax = np.linspace(0, tmax, 5000)
     data = np.sin(wm * tax)
-    plt.plot(tax, data)
-    plt.show()
-    ft, wax = myFft(tax, data, 2 * wm, 10000)
-    plt.plot(wax, ft)
-    plt.show()

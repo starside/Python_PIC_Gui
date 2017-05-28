@@ -6,7 +6,6 @@ import operator
 import wx.stc as stc
 import numpy as np
 import matplotlib
-import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import LogNorm
