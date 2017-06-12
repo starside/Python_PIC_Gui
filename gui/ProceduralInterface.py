@@ -1,6 +1,7 @@
 import numpy as np
 import wx
 import os
+import sys
 import time
 from threading import Thread
 from multiprocessing import Process, Pipe, Queue, Lock, Value, Manager
@@ -37,8 +38,9 @@ def initGui(q, que, td, events, outqueue):
 
 
 class PlasmaContext():
-    def __init__(self, *args):
+    def __init__(self, obj, *args):
         assert(len(args) == 6)
+        self.simObj = obj
         self.defaultGraphs = []
         self.norun = False
         #read in comm channels
@@ -52,6 +54,7 @@ class PlasmaContext():
         self.curTime = 0
         self.graphEnabled = True
         self.callbacks = dict()
+        self.graphEarly = dict()    #dict of plots to plot before end of fastforarding
 
     @staticmethod
     def runMain(func):
@@ -69,12 +72,30 @@ class PlasmaContext():
         #run gui in parent process
         initGui(child_conn, que, timeDir, events, async)
 
+    def _sendEarly(self, obj):
+        try:
+            obj.plottype
+        except:
+            return False
+        try:
+            time = self.graphEarly[obj.plottype] #Fire early?
+            assert(time >= 0)
+            ntime = np.round(self.curTime/self.dt)
+            ffs = np.round(self.simObj.fastforward/ self.dt)
+            it = int(ffs/ time) #Fast Forard stop divided by the plot frequency
+            if (it-1)*time == ntime:    #Fire Early
+                print "Firing at ", self.dt*ntime
+                return True
+        except:
+            return False
+        return False
+
 
     # Low Level method to communicate with gui thread
     def _sendplot(self, obj):
         if self.norun:
             return
-        if self.graphEnabled:
+        if self.graphEnabled or self._sendEarly(obj):  #self.graphEarly is set when fastforward is called
             try:
                 obj._tackOnTime = self.curTime  # Just sloppily glue the time on the object
             except:
@@ -104,7 +125,8 @@ class PlasmaContext():
         self._sendplot("RUNONCE")
 
     # process events, such as callbacks and variable changes from the GUI
-    def getEvents(self, obj, pause=True):
+    def getEvents(self, pause=True):
+        obj = self.simObj
         if self.norun:
             return
         que = []
@@ -145,26 +167,25 @@ class PlasmaContext():
     def isGraphing(self, name):
         if self.norun:
             return
-        if self.graphEnabled == False:
-            return False
         if name != None:
             try:
                 if self.async[name] == 0:
                     return False
             except:  # Key does not exist.  Not drawing
                 return False
-        return self.graphEnabled
+        return True
 
     # Set aync or sync mode
     # def asyncMode(self,mode):
     #   self.async.value = mode
 
     # Set the global time in the control panel
-    def setTime(self, time):
+    def setTime(self, time, dt):
         if self.norun:
             return
         # Let the graphs know the simulation time
         self.curTime = time
+        self.dt = dt
         obj = SetFrameTime(time)
         obj._tackOnTime = self.curTime  # Just sloppily glue the time on the object
         self.que.put(cPickle.dumps(obj))
@@ -174,14 +195,20 @@ class PlasmaContext():
             return
         self._sendplotasync("PAUSE")
 
+
     # Allow fast forwarding.  Stop sending graphics output when ctime is less than some value specified in
     # inputlist variable fastforward
-    def fastForward(self, ctime, obj):
+    def fastForward(self):
+        try:
+            obj = self.simObj
+        except:
+            sys.stderr.write('Must call getEvents before fastforward')
+            exit(0)
         global _ffwding
         if self.norun:
             return
         if hasattr(obj, "fastforward"):
-            if ctime < obj.fastforward:
+            if np.round(self.curTime/self.dt) + 1 < np.round(obj.fastforward/self.dt):
                 self.showGraphs(False)
                 _ffwding = True
             else:

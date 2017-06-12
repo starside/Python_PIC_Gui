@@ -38,7 +38,6 @@ double_type = numpy.float64
 float_type = numpy.float32
 complex_type = numpy.complex64
 
-
 # Some boilderplate
 def changeVarsCallback(obj, to):
     try:
@@ -109,7 +108,7 @@ def initialize_menus(pc):
 
 def main(*args):
     # init GUI
-    pc = PlasmaContext(*args)  # Create GUI
+    pc = PlasmaContext(in1, *args)  # Create GUI
     pc.showGraphs(True)  # enable graphics.  Setting to false will disable graphics
     pc.clearGraphList()  # remove all default graph options
     pc.callbacks["VARCHANGE"] = changeVarsCallback  # Set a callback
@@ -262,9 +261,9 @@ def main(*args):
         curtime = ntime * in1.dt
         if ntime == nstart:
             pc.runOnce()
-        pc.setTime(curtime)
-        pc.getEvents(in1)
-        pc.fastForward(curtime + in1.dt, in1)
+        pc.setTime(curtime, in1.dt)
+        pc.getEvents()
+        pc.fastForward()
 
         # debug reset
         #  if (ntime==nloop/2):
@@ -350,6 +349,7 @@ def main(*args):
         mgard1.mdguard1(s1.fxe, s1.tguard, nx)
 
         # potential diagnostic: updates sfield=potential, pkw, wk
+        pc.graphEarly[' POTENTIAL'] = in1.ntp
         if (in1.ntp > 0):
             it = int(ntime / in1.ntp)
             if (ntime == in1.ntp * it):
