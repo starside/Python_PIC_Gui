@@ -38,38 +38,6 @@ double_type = numpy.float64
 float_type = numpy.float32
 complex_type = numpy.complex64
 
-# Some boilderplate
-def changeVarsCallback(obj, to):
-    try:
-        for key in to.var:
-            if key == "fastforward":
-                if rightType(to.var[key]) > obj.tend:
-                    continue
-            setattr(obj, key, rightType(to.var[key]))
-    except AttributeError:
-        print "Could not change variables"
-
-
-# The function to be called when reset is pushed
-def resetCallback(obj, to):
-    print "The reset button was pushed!"
-    # Do something
-    print obj.tend
-
-
-def exitCallback(obj, to):
-    exit(0)
-
-
-def rightType(val):
-    ints, reals, complexs = int_type, float_type, complex_type
-    if type(val) is IntType:
-        return numpy.array([val], ints)
-    elif type(val) is FloatType:
-        return numpy.array([val], reals)
-    elif type(val) is ComplexType:
-        return numpy.array([val], complexs)
-
 
 """
 Define function that initializes menus
@@ -106,14 +74,28 @@ def initialize_menus(pc):
     if (in1.ntw > 0):
         pc.addGraph("ENERGY", "Energy", priority=150)  # Enable electron velocity
 
+def early(pc, in1):
+    pc.graphBeforeEndOfFF(' POTENTIAL', in1.ntp)
+    pc.graphBeforeEndOfFF(' EDENSITY', in1.ntde)
+    pc.graphBeforeEndOfFF(' ION DENSITY', in1.ntdi )
+    pc.graphBeforeEndOfFF(' ELFIELD', in1.ntel)
+    pc.graphBeforeEndOfFF('ELECTRON VEL', in1.ntv)
+    pc.graphBeforeEndOfFF('ION VEL', in1.ndv)
+    pc.graphBeforeEndOfFF('ELECTRON TRAJ', in1.ntt)
+    pc.graphBeforeEndOfFF('ELECTRON Vx vs X', in1.nts)
+    pc.graphBeforeEndOfFF('ION Vx vs X', in1.nds)
+    pc.graphBeforeEndOfFF('ENERGY', in1.ntw)        #Kind of clunky of how you cannot easily get this name without reading the source
+    pc.graphBeforeEndOfFF("POTENTIAL OMEGA VS MODE+", in1.ntp)
+    pc.graphBeforeEndOfFF('POTENTIAL OMEGA VS MODE-', in1.ntp)
+    pc.graphBeforeEndOfFF('ION DENSITY OMEGA VS MODE', in1.ntdi)
+    pc.graphBeforeEndOfFF("ION DENSITY OMEGA VS MODE+", in1.ntdi)
+    pc.graphBeforeEndOfFF("ION DENSITY OMEGA VS MODE-", in1.ntdi)
+
 def main(*args):
     # init GUI
     pc = PlasmaContext(in1, *args)  # Create GUI
     pc.showGraphs(True)  # enable graphics.  Setting to false will disable graphics
     pc.clearGraphList()  # remove all default graph options
-    pc.callbacks["VARCHANGE"] = changeVarsCallback  # Set a callback
-    pc.callbacks["RESET"] = resetCallback
-    pc.callbacks["EXIT"] = exitCallback
     in1.timedirection = 0  # default state of the GUI.  MUST BE 0
 
     graf2 = GraphicsInterface(pc)
@@ -252,9 +234,11 @@ def main(*args):
     """
     initialize_menus(pc)
     PopMenus(pc, in1)
+    early(pc, in1)
 
     # sends data the GUI may want to know about the simulation
     pc.updateSimInfo({"tend": in1.tend})
+    #
     # * * * start main iteration loop * * *
     for ntime in xrange(nstart, nloop):
         print >> iuot, "ntime = ", ntime
@@ -349,7 +333,6 @@ def main(*args):
         mgard1.mdguard1(s1.fxe, s1.tguard, nx)
 
         # potential diagnostic: updates sfield=potential, pkw, wk
-        pc.graphEarly[' POTENTIAL'] = in1.ntp
         if (in1.ntp > 0):
             it = int(ntime / in1.ntp)
             if (ntime == in1.ntp * it):

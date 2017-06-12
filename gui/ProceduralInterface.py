@@ -1,3 +1,4 @@
+from types import *
 import numpy as np
 import wx
 import os
@@ -15,6 +16,44 @@ from defaults import *
 from Signals import *
 
 import new_beps1gl
+
+int_type = np.int32
+double_type = np.float64
+float_type = np.float32
+complex_type = np.complex64
+
+# Default callback functions
+def changeVarsCallback(obj, to):
+    try:
+        for key in to.var:
+            if key == "fastforward":
+                if rightType(to.var[key]) > obj.tend:
+                    continue
+            setattr(obj, key, rightType(to.var[key]))
+    except AttributeError:
+        print "Could not change variables"
+
+
+# The function to be called when reset is pushed
+def resetCallback(obj, to):
+    print "The reset button was pushed!"
+    # Do something
+    print obj.tend
+
+
+def exitCallback(obj, to):
+    exit(0)
+
+
+def rightType(val):
+    ints, reals, complexs = int_type, float_type, complex_type
+    if type(val) is IntType:
+        return np.array([val], ints)
+    elif type(val) is FloatType:
+        return np.array([val], reals)
+    elif type(val) is ComplexType:
+        return np.array([val], complexs)
+
 
 
 class DispItem:
@@ -56,6 +95,10 @@ class PlasmaContext():
         self.callbacks = dict()
         self.graphEarly = dict()    #dict of plots to plot before end of fastforarding
 
+        self.callbacks["VARCHANGE"] = changeVarsCallback  # Set a callback
+        self.callbacks["RESET"] = resetCallback
+        self.callbacks["EXIT"] = exitCallback
+
     @staticmethod
     def runMain(func):
         #create bidirectional comm channels
@@ -84,7 +127,6 @@ class PlasmaContext():
             ffs = np.round(self.simObj.fastforward/ self.dt)
             it = int(ffs/ time) #Fast Forard stop divided by the plot frequency
             if (it-1)*time == ntime:    #Fire Early
-                print "Firing at ", self.dt*ntime
                 return True
         except:
             return False
@@ -108,6 +150,14 @@ class PlasmaContext():
         if self.norun:
             return
         self.que.put(cPickle.dumps(obj))
+
+    def graphBeforeEndOfFF(self, plottype, interval):
+        """
+        Tells te system to graph any plot objects of type plottype at time interval # of steps
+        before the fastforward ends.  This ensures that even if you fastforward past all of a plots
+        graphing times, it will still draw the last one.
+        """
+        self.graphEarly[plottype] = interval
 
     # Takes a layout index between 1 and 4, and a list of default graphs to plot
     def newFrame(self, layout, defaults):
