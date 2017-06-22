@@ -1,3 +1,563 @@
 wpm= 0.757500648499
 program mdbeps1
 ntime =  0
+Total Field, Kinetic and Total Energies:
+ 1.2941173e+02  2.7910184e+04  2.7485591e+03  3.0788154e+04
+Electric(l,t) and Magnetic Energies = 
+ 0.0000000e+00  1.1424814e+00  1.2941173e+02
+ntime =  1
+Total Field, Kinetic and Total Energies:
+ 1.3050276e+02  2.7907936e+04  2.7485488e+03  3.0786986e+04
+Electric(l,t) and Magnetic Energies = 
+ 2.7691245e+00  1.3089752e+00  1.2773363e+02
+ntime =  2
+Total Field, Kinetic and Total Energies:
+ 1.3727333e+02  2.7901033e+04  2.7485554e+03  3.0786861e+04
+Electric(l,t) and Magnetic Energies = 
+ 1.0258194e+01  1.2645957e+00  1.2701514e+02
+ntime =  3
+Total Field, Kinetic and Total Energies:
+ 1.4736003e+02  2.7890887e+04  2.7485864e+03  3.0786832e+04
+Electric(l,t) and Magnetic Energies = 
+ 2.1044062e+01  1.1297004e+00  1.2631596e+02
+ntime =  4
+Total Field, Kinetic and Total Energies:
+ 1.5895520e+02  2.7879275e+04  2.7486494e+03  3.0786879e+04
+Electric(l,t) and Magnetic Energies = 
+ 3.3411053e+01  9.3782580e-01  1.2554414e+02
+ntime =  5
+Total Field, Kinetic and Total Energies:
+ 1.7037196e+02  2.7867879e+04  2.7487502e+03  3.0787000e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.5645702e+01  7.2226757e-01  1.2472626e+02
+ntime =  6
+Total Field, Kinetic and Total Energies:
+ 1.8017871e+02  2.7858111e+04  2.7488950e+03  3.0787184e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.6303608e+01  5.1940864e-01  1.2387510e+02
+ntime =  7
+Total Field, Kinetic and Total Energies:
+ 1.8704486e+02  2.7851086e+04  2.7490850e+03  3.0787215e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.4029541e+01  3.6380652e-01  1.2301531e+02
+ntime =  8
+Total Field, Kinetic and Total Energies:
+ 1.9042648e+02  2.7847480e+04  2.7493152e+03  3.0787221e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.8229095e+01  2.8204858e-01  1.2219739e+02
+ntime =  9
+Total Field, Kinetic and Total Energies:
+ 1.9066846e+02  2.7847211e+04  2.7495742e+03  3.0787453e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.9243919e+01  2.8710124e-01  1.2142453e+02
+ntime =  10
+Total Field, Kinetic and Total Energies:
+ 1.8828793e+02  2.7849430e+04  2.7498469e+03  3.0787564e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.7528717e+01  3.7674546e-01  1.2075922e+02
+ntime =  11
+Total Field, Kinetic and Total Energies:
+ 1.8437637e+02  2.7852932e+04  2.7501174e+03  3.0787426e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.4123390e+01  5.3429925e-01  1.2025298e+02
+ntime =  12
+Total Field, Kinetic and Total Energies:
+ 1.8089052e+02  2.7856379e+04  2.7503701e+03  3.0787641e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.0944832e+01  7.3170590e-01  1.1994569e+02
+ntime =  13
+Total Field, Kinetic and Total Energies:
+ 1.7845889e+02  2.7858686e+04  2.7505920e+03  3.0787736e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.8622593e+01  9.3417823e-01  1.1983630e+02
+ntime =  14
+Total Field, Kinetic and Total Energies:
+ 1.7794891e+02  2.7859275e+04  2.7507739e+03  3.0787998e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.7988323e+01  1.1070853e+00  1.1996059e+02
+ntime =  15
+Total Field, Kinetic and Total Energies:
+ 1.7926190e+02  2.7858143e+04  2.7509089e+03  3.0788312e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.8958302e+01  1.2203460e+00  1.2030360e+02
+ntime =  16
+Total Field, Kinetic and Total Energies:
+ 1.8168272e+02  2.7855689e+04  2.7509978e+03  3.0788371e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.0847698e+01  1.2549803e+00  1.2083503e+02
+ntime =  17
+Total Field, Kinetic and Total Energies:
+ 1.8499890e+02  2.7852557e+04  2.7510439e+03  3.0788598e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.3459053e+01  1.2048479e+00  1.2153985e+02
+ntime =  18
+Total Field, Kinetic and Total Energies:
+ 1.8847348e+02  2.7849432e+04  2.7510525e+03  3.0788957e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.6123711e+01  1.0793834e+00  1.2234978e+02
+ntime =  19
+Total Field, Kinetic and Total Energies:
+ 1.9087982e+02  2.7847000e+04  2.7510320e+03  3.0788910e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.7643921e+01  8.9988232e-01  1.2323591e+02
+ntime =  20
+Total Field, Kinetic and Total Energies:
+ 1.9221967e+02  2.7845824e+04  2.7509897e+03  3.0789033e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.8106606e+01  6.9801664e-01  1.2411306e+02
+ntime =  21
+Total Field, Kinetic and Total Energies:
+ 1.9201065e+02  2.7846117e+04  2.7509302e+03  3.0789057e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.7069946e+01  5.0892764e-01  1.2494070e+02
+ntime =  22
+Total Field, Kinetic and Total Energies:
+ 1.9015488e+02  2.7847732e+04  2.7508567e+03  3.0788744e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.4484848e+01  3.6421224e-01  1.2567003e+02
+ntime =  23
+Total Field, Kinetic and Total Energies:
+ 1.8734033e+02  2.7850352e+04  2.7507727e+03  3.0788465e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.1025322e+01  2.8853449e-01  1.2631502e+02
+ntime =  24
+Total Field, Kinetic and Total Energies:
+ 1.8432294e+02  2.7853500e+04  2.7506851e+03  3.0788508e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.7478149e+01  2.9350841e-01  1.2684478e+02
+ntime =  25
+Total Field, Kinetic and Total Energies:
+ 1.8117308e+02  2.7856662e+04  2.7506011e+03  3.0788438e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.3908466e+01  3.7808830e-01  1.2726462e+02
+ntime =  26
+Total Field, Kinetic and Total Energies:
+ 1.7811958e+02  2.7859418e+04  2.7505239e+03  3.0788061e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.0557079e+01  5.2855742e-01  1.2756251e+02
+ntime =  27
+Total Field, Kinetic and Total Energies:
+ 1.7594615e+02  2.7861578e+04  2.7504563e+03  3.0787980e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.8215096e+01  7.2051460e-01  1.2773106e+02
+ntime =  28
+Total Field, Kinetic and Total Energies:
+ 1.7460114e+02  2.7863090e+04  2.7504016e+03  3.0788094e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.6863712e+01  9.2245132e-01  1.2773743e+02
+ntime =  29
+Total Field, Kinetic and Total Energies:
+ 1.7352769e+02  2.7864010e+04  2.7503633e+03  3.0787900e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.5918884e+01  1.1013975e+00  1.2760881e+02
+ntime =  30
+Total Field, Kinetic and Total Energies:
+ 1.7280746e+02  2.7864455e+04  2.7503411e+03  3.0787604e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.5438118e+01  1.2274597e+00  1.2736935e+02
+ntime =  31
+Total Field, Kinetic and Total Energies:
+ 1.7301683e+02  2.7864357e+04  2.7503337e+03  3.0787709e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.5989529e+01  1.2806658e+00  1.2702731e+02
+ntime =  32
+Total Field, Kinetic and Total Energies:
+ 1.7413673e+02  2.7863494e+04  2.7503423e+03  3.0787973e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.7541603e+01  1.2523711e+00  1.2659513e+02
+ntime =  33
+Total Field, Kinetic and Total Energies:
+ 1.7550385e+02  2.7861867e+04  2.7503682e+03  3.0787738e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.9434986e+01  1.1492070e+00  1.2606886e+02
+ntime =  34
+Total Field, Kinetic and Total Energies:
+ 1.7750638e+02  2.7859736e+04  2.7504133e+03  3.0787656e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.2006645e+01  9.9055338e-01  1.2549973e+02
+ntime =  35
+Total Field, Kinetic and Total Energies:
+ 1.7954504e+02  2.7857596e+04  2.7504800e+03  3.0787621e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.4644062e+01  8.0413210e-01  1.2490099e+02
+ntime =  36
+Total Field, Kinetic and Total Energies:
+ 1.8107851e+02  2.7855936e+04  2.7505686e+03  3.0787582e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.6796497e+01  6.2209505e-01  1.2428201e+02
+ntime =  37
+Total Field, Kinetic and Total Energies:
+ 1.8222595e+02  2.7854855e+04  2.7506770e+03  3.0787760e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.8550190e+01  4.7454691e-01  1.2367576e+02
+ntime =  38
+Total Field, Kinetic and Total Energies:
+ 1.8241948e+02  2.7854285e+04  2.7508000e+03  3.0787506e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.9319592e+01  3.8387612e-01  1.2309988e+02
+ntime =  39
+Total Field, Kinetic and Total Energies:
+ 1.8257021e+02  2.7853971e+04  2.7509319e+03  3.0787473e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.9971542e+01  3.6264509e-01  1.2259866e+02
+ntime =  40
+Total Field, Kinetic and Total Energies:
+ 1.8252621e+02  2.7853766e+04  2.7510693e+03  3.0787359e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.0344452e+01  4.1041136e-01  1.2218176e+02
+ntime =  41
+Total Field, Kinetic and Total Energies:
+ 1.8293246e+02  2.7853574e+04  2.7512083e+03  3.0787715e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.1020374e+01  5.1690775e-01  1.2191209e+02
+ntime =  42
+Total Field, Kinetic and Total Energies:
+ 1.8353436e+02  2.7853207e+04  2.7513433e+03  3.0788086e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.1727390e+01  6.6184825e-01  1.2180697e+02
+ntime =  43
+Total Field, Kinetic and Total Energies:
+ 1.8405362e+02  2.7852688e+04  2.7514717e+03  3.0788211e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.2191353e+01  8.1966323e-01  1.2186226e+02
+ntime =  44
+Total Field, Kinetic and Total Energies:
+ 1.8433363e+02  2.7852268e+04  2.7515908e+03  3.0788191e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.2243557e+01  9.6292400e-01  1.2209007e+02
+ntime =  45
+Total Field, Kinetic and Total Energies:
+ 1.8440439e+02  2.7852158e+04  2.7517017e+03  3.0788264e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.1935036e+01  1.0683928e+00  1.2246935e+02
+ntime =  46
+Total Field, Kinetic and Total Energies:
+ 1.8423386e+02  2.7852232e+04  2.7518044e+03  3.0788271e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.1244736e+01  1.1178675e+00  1.2298913e+02
+ntime =  47
+Total Field, Kinetic and Total Energies:
+ 1.8412990e+02  2.7852172e+04  2.7518987e+03  3.0788201e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.0520061e+01  1.1040099e+00  1.2360984e+02
+ntime =  48
+Total Field, Kinetic and Total Energies:
+ 1.8462244e+02  2.7851680e+04  2.7519858e+03  3.0788289e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.0307419e+01  1.0309256e+00  1.2431503e+02
+ntime =  49
+Total Field, Kinetic and Total Energies:
+ 1.8566849e+02  2.7850676e+04  2.7520686e+03  3.0788412e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.0620728e+01  9.1124684e-01  1.2504777e+02
+ntime =  50
+Total Field, Kinetic and Total Energies:
+ 1.8720921e+02  2.7849523e+04  2.7521511e+03  3.0788883e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.1425205e+01  7.6538694e-01  1.2578400e+02
+ntime =  51
+Total Field, Kinetic and Total Energies:
+ 1.8781731e+02  2.7848689e+04  2.7522361e+03  3.0788742e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.1327473e+01  6.1713493e-01  1.2648983e+02
+ntime =  52
+Total Field, Kinetic and Total Energies:
+ 1.8757419e+02  2.7848557e+04  2.7523232e+03  3.0788453e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.0435593e+01  4.9031934e-01  1.2713859e+02
+ntime =  53
+Total Field, Kinetic and Total Energies:
+ 1.8630731e+02  2.7849527e+04  2.7524138e+03  3.0788248e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.8611053e+01  4.0503556e-01  1.2769627e+02
+ntime =  54
+Total Field, Kinetic and Total Energies:
+ 1.8408740e+02  2.7851551e+04  2.7525083e+03  3.0788146e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.5947563e+01  3.7475869e-01  1.2813985e+02
+ntime =  55
+Total Field, Kinetic and Total Energies:
+ 1.8134155e+02  2.7854145e+04  2.7526057e+03  3.0788092e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.2886078e+01  4.0355435e-01  1.2845547e+02
+ntime =  56
+Total Field, Kinetic and Total Energies:
+ 1.7861542e+02  2.7856861e+04  2.7527031e+03  3.0788180e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.9987587e+01  4.8732764e-01  1.2862784e+02
+ntime =  57
+Total Field, Kinetic and Total Energies:
+ 1.7591171e+02  2.7859195e+04  2.7527959e+03  3.0787902e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.7241512e+01  6.1272448e-01  1.2867020e+02
+ntime =  58
+Total Field, Kinetic and Total Energies:
+ 1.7462717e+02  2.7860520e+04  2.7528821e+03  3.0788029e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.6070141e+01  7.6025540e-01  1.2855702e+02
+ntime =  59
+Total Field, Kinetic and Total Energies:
+ 1.7476062e+02  2.7860514e+04  2.7529614e+03  3.0788234e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.6451679e+01  9.0808523e-01  1.2830894e+02
+ntime =  60
+Total Field, Kinetic and Total Energies:
+ 1.7594370e+02  2.7859324e+04  2.7530347e+03  3.0788303e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.8002483e+01  1.0337567e+00  1.2794122e+02
+ntime =  61
+Total Field, Kinetic and Total Energies:
+ 1.7736002e+02  2.7857561e+04  2.7531062e+03  3.0788025e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.9896492e+01  1.1184584e+00  1.2746353e+02
+ntime =  62
+Total Field, Kinetic and Total Energies:
+ 1.7868005e+02  2.7855840e+04  2.7531804e+03  3.0787699e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.1797897e+01  1.1510065e+00  1.2688216e+02
+ntime =  63
+Total Field, Kinetic and Total Energies:
+ 1.7964967e+02  2.7854605e+04  2.7532644e+03  3.0787520e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.3443676e+01  1.1287092e+00  1.2620600e+02
+ntime =  64
+Total Field, Kinetic and Total Energies:
+ 1.7986061e+02  2.7854150e+04  2.7533667e+03  3.0787379e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.4416908e+01  1.0571775e+00  1.2544370e+02
+ntime =  65
+Total Field, Kinetic and Total Energies:
+ 1.7913370e+02  2.7854426e+04  2.7534932e+03  3.0787051e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.4505379e+01  9.4926262e-01  1.2462833e+02
+ntime =  66
+Total Field, Kinetic and Total Energies:
+ 1.7822975e+02  2.7855193e+04  2.7536450e+03  3.0787068e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.4452824e+01  8.2148361e-01  1.2377693e+02
+ntime =  67
+Total Field, Kinetic and Total Energies:
+ 1.7718364e+02  2.7856266e+04  2.7538220e+03  3.0787271e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.4249043e+01  6.9321620e-01  1.2293459e+02
+ntime =  68
+Total Field, Kinetic and Total Energies:
+ 1.7548033e+02  2.7857471e+04  2.7540251e+03  3.0786977e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.3358200e+01  5.8359188e-01  1.2212213e+02
+ntime =  69
+Total Field, Kinetic and Total Energies:
+ 1.7386517e+02  2.7858850e+04  2.7542539e+03  3.0786969e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.2479263e+01  5.0876886e-01  1.2138591e+02
+ntime =  70
+Total Field, Kinetic and Total Energies:
+ 1.7211156e+02  2.7860590e+04  2.7545049e+03  3.0787207e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.1362946e+01  4.7893390e-01  1.2074861e+02
+ntime =  71
+Total Field, Kinetic and Total Energies:
+ 1.6995453e+02  2.7862703e+04  2.7547734e+03  3.0787432e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.9715744e+01  4.9769133e-01  1.2023878e+02
+ntime =  72
+Total Field, Kinetic and Total Energies:
+ 1.6747321e+02  2.7864971e+04  2.7550532e+03  3.0787496e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.7590046e+01  5.5980873e-01  1.1988316e+02
+ntime =  73
+Total Field, Kinetic and Total Energies:
+ 1.6485204e+02  2.7866869e+04  2.7553357e+03  3.0787057e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.5159828e+01  6.5290475e-01  1.1969221e+02
+ntime =  74
+Total Field, Kinetic and Total Energies:
+ 1.6366406e+02  2.7867863e+04  2.7556130e+03  3.0787141e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.3969696e+01  7.5984913e-01  1.1969437e+02
+ntime =  75
+Total Field, Kinetic and Total Energies:
+ 1.6372049e+02  2.7867666e+04  2.7558789e+03  3.0787266e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.3851082e+01  8.6068600e-01  1.1986940e+02
+ntime =  76
+Total Field, Kinetic and Total Energies:
+ 1.6488417e+02  2.7866295e+04  2.7561292e+03  3.0787309e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.4685272e+01  9.3778521e-01  1.2019890e+02
+ntime =  77
+Total Field, Kinetic and Total Energies:
+ 1.6721968e+02  2.7864107e+04  2.7563589e+03  3.0787686e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.6559139e+01  9.7705561e-01  1.2066054e+02
+ntime =  78
+Total Field, Kinetic and Total Energies:
+ 1.6986353e+02  2.7861525e+04  2.7565652e+03  3.0787953e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.8642921e+01  9.7113246e-01  1.2122060e+02
+ntime =  79
+Total Field, Kinetic and Total Energies:
+ 1.7213754e+02  2.7859074e+04  2.7567483e+03  3.0787959e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.0308289e+01  9.2004508e-01  1.2182925e+02
+ntime =  80
+Total Field, Kinetic and Total Energies:
+ 1.7367532e+02  2.7857283e+04  2.7569104e+03  3.0787869e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.1216896e+01  8.3179331e-01  1.2245844e+02
+ntime =  81
+Total Field, Kinetic and Total Energies:
+ 1.7455170e+02  2.7856365e+04  2.7570520e+03  3.0787969e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.1497932e+01  7.1960551e-01  1.2305377e+02
+ntime =  82
+Total Field, Kinetic and Total Energies:
+ 1.7468843e+02  2.7856295e+04  2.7571738e+03  3.0788156e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.1095585e+01  6.0070878e-01  1.2359285e+02
+ntime =  83
+Total Field, Kinetic and Total Energies:
+ 1.7399091e+02  2.7856764e+04  2.7572754e+03  3.0788029e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.9941326e+01  4.9426204e-01  1.2404958e+02
+ntime =  84
+Total Field, Kinetic and Total Energies:
+ 1.7330469e+02  2.7857322e+04  2.7573552e+03  3.0787982e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.8917427e+01  4.1718286e-01  1.2438726e+02
+ntime =  85
+Total Field, Kinetic and Total Energies:
+ 1.7304912e+02  2.7857605e+04  2.7574119e+03  3.0788066e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.8453873e+01  3.8232872e-01  1.2459525e+02
+ntime =  86
+Total Field, Kinetic and Total Energies:
+ 1.7333791e+02  2.7857430e+04  2.7574451e+03  3.0788213e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.8664318e+01  3.9571330e-01  1.2467358e+02
+ntime =  87
+Total Field, Kinetic and Total Energies:
+ 1.7395944e+02  2.7856732e+04  2.7574558e+03  3.0788146e+04
+Electric(l,t) and Magnetic Energies = 
+ 4.9331463e+01  4.5692211e-01  1.2462798e+02
+ntime =  88
+Total Field, Kinetic and Total Energies:
+ 1.7508414e+02  2.7855551e+04  2.7574482e+03  3.0788082e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.0638344e+01  5.5770320e-01  1.2444579e+02
+ntime =  89
+Total Field, Kinetic and Total Energies:
+ 1.7648257e+02  2.7854162e+04  2.7574312e+03  3.0788076e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.2347305e+01  6.8433714e-01  1.2413528e+02
+ntime =  90
+Total Field, Kinetic and Total Energies:
+ 1.7732347e+02  2.7852943e+04  2.7574146e+03  3.0787682e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.3626877e+01  8.1888449e-01  1.2369659e+02
+ntime =  91
+Total Field, Kinetic and Total Energies:
+ 1.7785300e+02  2.7852238e+04  2.7574109e+03  3.0787502e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.4724224e+01  9.4077992e-01  1.2312877e+02
+ntime =  92
+Total Field, Kinetic and Total Energies:
+ 1.7770209e+02  2.7852186e+04  2.7574307e+03  3.0787316e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.5254341e+01  1.0333422e+00  1.2244775e+02
+ntime =  93
+Total Field, Kinetic and Total Energies:
+ 1.7694507e+02  2.7852705e+04  2.7574819e+03  3.0787133e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.5275635e+01  1.0825502e+00  1.2166943e+02
+ntime =  94
+Total Field, Kinetic and Total Energies:
+ 1.7600938e+02  2.7853539e+04  2.7575720e+03  3.0787121e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.5191132e+01  1.0811613e+00  1.2081825e+02
+ntime =  95
+Total Field, Kinetic and Total Energies:
+ 1.7506068e+02  2.7854324e+04  2.7577036e+03  3.0787088e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.5131702e+01  1.0300512e+00  1.1992899e+02
+ntime =  96
+Total Field, Kinetic and Total Energies:
+ 1.7415480e+02  2.7854641e+04  2.7578789e+03  3.0786674e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.5117790e+01  9.3682027e-01  1.1903701e+02
+ntime =  97
+Total Field, Kinetic and Total Energies:
+ 1.7432146e+02  2.7854193e+04  2.7581001e+03  3.0786615e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.6157978e+01  8.1620246e-01  1.1816348e+02
+ntime =  98
+Total Field, Kinetic and Total Energies:
+ 1.7502737e+02  2.7852967e+04  2.7583662e+03  3.0786359e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.7680500e+01  6.8621606e-01  1.1734688e+02
+ntime =  99
+Total Field, Kinetic and Total Energies:
+ 1.7667322e+02  2.7851066e+04  2.7586770e+03  3.0786418e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.0077450e+01  5.6684721e-01  1.1659576e+02
+ntime =  100
+Total Field, Kinetic and Total Energies:
+ 1.7885043e+02  2.7848941e+04  2.7590312e+03  3.0786822e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.2903397e+01  4.7567916e-01  1.1594703e+02
+ntime =  101
+Total Field, Kinetic and Total Energies:
+ 1.8030302e+02  2.7847279e+04  2.7594241e+03  3.0787006e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.4875267e+01  4.2538837e-01  1.1542776e+02
+ntime =  102
+Total Field, Kinetic and Total Energies:
+ 1.8028595e+02  2.7846623e+04  2.7598489e+03  3.0786758e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.5209106e+01  4.2170724e-01  1.1507685e+02
+ntime =  103
+Total Field, Kinetic and Total Energies:
+ 1.7955957e+02  2.7847018e+04  2.7602979e+03  3.0786875e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.4643730e+01  4.6226028e-01  1.1491584e+02
+ntime =  104
+Total Field, Kinetic and Total Energies:
+ 1.7824092e+02  2.7848119e+04  2.7607620e+03  3.0787121e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.3294788e+01  5.3766942e-01  1.1494614e+02
+ntime =  105
+Total Field, Kinetic and Total Energies:
+ 1.7664200e+02  2.7849426e+04  2.7612283e+03  3.0787297e+04
+Electric(l,t) and Magnetic Energies = 
+ 6.1477829e+01  6.3349736e-01  1.1516417e+02
+ntime =  106
+Total Field, Kinetic and Total Energies:
+ 1.7521008e+02  2.7850578e+04  2.7616824e+03  3.0787471e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.9633614e+01  7.3217660e-01  1.1557646e+02
+ntime =  107
+Total Field, Kinetic and Total Energies:
+ 1.7374744e+02  2.7851441e+04  2.7621125e+03  3.0787303e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.7594521e+01  8.1566972e-01  1.1615291e+02
+ntime =  108
+Total Field, Kinetic and Total Energies:
+ 1.7329678e+02  2.7851910e+04  2.7625112e+03  3.0787719e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.6435181e+01  8.6932302e-01  1.1686161e+02
+ntime =  109
+Total Field, Kinetic and Total Energies:
+ 1.7333810e+02  2.7851818e+04  2.7628718e+03  3.0788027e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.5668030e+01  8.8271284e-01  1.1767007e+02
+ntime =  110
+Total Field, Kinetic and Total Energies:
+ 1.7363098e+02  2.7851188e+04  2.7631904e+03  3.0788008e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.5103035e+01  8.5273737e-01  1.1852794e+02
+ntime =  111
+Total Field, Kinetic and Total Energies:
+ 1.7423640e+02  2.7850199e+04  2.7634636e+03  3.0787898e+04
+Electric(l,t) and Magnetic Energies = 
+ 5.4847260e+01  7.8323442e-01  1.1938914e+02
+ntime =  112
