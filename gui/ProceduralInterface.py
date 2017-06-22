@@ -286,7 +286,7 @@ class PlasmaContext():
             return
 
     # Plottype is optional.  Use it to rename the dv1 plottype
-    def showVelocity(self, data, labels, fvm=None, plottype=None, title=None):
+    def showVelocity(self, data, labels, fvm=None, plottype=None, title=None, early=None):
         if self.norun:
             return
         pt = plottype
@@ -294,6 +294,8 @@ class PlasmaContext():
             pt = "DRAWVELOCITY"
         if not self.isGraphing(pt):
             return
+        if early is not None:
+            self.graphBeforeEndOfFF("DRAWVELOCITY", early)
         dv1 = Graphs.DrawVelocity(data, labels, fvm=fvm, title=title)
         if plottype is not None:
             dv1.plottype = plottype
@@ -317,16 +319,18 @@ class PlasmaContext():
         dv1 = Graphs.DrawEnergy(data, time, labels, timeindex=maxtimeindex, title=title)
         self._sendplot(dv1)
 
-    def showSimple(self, name, xdata, ydata, text, graphoptions=None, title=None):
+    def showSimple(self, name, xdata, ydata, text, graphoptions=None, title=None, early=None):
         if self.norun:
             return
         if not self.isGraphing(name[0]):
             return
+        if early is not None:
+            self.graphBeforeEndOfFF(name[0], early)
         dv1 = Graphs.DrawSimple(name, xdata, ydata, text, graphoptions=graphoptions, title=title)
         self._sendplot(dv1)
 
     def showPhase(self, ppart, kpic,
-                  plottype=None, title=None):  # data is the particle data, ppart.  kpic is array of num particles per tile
+                  plottype=None, title=None, early=None):  # data is the particle data, ppart.  kpic is array of num particles per tile
         if self.norun:
             return
         pt = plottype
@@ -334,6 +338,8 @@ class PlasmaContext():
             pt = "DRAWPHASE"
         if not self.isGraphing(pt):
             return
+        if early is not None:
+            self.graphBeforeEndOfFF("DRAWPHASE", early)
         # shape is the bounds of the histogram, [[xmin,xmax], [ymin,ymax]]
         numPart = np.sum(kpic)  # number of particles
         numTiles = np.size(kpic)  # number of tiles

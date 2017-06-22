@@ -43,40 +43,6 @@ double_type = numpy.float64
 float_type = numpy.float32
 complex_type = numpy.complex64
 
-
-# Some boilderplate
-def changeVarsCallback(obj, to):
-    try:
-        for key in to.var:
-            if key == "fastforward":
-                if rightType(to.var[key]) > obj.tend:
-                    continue
-            setattr(obj, key, rightType(to.var[key]))
-    except AttributeError:
-        print "Could not change variables"
-
-
-# The function to be called when reset is pushed
-def resetCallback(obj, to):
-    print "The reset button was pushed!"
-    # Do something
-    print obj.tend
-
-
-def exitCallback(obj, to):
-    exit(0)
-
-
-def rightType(val):
-    ints, reals, complexs = int_type, float_type, complex_type
-    if type(val) is IntType:
-        return numpy.array([val], ints)
-    elif type(val) is FloatType:
-        return numpy.array([val], reals)
-    elif type(val) is ComplexType:
-        return numpy.array([val], complexs)
-
-
 """
 Define function that initializes menus
 """
@@ -195,92 +161,11 @@ def initialize_menus(pc):
         pc.addGraph("RADVECPOT Z -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Z -Omega",
                     autoadd=False)
 
-    """
-
-    # initialize ion density diagnostic: allocates pkwdi, wkdi
-
-
-    # initialize potential diagnostic: allocates pkw, wk
-    if (in1.ntp > 0):
-       pc.addGraph("DRAWPOT", "Potential/Potential") #Enable electron velocity
-       pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
-       pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -")
-       pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace")
-       defaultGraphs.append("DRAWPOT")
-
-    # initialize longitudinal efield diagnostic
-    if (in1.ntel > 0):
-       pc.addGraph("ELFIELD", "E-Field/Longitudinal E-Field")
-       defaultGraphs.append("ELFIELD")
-
-
-    # allocate and initialize scratch arrays for vector fields:
-    # allocates vfield
-    if ((in1.nta>0) or (in1.ntet>0) or (in1.ntb>0) or (in1.ntar>0) or
-        (in1.ntji>0)):
-       init_spectrum13()
-
-    # initialize electron density diagnostic
-    if (in1.ntde > 0):
-       s1.init_edensity_diag1()
-
-    # initialize ion density diagnostic: allocates pkwdi, wkdi
-    if (in1.movion==1):
-       if (in1.ntdi > 0):
-          s1.init_idensity_diag1()
-
-    # initialize potential diagnostic: allocates pkw, wk
-    if (in1.ntp > 0):
-       s1.init_potential_diag1()
-
-    # initialize longitudinal efield diagnostic
-    if (in1.ntel > 0):
-       s1.init_elfield_diag1()
-
-    # initialize ion current density diagnostic: allocates vpkwji, vwkji
-    if (in1.movion==1):
-       if (in1.ntji > 0):
-          pc.addGraph("ICURRENTD", "Ions/Ion Current Density")
-          defaultGraphs.append("ICURRENTD")
-
-    # initialize radiative vector potential diagnostic:
-    # allocates vpkwr, vwkr, oldcu
-    if (in1.ntar > 0):
-          init_vrpotential_diag13()
-
-    # initialize vector potential diagnostic: allocates vpkw, vwk
-    if (in1.nta > 0):
-       init_vpotential_diag13()
-
-    # initialize transverse efield diagnostic: allocates vpkwet, vwket
-    if (in1.ntet > 0):
-       init_etfield_diag13()
-
-    # initialize magnetic field diagnostic
-    if (in1.ntb > 0):
-       init_bfield_diag13()
-
-    # initialize velocity diagnostic
-    if (in1.ntv > 0):
-    # electrons: allocates fv, fvm, fvtm
-       init_evelocity_diag13()
-    # ions: allocates fvi, fvmi, fvtmi
-       if (in1.movion==1):
-          init_ivelocity_diag13()
-
-    # initialize trajectory diagnostic: allocates partd, fvtp, fvmtp
-    if (in1.ntt > 0):
-       init_traj_diag13(ntime)
-    """
-
 def main(*args):
     # init GUI
-    pc = PlasmaContext(*args)  # Create GUI
+    pc = PlasmaContext(in1, *args)  # Create GUI
     pc.showGraphs(True)  # enable graphics.  Setting to false will disable graphics
     pc.clearGraphList()  # remove all default graph options
-    pc.callbacks["VARCHANGE"] = changeVarsCallback  # Set a callback
-    pc.callbacks["RESET"] = resetCallback
-    pc.callbacks["EXIT"] = exitCallback
     graf2 = GraphicsInterface(pc)
     in1.timedirection = 0  # default state of the GUI.  MUST BE 0
 
@@ -466,9 +351,9 @@ def main(*args):
         if ntime == nstart:
             pc.runOnce()
         curtime = ntime * in1.dt
-        pc.setTime(curtime)
-        pc.getEvents(in1)
-        pc.fastForward(curtime + in1.dt, in1)
+        pc.setTime(curtime, in1.dt)
+        pc.getEvents()
+        pc.fastForward()
 
         # debug reset
         #  if (ntime==nloop/2):
@@ -508,7 +393,7 @@ def main(*args):
                         # display smoothed ion current
                         edenx = numpy.array(range(nx))
                         # pc.showSimple(["ICURRENTD","Y", "Z"],[edenx, edenx],[sb1.vfield[0,0:nx], sb1.vfield[1,0:nx] ],"Time="+str(ntime*in1.dt)+" Ion Current")
-                        graf2.dvector1(sb1.vfield, ' ION CURRENT', ntime, 999, 0, 2, nx, irc)
+                        graf2.dvector1(sb1.vfield, ' ION CURRENT', ntime, 999, 0, 2, nx, irc, early=in1.ntji)
                         if (irc[0] == 1):
                             break
                         irc[0] = 0
@@ -516,13 +401,13 @@ def main(*args):
                     if ((in1.ndji == 2) or (in1.ndji == 3)):
                         # display frequency spectrum
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEY+", sb1.vpkwji[0, ::, :, 0],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax))
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji)
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEY-", sb1.vpkwji[0, ::, :, 1],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax))
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji)
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEZ+", sb1.vpkwji[1, ::, :, 0],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax))
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji)
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEZ-", sb1.vpkwji[1, ::, :, 1],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax))
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji)
                         graf1.dmvector1(sb1.vwkji, 'ION CURRENT OMEGA VS MODE',
                                         ntime, 999, 2, 2, in1.modesxji, s1.cwk, irc)
                         if (irc[0] == 1):
@@ -546,7 +431,7 @@ def main(*args):
                 # display smoothed electron density
                 edenx = numpy.array(range(nx))
                 edeny = numpy.array(s1.sfield[0:nx], copy=True)
-                pc.showSimple(["EDENSITY", "Electron Density"], [edenx], [edeny], "Time=" + str(ntime * in1.dt))
+                pc.showSimple(["EDENSITY", "Electron Density"], [edenx], [edeny], "Time=" + str(ntime * in1.dt), early=in1.ntde)
                 graf1.dscaler1(s1.sfield, ' EDENSITY', ntime, 999, 0, nx, irc)
                 if (irc[0] == 1):
                     break
@@ -572,7 +457,7 @@ def main(*args):
                         # display smoothed ion density
                         edenx = numpy.array(range(nx))
                         pc.showSimple(["IDENSITY", "Ion Density", "Electron Density"], [edenx, edenx],
-                                      [s1.sfield[0:nx], edeny], "Time=" + str(ntime * in1.dt))
+                                      [s1.sfield[0:nx], edeny], "Time=" + str(ntime * in1.dt), early=in1.ntdi)
                         graf1.dscaler1(s1.sfield, ' ION DENSITY', ntime, 999, 1, nx,
                                        irc)
                         if (irc[0] == 1):
@@ -582,13 +467,13 @@ def main(*args):
                     if ((in1.nddi == 2) or (in1.nddi == 3)):
                         # display frequency spectrum
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE+", s1.pkwdi[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax))
+                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), early=in1.ntdi)
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE-", s1.pkwdi[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax))
+                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), early=in1.ntdi)
                         wax = numpy.array(range(in1.modesxdi))
                         pc.showSimple(["ION DENSITY OMEGA VS MODE LINE", "+OMEGA", "-OMEGA"], [wax, wax],
                                       [s1.wkdi[0:in1.modesxdi, 0], s1.wkdi[0:in1.modesxdi, 1]],
-                                      "Time=" + str(ntime * in1.dt))
+                                      "Time=" + str(ntime * in1.dt), early=in1.ntdi)
                         graf1.dmscaler1(s1.wkdi, 'ION DENSITY OMEGA VS MODE',
                                         ntime, 999, 1, in1.modesxdi, s1.cwk, irc)
                         if (irc[0] == 1):
@@ -620,7 +505,7 @@ def main(*args):
                     # display radiative vector potential
                     xax = numpy.array(range(len(sb1.vfield[0, :-2])))
                     # pc.showSimple(["RADVECPOTENTIAL","y","z"],[xax,xax],[sb1.vfield[0,:-2],sb1.vfield[1,:-2]],"Time="+str(ntime*in1.dt))
-                    graf2.dvector1(sb1.vfield, ' RADIATIVE VPOTENTIAL', ntime, 999, 0, 2, nx, irc)
+                    graf2.dvector1(sb1.vfield, ' RADIATIVE VPOTENTIAL', ntime, 999, 0, 2, nx, irc, early=in1.ntar)
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
@@ -628,13 +513,13 @@ def main(*args):
                 if ((in1.ndar == 2) or (in1.ndar == 3)):
                     # display frequency spectrum
                     pc.showSimpleImage("RADVECPOT Y +OMEGA", sb1.vpkwr[0, :, :, 0], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxar, in1.wmin, in1.wmax))
+                                       extent=(0, in1.modesxar, in1.wmin, in1.wmax), early=in1.ntar)
                     pc.showSimpleImage("RADVECPOT Y -OMEGA", sb1.vpkwr[0, :, :, 1], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxar, in1.wmin, in1.wmax))
+                                       extent=(0, in1.modesxar, in1.wmin, in1.wmax), early=in1.ntar)
                     pc.showSimpleImage("RADVECPOT Z +OMEGA", sb1.vpkwr[1, :, :, 0], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxar, in1.wmin, in1.wmax))
+                                       extent=(0, in1.modesxar, in1.wmin, in1.wmax), early=in1.ntar)
                     pc.showSimpleImage("RADVECPOT Z -OMEGA", sb1.vpkwr[1, :, :, 1], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxar, in1.wmin, in1.wmax))
+                                       extent=(0, in1.modesxar, in1.wmin, in1.wmax), early=in1.ntar)
 
                     graf1.dmvector1(sb1.vwkr,
                                     'RADIATIVE VPOTENTIAL OMEGA VS MODE', ntime,
@@ -696,7 +581,7 @@ def main(*args):
                     # display potential
                     edenx = numpy.array(range(nx))
                     pc.showSimple(["DRAWPOT", "Potential"], [edenx], [s1.sfield[0:nx]],
-                                  "Time=" + str(ntime * in1.dt) + " Potential")
+                                  "Time=" + str(ntime * in1.dt) + " Potential", early=in1.ntp)
                     graf1.dscaler1(s1.sfield, ' POTENTIAL', ntime, 999, 0, nx, irc)
                     if (irc[0] == 1):
                         break
@@ -705,12 +590,12 @@ def main(*args):
                 if ((in1.ndp == 2) or (in1.ndp == 3)):
                     # display frequency spectrum
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE+", s1.pkw[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax))
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), early=in1.ntp)
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE-", s1.pkw[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax))
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), early=in1.ntp)
                     wax = numpy.array(range(in1.modesxp))
                     pc.showSimple(["POTENTIAL OMEGA VS MODE LINE", "+OMEGA", "-OMEGA"], [wax, wax],
-                                  [s1.wk[0:in1.modesxdi, 0], s1.wk[0:in1.modesxdi, 1]], "Time=" + str(ntime * in1.dt))
+                                  [s1.wk[0:in1.modesxdi, 0], s1.wk[0:in1.modesxdi, 1]], "Time=" + str(ntime * in1.dt), early=in1.ntp)
                     graf1.dmscaler1(s1.wk, 'POTENTIAL OMEGA VS MODE', ntime, 999, 2,
                                     in1.modesxp, s1.cwk, irc)
                     if (irc[0] == 1):
@@ -728,7 +613,7 @@ def main(*args):
                 except:
                     edenx = numpy.array(range(nx))
                 pc.showSimple(["ELFIELD", "Longitudinal E-Field"], [edenx], [s1.sfield[0:nx]],
-                              "Time=" + str(ntime * in1.dt) + " Lon.  E-Field")
+                              "Time=" + str(ntime * in1.dt) + " Lon.  E-Field", early=in1.ntel)
                 graf1.dscaler1(s1.sfield, ' ELFIELD', ntime, 999, 0, nx, irc)
                 if (irc[0] == 1):
                     break
@@ -747,7 +632,7 @@ def main(*args):
                         edenx = numpy.array(range(nx))
                     # pc.showSimple(["VECPOTENTIAL","y","z"],[edenx,edenx],[sb1.vfield[0,:nx],sb1.vfield[1,:nx]],"Time="+str(ntime*in1.dt))
                     graf2.dvector1(sb1.vfield, ' VECTOR POTENTIAL', ntime, 999, 0, 2,
-                                   nx, irc)
+                                   nx, irc, early=in1.nta)
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
@@ -755,21 +640,21 @@ def main(*args):
                 if ((in1.nda == 2) or (in1.nda == 3)):
                     # display frequency spectrum
                     pc.showSimpleImage("VECTOR POTENTIAL OMEGA VS MODE Y+", sb1.vpkw[0, :, :, 0],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax))
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta)
                     pc.showSimpleImage("VECTOR POTENTIAL OMEGA VS MODE Y-", sb1.vpkw[0, :, :, 1],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax))
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta)
                     pc.showSimpleImage("VECTOR POTENTIAL OMEGA VS MODE Z+", sb1.vpkw[1, :, :, 0],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax))
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta)
                     pc.showSimpleImage("VECTOR POTENTIAL OMEGA VS MODE Z-", sb1.vpkw[1, :, :, 1],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax))
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta)
 
                     wax = numpy.array(range(in1.modesxa))
                     pc.showSimple(["VECTOR POTENTIAL OMEGA VS MODE Y LINE", "+OMEGA", "-OMEGA"], [wax, wax],
                                   [sb1.vwk[0, 0:in1.modesxa, 0], sb1.vwk[0, 0:in1.modesxa, 1]],
-                                  "Time=" + str(ntime * in1.dt))
+                                  "Time=" + str(ntime * in1.dt), early=in1.nta)
                     pc.showSimple(["VECTOR POTENTIAL OMEGA VS MODE Z LINE", "-OMEGA", "-OMEGA"], [wax, wax],
                                   [sb1.vwk[1, 0:in1.modesxa, 0], sb1.vwk[1, 0:in1.modesxa, 1]],
-                                  "Time=" + str(ntime * in1.dt))
+                                  "Time=" + str(ntime * in1.dt), early=in1.nta)
                     graf1.dmvector1(sb1.vwk, 'VECTOR POTENTIAL OMEGA VS MODE',
                                     ntime, 999, 2, 2, in1.modesxa, s1.cwk, irc)
                     if (irc[0] == 1):
@@ -790,7 +675,7 @@ def main(*args):
                         edenx = numpy.array(range(nx))
                     # pc.showSimple(["TRANSVERSE E FIELD","Y","Z"],[edenx,edenx],[ sb1.vfield[0,0:nx], sb1.vfield[1,0:nx] ],"Time="+str(ntime*in1.dt))
                     graf2.dvector1(sb1.vfield, 'TRANSVERSE E FIELD', ntime, 999, 0,
-                                   2, nx, irc)
+                                   2, nx, irc, early=in1.ntet)
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
@@ -798,21 +683,21 @@ def main(*args):
                 if ((in1.ndet == 2) or (in1.ndet == 3)):
                     # display frequency spectrum
                     pc.showSimpleImage("FT TRANSVERSE E.F. Y +OMEGA VS MODE", sb1.vpkwet[0, :, :, 0],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax))
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet)
                     pc.showSimpleImage("FT TRANSVERSE E.F. Y -OMEGA VS MODE", sb1.vpkwet[0, :, :, 1],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax))
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet)
                     pc.showSimpleImage("FT TRANSVERSE E.F. Z +OMEGA VS MODE", sb1.vpkwet[1, :, :, 0],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax))
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet)
                     pc.showSimpleImage("FT TRANSVERSE E.F. Z -OMEGA VS MODE", sb1.vpkwet[1, :, :, 1],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax))
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet)
 
                     wax = numpy.array(range(in1.modesxet))
                     pc.showSimple(["TRANSVERSE E.F. Y OMEGA VS MODE", "+OMEGA", "-OMEGA"], [wax, wax],
                                   [sb1.vwket[0, 0:in1.modesxet, 0], sb1.vwket[0, 0:in1.modesxet, 1]],
-                                  "Time=" + str(ntime * in1.dt))
+                                  "Time=" + str(ntime * in1.dt), early=in1.ntet)
                     pc.showSimple(["TRANSVERSE E.F. Z OMEGA VS MODE", "-OMEGA", "-OMEGA"], [wax, wax],
                                   [sb1.vwket[1, 0:in1.modesxet, 0], sb1.vwket[1, 0:in1.modesxet, 1]],
-                                  "Time=" + str(ntime * in1.dt))
+                                  "Time=" + str(ntime * in1.dt), early=in1.ntet)
                     graf1.dmvector1(sb1.vwket, 'TRANSVERSE EFIELD OMEGA VS MODE',
                                     ntime, 999, 2, 2, in1.modesxet, s1.cwk, irc)
                     if (irc[0] == 1):
@@ -831,7 +716,7 @@ def main(*args):
                     edenx = numpy.array(range(nx))
                 # pc.showSimple([" MAGNETIC FIELD","Y","Z"],[edenx,edenx],[ sb1.vfield[0,0:nx], sb1.vfield[1,0:nx] ],"Time="+str(ntime*in1.dt))
                 graf2.dvector1(sb1.vfield, 'BFIELD', ntime, 999, 0, 2, nx,
-                               irc)
+                               irc, early=in1.ntb)
                 if (irc[0] == 1):
                     break
                 irc[0] = 0
@@ -844,7 +729,7 @@ def main(*args):
                 sb1.evelocity_diag13(s1.ppart, s1.kpic, s1.fv, s1.fvm, s1.fvtm)
                 # display electron velocity distributions
                 if ((in1.ndv == 1) or (in1.ndv == 3)):
-                    pc.showVelocity(s1.fv[:, :], ["x", "y", "z"], fvm=s1.fvm[0], plottype="EVELOCITY")
+                    pc.showVelocity(s1.fv[:, :], ["x", "y", "z"], fvm=s1.fvm[0], plottype="EVELOCITY", early=in1.ntv)
                     graf1.displayfv1(s1.fv, s1.fvm, ' ELECTRON', ntime, in1.nmv, 2,
                                      irc)
                     if (irc[0] == 1):
@@ -857,7 +742,7 @@ def main(*args):
                                          s1.fvtmi)
                     # display ion velocity distributions
                     if ((in1.ndv == 2) or (in1.ndv == 3)):
-                        pc.showVelocity(s1.fvi[:, :], ["x", "y", "z"], fvm=s1.fvmi[0], plottype="IVELOCITY")
+                        pc.showVelocity(s1.fvi[:, :], ["x", "y", "z"], fvm=s1.fvmi[0], plottype="IVELOCITY", early=in1.ntv)
                         graf1.displayfv1(s1.fvi, s1.fvmi, ' ION', ntime, in1.nmv, 2,
                                          irc)
                         if (irc[0] == 1):
@@ -871,7 +756,7 @@ def main(*args):
                 sb1.traj_diag13(s1.ppart, s1.kpic, s1.partd, s1.fvtp, s1.fvmtp)
                 if (in1.nst == 3):
                     # display velocity distributions
-                    pc.showVelocity(s1.fvtp[:, :], ["x", "y", "z"], fvm=s1.fvmtp[0], plottype="TRAJECTORY")
+                    pc.showVelocity(s1.fvtp[:, :], ["x", "y", "z"], fvm=s1.fvmtp[0], plottype="TRAJECTORY", early=in1.ntt)
                     graf1.displayfv1(s1.fvtp, s1.fvmtp, ' ELECTRON', ntime, in1.nmv,
                                      2, irc)
                     if (irc[0] == 1):
@@ -893,7 +778,7 @@ def main(*args):
                             phasearr = numpy.empty((2, b, c), dtype=s1.ppart.dtype)
                             phasearr[1, :, :] = s1.ppart[i + 2 - 1, :, :]
                             phasearr[0, :, :] = s1.ppart[1 - 1, :, :]
-                            pc.showPhase(phasearr, s1.kpic, plottype="EPHASE" + str(i))
+                            pc.showPhase(phasearr, s1.kpic, plottype="EPHASE" + str(i), early=in1.nts)
                             graf1.dpmgrasp1(s1.ppart, s1.kpic, ' ELECTRON', ntime,
                                             999, nx, i + 2, 1, in1.ntsc, irc)
                             if (irc[0] == 1):
@@ -912,7 +797,7 @@ def main(*args):
                             phasearr = numpy.empty((2, b, c), dtype=s1.ppart.dtype)
                             phasearr[1, :, :] = s1.ppart[min(i + 3, 4) - 1, :, :]
                             phasearr[0, :, :] = s1.ppart[max(i + 1, 2) - 1, :, :]
-                            pc.showPhase(phasearr, s1.kpic, plottype="EPHASEV" + str(i))
+                            pc.showPhase(phasearr, s1.kpic, plottype="EPHASEV" + str(i), early=in1.nts)
                             graf1.dpmgrasp1(s1.ppart, s1.kpic, ' ELECTRON', ntime,
                                             999, nx, min(i + 3, 4), max(i + 1, 2), in1.ntsc,
                                             irc)
@@ -936,7 +821,7 @@ def main(*args):
                                 phasearr = numpy.empty((2, b, c), dtype=s1.pparti.dtype)
                                 phasearr[1, :, :] = s1.pparti[i + 2 - 1, :, :]
                                 phasearr[0, :, :] = s1.pparti[1 - 1, :, :]
-                                pc.showPhase(phasearr, s1.kipic, plottype="IPHASE" + str(i))
+                                pc.showPhase(phasearr, s1.kipic, plottype="IPHASE" + str(i), early=in1.nts)
                                 graf1.dpmgrasp1(s1.pparti, s1.kipic, ' ION', ntime,
                                                 999, nx, i + 2, 1, in1.ntsc, irc)
                                 if (irc[0] == 1):
@@ -955,7 +840,7 @@ def main(*args):
                                 phasearr = numpy.empty((2, b, c), dtype=s1.pparti.dtype)
                                 phasearr[1, :, :] = s1.pparti[min(i + 3, 4) - 1, :, :]
                                 phasearr[0, :, :] = s1.pparti[max(i + 1, 2) - 1, :, :]
-                                pc.showPhase(phasearr, s1.kipic, plottype="IPHASEV" + str(i))
+                                pc.showPhase(phasearr, s1.kipic, plottype="IPHASEV" + str(i), early=in1.nts)
                                 graf1.dpmgrasp1(s1.pparti, s1.kipic, ' ION', ntime,
                                                 999, nx, min(i + 3, 4), max(i + 1, 2),
                                                 in1.ntsc, irc)
@@ -986,7 +871,7 @@ def main(*args):
             if (ntime == in1.ntw * it):
                 pc.showEnergy(numpy.array(range(ntime)) * in1.dt, s1.wt, ntime,
                               ["Total Field", "Kinetic", "Kinetic Ions", "Total Energy", "Electric(l)", "Electric(t)",
-                               "Magnetic"])
+                               "Magnetic"], early=in1.ntw)
                 sb1.energy_diag13(s1.wt, ntime, iuot)
 
             # restart file
