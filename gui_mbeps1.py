@@ -42,8 +42,6 @@ complex_type = numpy.complex64
 """
 Define function that initializes menus
 """
-
-
 def initialize_menus(pc):
     pc.addGraph("NOPLOT", "No Plot", autoadd=False)
     if (in1.ntde > 0):
@@ -234,10 +232,9 @@ def main(*args):
     """
     initialize_menus(pc)
     PopMenus(pc, in1)
-    early(pc, in1)
-
+    
     # sends data the GUI may want to know about the simulation
-    pc.updateSimInfo({"tend": in1.tend})
+    pc.updateSimInfo({"tend": in1.tend})    #End time of the simulation
     #
     # * * * start main iteration loop * * *
     for ntime in xrange(nstart, nloop):
@@ -247,6 +244,7 @@ def main(*args):
             pc.runOnce()
         pc.setTime(curtime, in1.dt)
         pc.getEvents()
+        early(pc, in1)
         pc.fastForward()
 
         # debug reset

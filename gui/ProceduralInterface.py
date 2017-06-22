@@ -17,12 +17,17 @@ from Signals import *
 
 import new_beps1gl
 
+import pdb
+
 int_type = np.int32
 double_type = np.float64
 float_type = np.float32
 complex_type = np.complex64
 
-# Default callback functions
+#These are callback functions, that the user is free to redefine,
+#Which is done directly by setting the appropriate key in
+#self.callbacks.  For example:
+#self.callbacks["EXIT"] = exitCallback
 def changeVarsCallback(obj, to):
     try:
         for key in to.var:
@@ -40,11 +45,13 @@ def resetCallback(obj, to):
     # Do something
     print obj.tend
 
-
+#Called in the sim thread on exit.
 def exitCallback(obj, to):
     exit(0)
 
 
+#This is a simple function that takes a number and gives a fortran
+#consisten type
 def rightType(val):
     ints, reals, complexs = int_type, float_type, complex_type
     if type(val) is IntType:
@@ -75,7 +82,7 @@ def initGui(q, que, td, events, outqueue):
         print "Cannot create multiple wxApp contexts"
         return False
 
-
+##PlasmaContext is the interface the sim process uses to talk to the GUI.
 class PlasmaContext():
     def __init__(self, obj, *args):
         assert(len(args) == 6)
@@ -94,11 +101,14 @@ class PlasmaContext():
         self.graphEnabled = True
         self.callbacks = dict()
         self.graphEarly = dict()    #dict of plots to plot before end of fastforarding
-
+        #Set default callbacks
         self.callbacks["VARCHANGE"] = changeVarsCallback  # Set a callback
         self.callbacks["RESET"] = resetCallback
         self.callbacks["EXIT"] = exitCallback
 
+    #This function launches the main simulation function in a child process.
+    #This is necessary, becase on OS X for whatever reason the GUI fails to
+    #respond if launched in the child process
     @staticmethod
     def runMain(func):
         #create bidirectional comm channels
@@ -115,6 +125,10 @@ class PlasmaContext():
         #run gui in parent process
         initGui(child_conn, que, timeDir, events, async)
 
+    #This is a test to see if the object obj to be sent to the GUI for 
+    #rendering/processing has been flaged for early plotting.  If so,
+    #calculate if the sim is close enough to the end of the fast forward
+    #to plot
     def _sendEarly(self, obj):
         try:
             obj.plottype
@@ -123,17 +137,17 @@ class PlasmaContext():
         try:
             time = self.graphEarly[obj.plottype] #Fire early?
             assert(time >= 0)
-            ntime = np.round(self.curTime/self.dt)
-            ffs = np.round(self.simObj.fastforward/ self.dt)
+            ntime = int(round(self.curTime/self.dt))
+            ffs = int(round(self.simObj.fastforward/ self.dt))
             it = int(ffs/ time) #Fast Forard stop divided by the plot frequency
-            if (it-1)*time == ntime:    #Fire Early
+            if ntime >= (it-1)*time:    #Fire Early
                 return True
         except:
             return False
         return False
 
 
-    # Low Level method to communicate with gui thread
+    # Low Level method to communicate with gui thread.  Serialized and sends objects
     def _sendplot(self, obj):
         if self.norun:
             return

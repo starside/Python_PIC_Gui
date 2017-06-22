@@ -388,25 +388,9 @@ class DrawEnergyControlPanel(BaseControlPanel):
             etl.SetStringSelection(self._PV["Energy_Type" + str(i)])
             etl.Bind(wx.EVT_COMBOBOX, self.OnSelectWK)
             hs1.Add(item=etl, flag=wx.ALL | wx.EXPAND)
-        """self.energyTypeList = wx.ComboBox(self,-1, choices = ["Total","Potential","Kinetic"],style=wx.CB_READONLY)
-        self.energyTypeList.SetStringSelection(self._PV["Energy_Type"])
-        hs1.Add(item=self.energyTypeList)
-
-        self.energyTypeList2 = wx.ComboBox(self,-1, choices = ["Off","Total","Potential","Kinetic"],style=wx.CB_READONLY)
-        self.energyTypeList2.SetStringSelection(self._PV["Energy_Type2"])
-        hs1.Add(item=self.energyTypeList2)
-
-        self.energyTypeList3 = wx.ComboBox(self,-1, choices = ["Off", "Total","Potential","Kinetic"],style=wx.CB_READONLY)
-        self.energyTypeList3.SetStringSelection(self._PV["Energy_Type3"])
-        hs1.Add(item=self.energyTypeList3)"""
 
         vsizer1.Add(hs1)
-
         self.axesTypeList.Bind(wx.EVT_COMBOBOX, self.OnSelect)
-        """self.energyTypeList.Bind(wx.EVT_COMBOBOX, self.OnSelectWKE)
-        self.energyTypeList2.Bind(wx.EVT_COMBOBOX, self.OnSelectWKE2)
-        self.energyTypeList3.Bind(wx.EVT_COMBOBOX, self.OnSelectWKE3)"""
-
         return vsizer1
 
     def OnSelect(self, event):
