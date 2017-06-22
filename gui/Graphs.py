@@ -382,6 +382,7 @@ class DrawEnergyControlPanel(BaseControlPanel):
         hs1.Add(item=self.axesTypeList)
 
         self.energyTypeList = []
+        print self.labels
         for i, label in enumerate(self.labels[1:]):
             etl = wx.ComboBox(self, -1, choices=self.labels, style=wx.CB_READONLY)
             self.energyTypeList.append(etl)
@@ -480,10 +481,10 @@ class DrawEnergy(DrawOptions):
             self._PV["Axis-Type"] = "Linear-Linear"
             # Draw Default plot
         self.updateAxes3(fig, axes, self._PV["Axis-Type"])
-        for i, l in enumerate(self.labels):
+        for i, l in enumerate(self.labels[1:]):
             try:
                 lbl = self._PV["Energy_Type" + str(i)]
-                si = self.labels.index(lbl)
+                si = self.labels.index(lbl) - 1
                 xdata = self.itw[0:self.timeindex]
                 ydata = self.edata[0:self.timeindex, si]
                 axes.plot(xdata, ydata, "x", label=lbl)
