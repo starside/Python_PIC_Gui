@@ -17,8 +17,6 @@ from Signals import *
 
 import new_beps1gl
 
-import pdb
-
 int_type = np.int32
 double_type = np.float64
 float_type = np.float32
@@ -309,11 +307,13 @@ class PlasmaContext():
         dv1 = Graphs.DrawPotential(data)
         self._sendplot(dv1)
 
-    def showEnergy(self, time, data, maxtimeindex, labels, title=None):
+    def showEnergy(self, time, data, maxtimeindex, labels, title=None, early=None):
         if self.norun:
             return
         if not self.isGraphing("ENERGY"):
             return
+        if early is not None:
+            self.graphBeforeEndOfFF("ENERGY", early)
         dv1 = Graphs.DrawEnergy(data, time, labels, timeindex=maxtimeindex, title=title)
         self._sendplot(dv1)
 
@@ -398,9 +398,11 @@ class PlasmaContext():
                 dv1.plottype = plottype
             self._sendplot(dv1)
 
-    def showSimpleImage(self, name, data, text, extent=(), labl=("", ""), title=None):
+    def showSimpleImage(self, name, data, text, extent=(), labl=("", ""), title=None, early=None):
         if not self.isGraphing(name):
             return
+        if early is not None:
+            self.graphBeforeEndOfFF(name, early)
         dv1 = Graphs.DrawSimpleImage(name, data, text, extent=extent, labl=labl, title=title)
         self._sendplot(dv1)
 

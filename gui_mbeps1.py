@@ -12,6 +12,8 @@ from fomplib import *
 from fgraf1 import *
 from dtimer import *
 from PopMenus import *
+from types import *  # This is required for the rightType function
+
 
 # read namelist
 iuin = 8
@@ -26,8 +28,6 @@ import s1
 """
 This imports the gui code
 """
-from types import *  # This is required for the rightType function
-import sys
 
 sys.path.append('./gui')
 from ProceduralInterface import *
@@ -71,23 +71,6 @@ def initialize_menus(pc):
         pc.addGraph("ION Vx vs X", "Ion/Ion Phase")  # Enable electron velocity
     if (in1.ntw > 0):
         pc.addGraph("ENERGY", "Energy", priority=150)  # Enable electron velocity
-
-def early(pc, in1):
-    pc.graphBeforeEndOfFF(' POTENTIAL', in1.ntp)
-    pc.graphBeforeEndOfFF(' EDENSITY', in1.ntde)
-    pc.graphBeforeEndOfFF(' ION DENSITY', in1.ntdi )
-    pc.graphBeforeEndOfFF(' ELFIELD', in1.ntel)
-    pc.graphBeforeEndOfFF('ELECTRON VEL', in1.ntv)
-    pc.graphBeforeEndOfFF('ION VEL', in1.ndv)
-    pc.graphBeforeEndOfFF('ELECTRON TRAJ', in1.ntt)
-    pc.graphBeforeEndOfFF('ELECTRON Vx vs X', in1.nts)
-    pc.graphBeforeEndOfFF('ION Vx vs X', in1.nds)
-    pc.graphBeforeEndOfFF('ENERGY', in1.ntw)        #Kind of clunky of how you cannot easily get this name without reading the source
-    pc.graphBeforeEndOfFF("POTENTIAL OMEGA VS MODE+", in1.ntp)
-    pc.graphBeforeEndOfFF('POTENTIAL OMEGA VS MODE-', in1.ntp)
-    pc.graphBeforeEndOfFF('ION DENSITY OMEGA VS MODE', in1.ntdi)
-    pc.graphBeforeEndOfFF("ION DENSITY OMEGA VS MODE+", in1.ntdi)
-    pc.graphBeforeEndOfFF("ION DENSITY OMEGA VS MODE-", in1.ntdi)
 
 def main(*args):
     # init GUI
@@ -244,7 +227,6 @@ def main(*args):
             pc.runOnce()
         pc.setTime(curtime, in1.dt)
         pc.getEvents()
-        early(pc, in1)
         pc.fastForward()
 
         # debug reset
@@ -267,7 +249,7 @@ def main(*args):
             if (ntime == in1.ntde * it) or ntime:
                 s1.edensity_diag1(s1.sfield)
                 # display smoothed electron density
-                graf2.dscaler1(s1.sfield, ' EDENSITY', in1.dt*ntime, 999, 0, nx, irc, title='Electron Density vs X')
+                graf2.dscaler1(s1.sfield, ' EDENSITY', in1.dt*ntime, 999, 0, nx, irc, title='Electron Density vs X', early=in1.ntde)
                 if (irc[0] == 1):
                     break
                 irc[0] = 0
@@ -291,7 +273,7 @@ def main(*args):
                     if ((in1.nddi == 1) or (in1.nddi == 3)):
                         # display smoothed ion density
                         graf2.dscaler1(s1.sfield, ' ION DENSITY', in1.dt*ntime, 999, 1, nx,
-                                       irc, title='Ion Density vs X')
+                                       irc, title='Ion Density vs X', early=in1.ntdi)
                         if (irc[0] == 1):
                             break
                         irc[0] = 0
@@ -299,9 +281,9 @@ def main(*args):
                     if ((in1.nddi == 2) or (in1.nddi == 3)):
                         # display frequency spectrum
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE+", s1.pkwdi[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), title='Ion Density Omega vs Mode +')
+                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), title='Ion Density Omega vs Mode +', early=in1.ntdi)
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE-", s1.pkwdi[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax),  title='Ion Density Omega vs Mode -')
+                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax),  title='Ion Density Omega vs Mode -', early=in1.ntdi)
                         graf1.dmscaler1(s1.wkdi, 'ION DENSITY OMEGA VS MODE',
                                         ntime, 999, 1, in1.modesxdi, s1.cwk, irc)
                         if (irc[0] == 1):
@@ -337,7 +319,7 @@ def main(*args):
                 s1.potential_diag1(s1.sfield, s1.pkw, s1.wk, ntime)
                 if ((in1.ndp == 1) or (in1.ndp == 3)):
                     # display potential
-                    graf2.dscaler1(s1.sfield, ' POTENTIAL', ntime*in1.dt, 999, 0, nx, irc, title='Potential vs X')
+                    graf2.dscaler1(s1.sfield, ' POTENTIAL', ntime*in1.dt, 999, 0, nx, irc, title='Potential vs X', early=in1.ntp)
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
@@ -345,9 +327,9 @@ def main(*args):
                 if ((in1.ndp == 2) or (in1.ndp == 3)):
                     # display frequency spectrum
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE+", s1.pkw[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), title="Potential: Omega vs Mode +")
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), title="Potential: Omega vs Mode +", early=in1.ntp)
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE-", s1.pkw[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), title="Potential: Omega vs Mode -")
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), title="Potential: Omega vs Mode -", early=in1.ntp)
                     graf1.dmscaler1(s1.wk, 'POTENTIAL OMEGA VS MODE', ntime, 999, 2,
                                     in1.modesxp, s1.cwk, irc)
                     if (irc[0] == 1):
@@ -360,7 +342,7 @@ def main(*args):
             if (ntime == in1.ntel * it):
                 s1.elfield_diag1(s1.sfield)
                 # display longitudinal efield
-                graf2.dscaler1(s1.sfield, ' ELFIELD', in1.dt*ntime, 999, 0, nx, irc, title='Longitudinal E-Field')
+                graf2.dscaler1(s1.sfield, ' ELFIELD', in1.dt*ntime, 999, 0, nx, irc, title='Longitudinal E-Field', early=in1.ntel)
                 if (irc[0] == 1):
                     break
                 irc[0] = 0
@@ -374,7 +356,7 @@ def main(*args):
                 # display electron velocity distributions
                 if ((in1.ndv == 1) or (in1.ndv == 3)):
                     graf2.displayfv1(s1.fv, s1.fvm, 'ELECTRON VEL', ntime, in1.nmv, 1,
-                                     irc, title='Electron Velicity Histogram')
+                                     irc, title='Electron Velicity Histogram', early=in1.ntv)
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
@@ -385,7 +367,7 @@ def main(*args):
                     # display ion velocity distributions
                     if ((in1.ndv == 2) or (in1.ndv == 3)):
                         graf2.displayfv1(s1.fvi, s1.fvmi, 'ION VEL', ntime, in1.nmv, 1,
-                                         irc, title="Ion Velocity Histogram")
+                                         irc, title="Ion Velocity Histogram", early=in1.ntv)
                         if (irc[0] == 1):
                             break
                         irc[0] = 0
@@ -398,7 +380,7 @@ def main(*args):
                 if (in1.nst == 3):
                     # display velocity distributions
                     graf2.displayfv1(s1.fvtp, s1.fvmtp, 'ELECTRON TRAJ', ntime, in1.nmv,
-                                     1, irc, title='Electron Trajectory vs X')
+                                     1, irc, title='Electron Trajectory vs X', early=in1.ntt)
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
@@ -410,7 +392,7 @@ def main(*args):
                 # plot electrons vx versus x
                 if ((in1.nds == 1) or (in1.nds == 3)):
                     graf2.dpmgrasp1(s1.ppart, s1.kpic, 'ELECTRON Vx vs X', ntime, 999, nx, 2,
-                                    1, in1.ntsc, irc)
+                                    1, in1.ntsc, irc, early=in1.nts)
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
@@ -419,7 +401,7 @@ def main(*args):
                     # plot ions vx versus x
                     if ((in1.nds == 2) or (in1.nds == 3)):
                         graf2.dpmgrasp1(s1.pparti, s1.kipic, 'ION Vx vs X', ntime, 999, nx, 2,
-                                        1, in1.ntsc, irc)
+                                        1, in1.ntsc, irc, early=in1.nts)
                         if (irc[0] == 1):
                             break
                         irc[0] = 0
@@ -443,7 +425,7 @@ def main(*args):
             if (ntime == in1.ntw * it):
                 s1.energy_diag1(s1.wt, ntime, iuot)
                 pc.showEnergy(in1.ntw*numpy.array(range(it)) * in1.dt, s1.wt, it,
-                              ["Total Field", "Kinetic", "Kinetic Ions", "Total Energy"], title='Energy vs Time')
+                              ["Total Field", "Kinetic", "Kinetic Ions", "Total Energy"], title='Energy vs Time', early=in1.ntw)
 
                 # restart file
         if (in1.ntr > 0):

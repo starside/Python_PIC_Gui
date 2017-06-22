@@ -30,46 +30,6 @@ float_type = numpy.float32
 complex_type = numpy.complex64
 runCounter = 0
 
-
-# Some boilderplate
-def changeVarsCallback(obj, to):
-    try:
-        for key in to.var:
-            if key == "fastforward":
-                if rightType(to.var[key]) > obj.tend:
-                    continue
-            setattr(obj, key, rightType(to.var[key]))
-    except AttributeError:
-        print "Could not change variables"
-
-
-# The function to be called when reset is pushed
-def resetCallback(obj, to):
-    print "The reset button was pushed!"
-    # Do something
-    print obj.tend
-
-
-def exitCallback(obj, to):
-    print "Exit"
-    # exit(0)
-
-
-def rightType(val):
-    ints, reals, complexs = int_type, float_type, complex_type
-    if type(val) is IntType:
-        return numpy.array([val], ints)
-    elif type(val) is FloatType:
-        return numpy.array([val], reals)
-    elif type(val) is ComplexType:
-        return numpy.array([val], complexs)
-
-
-"""
-Define function that initializes menus
-"""
-
-
 def initialize_menus(pc):
     # initialize all diagnostics from namelist input parameters
     # initialize energy diagnostic: allocates wt
@@ -187,12 +147,9 @@ def initialize_menus(pc):
 
 def main(*args):
     # init GUI
-    pc = PlasmaContext(*args)  # Create GUI
+    pc = PlasmaContext(in1, *args)  # Create GUI
     pc.showGraphs(True)  # enable graphics.  Setting to false will disable graphics
     pc.clearGraphList()  # remove all default graph options
-    pc.callbacks["VARCHANGE"] = changeVarsCallback  # Set a callback
-    pc.callbacks["RESET"] = resetCallback
-    pc.callbacks["EXIT"] = exitCallback
     in1.timedirection = 0  # default state of the GUI.  MUST BE 0
 
     # override default input data
@@ -401,9 +358,9 @@ def main(*args):
         if ntime == nstart:
             pc.runOnce()
         curtime = ntime * in1.dt
-        pc.setTime(curtime)
-        pc.getEvents(in1)
-        pc.fastForward(curtime + in1.dt, in1)
+        pc.setTime(curtime, in1.dt)
+        pc.getEvents()
+        pc.fastForward()
 
         # debug reset
         #  if (ntime==nloop/2):

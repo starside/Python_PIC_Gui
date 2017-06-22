@@ -6,7 +6,7 @@ class GraphicsInterface:
         self.pc = pc
         self.dt = 1
 
-    def dscaler1(self, f, label, itime, isc, ist, nx, irc, title=None):
+    def dscaler1(self, f, label, itime, isc, ist, nx, irc, title=None, early=None):
         """
         ! displays 1d scalar field in real space
         ! f = 1d scalar field in real space
@@ -29,9 +29,11 @@ class GraphicsInterface:
         pc = self.pc
         edenx = numpy.array(range(nx))
         edeny = numpy.array(f[0:nx])
-        pc.showSimple([label, label], [edenx], [edeny], "Time=" + str(itime), title=title)
+        if early is not None:
+            self.pc.graphBeforeEndOfFF(label, early)
+        self.pc.showSimple([label, label], [edenx], [edeny], "Time=" + str(itime), title=title)
 
-    def displayfv1(self, fv, fvm, label, itime, nmv, idt, irc, title=None):
+    def displayfv1(self, fv, fvm, label, itime, nmv, idt, irc, title=None, early=None):
         """
         ! displays velocity distribution functions
         ! fv = velocity distribution
@@ -44,19 +46,25 @@ class GraphicsInterface:
         """
         w, h = numpy.shape(fv)
         s = ["x", "y", "z"]
+        if early is not None:
+            self.pc.graphBeforeEndOfFF(label, early)
         self.pc.showVelocity(fv, s[:h], fvm=fvm, plottype=label, title=title)
 
-    def dpmgrasp1(self, ppart, kpic, label, itime, isc, nx, iyp, ixp, ntsc, irc):
+    def dpmgrasp1(self, ppart, kpic, label, itime, isc, nx, iyp, ixp, ntsc, irc, early=None):
         a, b, c = numpy.shape(ppart)
         phasearr = numpy.empty((2, b, c), dtype=ppart.dtype)
         phasearr[1, :, :] = ppart[iyp - 1, :, :]
         phasearr[0, :, :] = ppart[ixp - 1, :, :]
+        if early is not None:
+            self.pc.graphBeforeEndOfFF(label, early)
         self.pc.showPhase(phasearr, kpic, plottype=label)
 
-    def dvector1(self, f, label, itime, isc, ist, idm, nx, irc, axislabels=["y", "z"]):
+    def dvector1(self, f, label, itime, isc, ist, idm, nx, irc, axislabels=["y", "z"], early=None):
         edenx = range(nx)
         w, h = numpy.shape(f)
         assert (w == len(axislabels))
+        if early is not None:
+            self.pc.graphBeforeEndOfFF(label, early)
         self.pc.showSimple([label] + axislabels, [edenx, edenx], [f[0, :nx], f[1, :nx]], "Time=" + str(itime * self.dt))
 
 
