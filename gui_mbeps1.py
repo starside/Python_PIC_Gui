@@ -44,31 +44,33 @@ Define function that initializes menus
 """
 def initialize_menus(pc):
     pc.addGraph("NOPLOT", "No Plot", autoadd=False)
-    if (in1.ntde > 0):
+    if in1.ntde > 0:
         pc.addGraph(' EDENSITY', "Density/Electron Density")  # Enable electron velocity
-    if (in1.movion == 1):
-        if (in1.ntdi > 0):
+    if in1.movion == 1:
+        if in1.ntdi > 0:
             pc.addGraph(' ION DENSITY', "Density/Ion Density")  # Enable ion velocity
-    if (in1.ntp > 0):
+    if in1.ntp > 0:
         pc.addGraph(' POTENTIAL', "Potential/Potential")  # Enable electron velocity
-        pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
-        pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -", autoadd=False)
-    if (in1.ntel > 0):
+        if in1.ndp == 2 or in1.ndp == 3:
+            pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
+            pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -", autoadd=False)
+    if in1.ntel > 0:
         pc.addGraph(' ELFIELD', "E-Field/Longitudinal E-Field")
-    if (in1.ntv > 0):
+    if in1.ntv > 0:
         pc.addGraph("ELECTRON VEL", "Electron Velocity")  # Enable electron velocity
         if (in1.movion == 1):
             if ((in1.ndv == 2) or (in1.ndv == 3)):
                 pc.addGraph("ION VEL", "Ion Velocity")  # Enable electron velocity
-    if (in1.ntt > 0):
+    if in1.ntt > 0:
         pc.addGraph("ELECTRON TRAJ", "ELECTRON Trajectory")  # Enable electron velocity
-    if (in1.movion == 1):
-        if (in1.ntdi > 0):
+    if in1.movion == 1:
+        if in1.ntdi > 0:
             pc.addGraph("ION DENSITY OMEGA VS MODE+", "Ion Dispersion/Ion Density Dispersion +")
             pc.addGraph("ION DENSITY OMEGA VS MODE-", "Ion Dispersion/Ion Density Dispersion -", autoadd=False)
     if in1.nts > 0:
         pc.addGraph("ELECTRON Vx vs X", "Electron/Electron Phase")  # Enable electron velocity
-        pc.addGraph("ION Vx vs X", "Ion/Ion Phase")  # Enable electron velocity
+        if in1.movion:
+            pc.addGraph("ION Vx vs X", "Ion/Ion Phase")  # Enable electron velocity
     if (in1.ntw > 0):
         pc.addGraph("ENERGY", "Energy", priority=150)  # Enable electron velocity
 
