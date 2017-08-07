@@ -12,6 +12,7 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 from subprocess import Popen, PIPE
+import copy
 # import Image
 import os, sys
 

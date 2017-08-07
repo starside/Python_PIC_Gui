@@ -408,6 +408,7 @@ class DrawEnergyControlPanel(BaseControlPanel):
 
 
     def OnSelectWK(self, event):
+        print id(self)
         caller = event.GetEventObject()
         callerid = -1
         item_data = self._PV["EnergyTypes"]
@@ -460,6 +461,8 @@ def lowerpowerof2(x):
 
 
 def axisPowerOfTwo(data):
+    if len(data) == 0:
+        return (None,None)
     minv = np.amin(data)
     maxv = np.amax(data)
     return (lowerpowerof2(minv), upperpowerof2(maxv))
