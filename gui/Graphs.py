@@ -363,7 +363,6 @@ class DrawEnergyControlPanel(BaseControlPanel):
         BaseControlPanel.__init__(self, parent)
         self._PV = pv
         self.labels = labels
-        self.labels.insert(0, "Off")
         vsizer1 = self.SetupControls()
         vsizer1.SetSizeHints(self)
         self.SetSizer(vsizer1)
@@ -371,6 +370,11 @@ class DrawEnergyControlPanel(BaseControlPanel):
         self.Show()
 
         # The following methods should be overriden if inherited
+
+    def _buildOptionsList(self):
+        items = self._PV["EnergyTypes"].iteritems()
+        return [i[0] for i in items if not i[1]["on"]]
+
 
     def SetupControls(self):
         vsizer1 = wx.BoxSizer(orient=wx.VERTICAL)
@@ -381,15 +385,19 @@ class DrawEnergyControlPanel(BaseControlPanel):
         self.axesTypeList.SetStringSelection(self._PV["Axis-Type"])
         hs1.Add(item=self.axesTypeList)
 
+        # List to store the dynamically generate combo boxes
         self.energyTypeList = []
-        print self.labels
-        for i, label in enumerate(self.labels[1:]):
-            etl = wx.ComboBox(self, -1, choices=self.labels, style=wx.CB_READONLY)
-            self.energyTypeList.append(etl)
-            etl.SetStringSelection(self._PV["Energy_Type" + str(i)])
+        # Generate combo boxes
+        augmentedLabels = ["Off"] + self.labels #Create list of possible options
+        for item in self.labels:
+            item_data = self._PV["EnergyTypes"][item]
+            is_on = item_data["on"]
+            etl = wx.ComboBox(self, -1, choices=augmentedLabels, style=wx.CB_READONLY)
+            selection_value = item if is_on else "Off"
+            etl.SetStringSelection(selection_value)
+            self.energyTypeList.append([etl, selection_value])  # Append tuple with the selected value of the box
             etl.Bind(wx.EVT_COMBOBOX, self.OnSelectWK)
             hs1.Add(item=etl, flag=wx.ALL | wx.EXPAND)
-
         vsizer1.Add(hs1)
         self.axesTypeList.Bind(wx.EVT_COMBOBOX, self.OnSelect)
         return vsizer1
@@ -398,29 +406,29 @@ class DrawEnergyControlPanel(BaseControlPanel):
         self._PV["Axis-Type"] = event.GetString()
         wx.PostEvent(self.stf, RefreshGraphEvent())
 
+
     def OnSelectWK(self, event):
         caller = event.GetEventObject()
         callerid = -1
-        for i, e in enumerate(self.energyTypeList):
+        item_data = self._PV["EnergyTypes"]
+        for i, etuple in enumerate(self.energyTypeList):
+            e,last_value = etuple
             if e.GetId() == caller.GetId():
                 callerid = i  # Off has position 0
-        if callerid != -1:
-            self._PV["Energy_Type" + str(callerid)] = event.GetString()
-            wx.PostEvent(self.stf, RefreshGraphEvent())
-            print "Energy_Type" + str(callerid), event.GetString()
-
-    def OnSelectWKE(self, event):
-        self._PV["Energy_Type"] = event.GetString()
-        wx.PostEvent(self.stf, RefreshGraphEvent())
-
-    def OnSelectWKE2(self, event):
-        self._PV["Energy_Type2"] = event.GetString()
-        wx.PostEvent(self.stf, RefreshGraphEvent())
-
-    def OnSelectWKE3(self, event):
-        self._PV["Energy_Type3"] = event.GetString()
-        wx.PostEvent(self.stf, RefreshGraphEvent())
-
+                graph_name = event.GetString()
+                if graph_name == "Off":
+                    if last_value != "Off": #Not already Off
+                        item_data[last_value]["on"] = False # Set shared state to Off
+                        etuple[1] = "Off"    # Update menu state
+                else:
+                    if item_data[graph_name]["on"]: # Already On
+                        e.SetStringSelection(last_value)
+                    else: # New selection is not on
+                        if last_value != "Off": # Turn Off previous plot
+                            item_data[last_value]["on"] = False
+                        item_data[graph_name]["on"] = True
+                        etuple[1] = graph_name
+                wx.PostEvent(self.stf, RefreshGraphEvent())
 
 def _upperpowerof2(x):
     x = int(abs(x))
@@ -458,8 +466,6 @@ def axisPowerOfTwo(data):
 
 
 class DrawEnergy(DrawOptions):
-    eind = {"Kinetic": 1, "Total": 3, "Potential": 0, "Off": -1}  # Selection to index
-
     def __init__(self, data, itw, labels, timeindex=-1, title=None):
         self.edata = data
         self.itw = itw
@@ -472,27 +478,34 @@ class DrawEnergy(DrawOptions):
         self.title = title
 
     def drawPlot(self, fig, axes):
-        # Set default values if they do not exist
-        # _PV is a dictionary of persistent values, that
-        if not self._PV.has_key("Energy_Type0"):
-            self._PV["Energy_Type0"] = self.labels[0]
-            for i, l in enumerate(self.labels[1:]):
-                self._PV["Energy_Type" + str(i + 1)] = "Off"
+        # Create the data model for communication with options,
+        # if it does not exist in _PV
+        if "EnergyTypes" not in self._PV:
+            self._PV["EnergyTypes"] = {x:{"on":False, "index":i} for i,x in enumerate(self.labels)}
+            print self._PV["EnergyTypes"]
+        # Check to see if Axis-Type selector exists.  Default to Linear scale
+        if "Axis-Type" not in self._PV:
             self._PV["Axis-Type"] = "Linear-Linear"
-            # Draw Default plot
+        # Use set axis types
         self.updateAxes3(fig, axes, self._PV["Axis-Type"])
-        for i, l in enumerate(self.labels[1:]):
-            try:
-                lbl = self._PV["Energy_Type" + str(i)]
-                si = self.labels.index(lbl) - 1
+        # Draw the plots that are on
+        ax_top = None;
+        ax_bot = None;
+        for item in self._PV["EnergyTypes"].iteritems():
+            state = item[1]
+            if state["on"]: #Plot if state is on
+                data_index = state["index"]
                 xdata = self.itw[0:self.timeindex]
-                ydata = self.edata[0:self.timeindex, si]
-                axes.plot(xdata, ydata, "x", label=lbl)
-                [top, bottom] = axisPowerOfTwo(ydata)
-                axes.set_ylim([bottom, top])
-            except ValueError:  # Off not in list
-                True
-
+                ydata = self.edata[0:self.timeindex, data_index]
+                axes.plot(xdata, ydata, "x", label=self.labels[data_index])
+                # Calculate y-axis limits
+                [bottom, top] = axisPowerOfTwo(ydata)
+                ax_top = max(ax_top, top)
+                ax_bot = min(ax_bot, bottom) if ax_bot is not None else bottom
+        # Set the limits if valid values are specified
+        if ax_top is not None and ax_bot is not None:
+            axes.set_ylim([ax_bot, ax_top])
+        # Draw titles and time
         self.drawTime(fig, axes)
         axes.legend()
         axes.set_xlabel("Time")
@@ -507,8 +520,7 @@ class DrawEnergy(DrawOptions):
         axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
 
     def makeControlPanel(self, parentWindow):  # Default options
-        temp = DrawEnergyControlPanel(parentWindow, self._PV, self.labels)
-        return temp
+        return DrawEnergyControlPanel(parentWindow, self._PV, self.labels)
 
 
 class DrawPhase(DrawOptions):

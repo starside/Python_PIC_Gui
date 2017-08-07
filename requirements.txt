@@ -1,4 +1,4 @@
 f90nml>=0.21
 matplotlib>=2.0.2
-numpy>=1.7.1
-wxPython>=4.0.0a2
+numpy==1.7.1
+#wxPython>=4.0.0a2
