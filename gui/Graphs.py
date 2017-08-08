@@ -380,10 +380,19 @@ class DrawEnergyControlPanel(BaseControlPanel):
         vsizer1 = wx.BoxSizer(orient=wx.VERTICAL)
         hs1 = wx.BoxSizer(orient=wx.VERTICAL)
 
+        # To offset energy or not
+        self.offset_choices = ["Offset Energies", "Magnitude"]
+        cb = wx.ComboBox(self, -1, choices=self.offset_choices, style=wx.CB_READONLY)
+        cb.SetStringSelection(self.offset_choices[0] if self._PV["EnergyOffset"] else self.offset_choices[1])
+        hs1.Add(item=cb, flag=wx.ALL | wx.EXPAND)
+        cb.Bind(wx.EVT_COMBOBOX, self.OnSelectOffset)
+
+
+        #Select axis type
         self.axesTypeList = wx.ComboBox(self, -1, choices=["Linear-Linear", "Log-Linear", "Linear-Log", "Log-Log"],
                                         style=wx.CB_READONLY)
         self.axesTypeList.SetStringSelection(self._PV["Axis-Type"])
-        hs1.Add(item=self.axesTypeList)
+        hs1.Add(item=self.axesTypeList, flag=wx.ALL | wx.EXPAND)
 
         # List to store the dynamically generate combo boxes
         self.energyTypeList = []
@@ -408,7 +417,6 @@ class DrawEnergyControlPanel(BaseControlPanel):
 
 
     def OnSelectWK(self, event):
-        print id(self)
         caller = event.GetEventObject()
         callerid = -1
         item_data = self._PV["EnergyTypes"]
@@ -430,6 +438,13 @@ class DrawEnergyControlPanel(BaseControlPanel):
                         item_data[graph_name]["on"] = True
                         etuple[1] = graph_name
                 wx.PostEvent(self.stf, RefreshGraphEvent())
+
+    def OnSelectOffset(self, event):
+        selection = event.GetString()
+        if selection == self.offset_choices[0]:
+            self._PV["EnergyOffset"] = True
+        else:
+            self._PV["EnergyOffset"] = False
 
 def _upperpowerof2(x):
     x = int(abs(x))
@@ -485,7 +500,9 @@ class DrawEnergy(DrawOptions):
         # if it does not exist in _PV
         if "EnergyTypes" not in self._PV:
             self._PV["EnergyTypes"] = {x:{"on":False, "index":i} for i,x in enumerate(self.labels)}
-            print self._PV["EnergyTypes"]
+            self._PV["EnergyTypes"][self.labels[0]]["on"] = True
+        if "EnergyOffset" not in self._PV:
+            self._PV["EnergyOffset"] = True
         # Check to see if Axis-Type selector exists.  Default to Linear scale
         if "Axis-Type" not in self._PV:
             self._PV["Axis-Type"] = "Linear-Linear"
@@ -500,6 +517,8 @@ class DrawEnergy(DrawOptions):
                 data_index = state["index"]
                 xdata = self.itw[0:self.timeindex]
                 ydata = self.edata[0:self.timeindex, data_index]
+                if len(ydata) > 0 and self._PV["EnergyOffset"]:
+                	ydata -= ydata[0]
                 axes.plot(xdata, ydata, "x", label=self.labels[data_index])
                 # Calculate y-axis limits
                 [bottom, top] = axisPowerOfTwo(ydata)
