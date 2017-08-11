@@ -404,12 +404,12 @@ class PlasmaContext():
                 dv1.plottype = plottype
             self._sendplot(dv1)
 
-    def showSimpleImage(self, name, data, text, extent=(), labl=("", ""), title=None, early=None):
+    def showSimpleImage(self, name, data, text, extent=(), labl=("", ""), title=None, early=None,ticks_scale=None):
         if not self.isGraphing(name):
             return
         if early is not None:
             self.graphBeforeEndOfFF(name, early)
-        dv1 = Graphs.DrawSimpleImage(name, data, text, extent=extent, labl=labl, title=title)
+        dv1 = Graphs.DrawSimpleImage(name, data, text, extent=extent, labl=labl, title=title, ticks_scale=ticks_scale)
         self._sendplot(dv1)
 
     def showMultiTrajectory(self, partd, itt, comp):

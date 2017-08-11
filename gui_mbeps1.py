@@ -117,6 +117,7 @@ def main(*args):
     np = s1.np
     # nx = number of grid points in x direction
     nx = s1.nx
+    spectrum_scale = 2.0*numpy.pi/float(nx)
     # npi = total number of ions in simulation
     if (in1.movion > 0):
         npi = s1.npi
@@ -283,9 +284,11 @@ def main(*args):
                     if ((in1.nddi == 2) or (in1.nddi == 3)):
                         # display frequency spectrum
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE+", s1.pkwdi[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), title='Ion Density Omega vs Mode +', early=in1.ntdi)
+                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), title='Ion Density Omega vs Mode +', early=in1.ntdi,
+                                           ticks_scale=spectrum_scale)
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE-", s1.pkwdi[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax),  title='Ion Density Omega vs Mode -', early=in1.ntdi)
+                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax),  title='Ion Density Omega vs Mode -', early=in1.ntdi,
+                                           ticks_scale=spectrum_scale)
                         graf1.dmscaler1(s1.wkdi, 'ION DENSITY OMEGA VS MODE',
                                         ntime, 999, 1, in1.modesxdi, s1.cwk, irc)
                         if (irc[0] == 1):
@@ -329,9 +332,11 @@ def main(*args):
                 if ((in1.ndp == 2) or (in1.ndp == 3)):
                     # display frequency spectrum
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE+", s1.pkw[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), title="Potential: Omega vs Mode +", early=in1.ntp)
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), title="Potential: Omega vs Mode +", early=in1.ntp,
+                                       ticks_scale=spectrum_scale)
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE-", s1.pkw[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), title="Potential: Omega vs Mode -", early=in1.ntp)
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), title="Potential: Omega vs Mode -", early=in1.ntp,
+                                       ticks_scale=spectrum_scale)
                     graf1.dmscaler1(s1.wk, 'POTENTIAL OMEGA VS MODE', ntime, 999, 2,
                                     in1.modesxp, s1.cwk, irc)
                     if (irc[0] == 1):

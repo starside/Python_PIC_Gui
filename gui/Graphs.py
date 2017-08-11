@@ -797,13 +797,14 @@ class DrawPhi(KeyList):
 
 
 class DrawSimpleImage(KeyList):
-    def __init__(self, name, data, text, labl=["", ""], extent=(), title=None):
+    def __init__(self, name, data, text, labl=["", ""], extent=(), title=None, ticks_scale=None):
         self.text = text
         self.plottype = name
         self.img = data
         self.labl = labl
         self.extent = extent
         self.title = title
+        self.ticks_scale = ticks_scale
 
     def drawPlot(self, fig, axes):
         (t, k) = np.shape(self.img)
@@ -824,6 +825,8 @@ class DrawSimpleImage(KeyList):
 
         axes.set_xlabel(self.labl[0])
         axes.set_ylabel(self.labl[1])
+        if self.ticks_scale is not None:
+            axes.set_xticklabels([str("{0:.2f}".format(self.ticks_scale*x)) for x in axes.get_xticks()])
         axes.annotate(self.text, xy=(0.0, 1.05), xycoords='axes fraction')
         if self.title is None:
             self.title = self.plottype
