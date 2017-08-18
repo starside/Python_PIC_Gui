@@ -213,6 +213,7 @@ def main(*args):
     np = s1.np
     # nx = number of grid points in x direction
     nx = s1.nx;
+    spectrum_scale = 2.0*numpy.pi/float(nx)
     nxh = int(nx / 2)
     # npi = total number of ions in simulation
     if (in1.movion > 0):
@@ -443,9 +444,11 @@ def main(*args):
                     if ((in1.nddi == 2) or (in1.nddi == 3)):
                         # display frequency spectrum
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE+", s1.pkwdi[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), early=in1.ntdi)
+                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), early=in1.ntdi,
+                                           ticks_scale=spectrum_scale)
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE-", s1.pkwdi[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), early=in1.ntdi)
+                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), early=in1.ntdi,
+                                           ticks_scale=spectrum_scale)
                         wax = numpy.array(range(in1.modesxdi))
                         pc.showSimple(["ION DENSITY OMEGA VS MODE LINE", "+OMEGA", "-OMEGA"], [wax, wax],
                                       [s1.wkdi[0:in1.modesxdi, 0], s1.wkdi[0:in1.modesxdi, 1]],
@@ -545,13 +548,17 @@ def main(*args):
                     if ((in1.ndji == 2) or (in1.ndji == 3)):
                         # display frequency spectrum
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEY+", sb1.vpkwji[0, ::, :, 0],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji)
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji,
+                                           ticks_scale=spectrum_scale)
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEY-", sb1.vpkwji[0, ::, :, 1],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji)
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji,
+                                           ticks_scale=spectrum_scale)
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEZ+", sb1.vpkwji[1, ::, :, 0],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji)
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji,
+                                           ticks_scale=spectrum_scale)
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEZ-", sb1.vpkwji[1, ::, :, 1],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji)
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji,
+                                           ticks_scale=spectrum_scale)
                         graf1.dmvector1(sb1.vwkji, 'ION CURRENT OMEGA VS MODE',
                                         ntime, 999, 2, 2, in1.modesxji, s1.cwk, irc)
                         if (irc[0] == 1):
@@ -576,9 +583,11 @@ def main(*args):
                 if ((in1.ndp == 2) or (in1.ndp == 3)):
                     # display frequency spectrum
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE+", s1.pkw[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), early=in1.ntp)
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), early=in1.ntp,
+                                       ticks_scale=spectrum_scale)
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE-", s1.pkw[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), early=in1.ntp)
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), early=in1.ntp,
+                                       ticks_scale=spectrum_scale)
                     wax = numpy.array(range(in1.modesxp))
                     pc.showSimple(["POTENTIAL OMEGA VS MODE LINE", "+OMEGA", "-OMEGA"], [wax, wax],
                                   [s1.wk[0:in1.modesxdi, 0], s1.wk[0:in1.modesxdi, 1]], "Time=" + str(ntime * in1.dt), early=in1.ntp)
@@ -627,13 +636,17 @@ def main(*args):
                 if ((in1.nda == 2) or (in1.nda == 3)):
                     # display frequency spectrum
                     pc.showSimpleImage("VECTOR POTENTIAL OMEGA VS MODE Y+", sd1.vpkw[0, :, :, 0],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta)
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta,
+                                       ticks_scale=spectrum_scale)
                     pc.showSimpleImage("VECTOR POTENTIAL OMEGA VS MODE Y-", sd1.vpkw[0, :, :, 1],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta)
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta,
+                                       ticks_scale=spectrum_scale)
                     pc.showSimpleImage("VECTOR POTENTIAL OMEGA VS MODE Z+", sd1.vpkw[1, :, :, 0],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta)
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta,
+                                       ticks_scale=spectrum_scale)
                     pc.showSimpleImage("VECTOR POTENTIAL OMEGA VS MODE Z-", sd1.vpkw[1, :, :, 1],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta)
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxa, in1.wmin, in1.wmax), early=in1.nta,
+                                       ticks_scale=spectrum_scale)
 
                     wax = numpy.array(range(in1.modesxa))
                     pc.showSimple(["VECTOR POTENTIAL OMEGA VS MODE Y LINE", "+OMEGA", "-OMEGA"], [wax, wax],
@@ -672,13 +685,17 @@ def main(*args):
                 if ((in1.ndet == 2) or (in1.ndet == 3)):
                     # display frequency spectrum
                     pc.showSimpleImage("FT TRANSVERSE E.F. Y +OMEGA VS MODE", sd1.vpkwet[0, :, :, 0],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet)
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet,
+                                       ticks_scale=spectrum_scale)
                     pc.showSimpleImage("FT TRANSVERSE E.F. Y -OMEGA VS MODE", sd1.vpkwet[0, :, :, 1],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet)
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet,
+                                       ticks_scale=spectrum_scale)
                     pc.showSimpleImage("FT TRANSVERSE E.F. Z +OMEGA VS MODE", sd1.vpkwet[1, :, :, 0],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet)
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet,
+                                       ticks_scale=spectrum_scale)
                     pc.showSimpleImage("FT TRANSVERSE E.F. Z -OMEGA VS MODE", sd1.vpkwet[1, :, :, 1],
-                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet)
+                                       "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxet, in1.wmin, in1.wmax), early=in1.ntet,
+                                       ticks_scale=spectrum_scale)
 
                     wax = numpy.array(range(in1.modesxet))
                     pc.showSimple(["TRANSVERSE E.F. Y OMEGA VS MODE", "+OMEGA", "-OMEGA"], [wax, wax],
