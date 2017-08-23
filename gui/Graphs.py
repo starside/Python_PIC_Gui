@@ -265,7 +265,7 @@ class DrawSimple(DrawOptions, KeyList):
             self._PV['ylimits'] = ylim
         self.updateAxes(fig, axes)
         leg = axes.legend()
-        leg.get_frame().set_alpha(0.5)
+        leg.get_frame().set_alpha(0.2)
         axes.annotate(self.text, xy=(0.0, 1.05), xycoords='axes fraction')
         if self.title is None:
             self.title = self.plottype
@@ -333,7 +333,8 @@ class DrawVelocity(DrawOptions, KeyList):
                     True  # extText = "  VTX = " + str(self.fvm[i][1]  )
         self.drawTime(fig, axes, extText)
         self.scaleYAxis(fig, axes, ydata[1:], 2.0)
-        axes.legend()
+        leg = axes.legend()
+        leg.get_frame().set_alpha(0.2)
         if self.title is None:
             self.title = self.plottype
         axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
@@ -529,7 +530,8 @@ class DrawEnergy(DrawOptions):
             axes.set_ylim([ax_bot, ax_top])
         # Draw titles and time
         self.drawTime(fig, axes)
-        axes.legend()
+        leg = axes.legend()
+        leg.get_frame().set_alpha(0.2)
         axes.set_xlabel("Time")
         axes.set_ylabel("Energy")
         if self.timeindex == 0:
