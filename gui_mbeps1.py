@@ -363,7 +363,7 @@ def main(*args):
                 # display electron velocity distributions
                 if ((in1.ndv == 1) or (in1.ndv == 3)):
                     graf2.displayfv1(s1.fv, s1.fvm, 'ELECTRON VEL', ntime, in1.nmv, 1,
-                                     irc, title='Electron Velicity Histogram', early=in1.ntv)
+                                     irc, title='Electron Velocity Histogram', early=in1.ntv)
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
