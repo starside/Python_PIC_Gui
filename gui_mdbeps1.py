@@ -444,10 +444,10 @@ def main(*args):
                     if ((in1.nddi == 2) or (in1.nddi == 3)):
                         # display frequency spectrum
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE+", s1.pkwdi[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), early=in1.ntdi,
+                                           extent=(0, in1.modesxdi, in1.wimin, in1.wimax), early=in1.ntdi,
                                            ticks_scale=spectrum_scale)
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE-", s1.pkwdi[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), early=in1.ntdi,
+                                           extent=(0, in1.modesxdi, in1.wimin, in1.wimax), early=in1.ntdi,
                                            ticks_scale=spectrum_scale)
                         wax = numpy.array(range(in1.modesxdi))
                         pc.showSimple(["ION DENSITY OMEGA VS MODE LINE", "+OMEGA", "-OMEGA"], [wax, wax],
@@ -548,16 +548,16 @@ def main(*args):
                     if ((in1.ndji == 2) or (in1.ndji == 3)):
                         # display frequency spectrum
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEY+", sb1.vpkwji[0, ::, :, 0],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji,
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wimin, in1.wimax), early=in1.ntji,
                                            ticks_scale=spectrum_scale)
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEY-", sb1.vpkwji[0, ::, :, 1],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji,
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wimin, in1.wimax), early=in1.ntji,
                                            ticks_scale=spectrum_scale)
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEZ+", sb1.vpkwji[1, ::, :, 0],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji,
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wimin, in1.wimax), early=in1.ntji,
                                            ticks_scale=spectrum_scale)
                         pc.showSimpleImage("ION CURRENT OMEGA VS MODEZ-", sb1.vpkwji[1, ::, :, 1],
-                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wmin, in1.wmax), early=in1.ntji,
+                                           "Time=" + str(ntime * in1.dt), extent=(0, in1.modesxji, in1.wimin, in1.wimax), early=in1.ntji,
                                            ticks_scale=spectrum_scale)
                         graf1.dmvector1(sb1.vwkji, 'ION CURRENT OMEGA VS MODE',
                                         ntime, 999, 2, 2, in1.modesxji, s1.cwk, irc)

@@ -387,7 +387,7 @@ def main(*args):
                 if (in1.nst == 3):
                     # display velocity distributions
                     graf2.displayfv1(s1.fvtp, s1.fvmtp, 'ELECTRON TRAJ', ntime, in1.nmv,
-                                     1, irc, title='Electron Trajectory vs X', early=in1.ntt)
+                                     1, irc, title='Electron Trajectory Velocity Histogram', early=in1.ntt)
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
