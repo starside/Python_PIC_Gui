@@ -199,7 +199,20 @@ class DrawTrajectory(DrawOptions, KeyList):
         axes.plot(xax, self.ydata[1:])
         self.drawTime(fig, axes)
 
-        # well defined axis here
+class DrawMultipleTrajectories(DrawOptions, KeyList):
+    def __init__(self, name, data, graphoptions=None, title=None):
+        DrawOptions.__init__(self)
+        self.setupKeylist(DrawOptions.defaultKeylist)
+        self.data = data
+        self.plottype = name
+
+    def drawPlot(self, fig, axes):
+        self.syncParameters()
+        self.setAxesType(self.PaxesType)
+        self.updateAxes(fig, axes)
+        axes.plot([0,1,2,3],[2,3,4,5])
+        self.drawTime(fig, axes)
+
 
 
 class DrawElectronDensity(DrawOptions, KeyList):
