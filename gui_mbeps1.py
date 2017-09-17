@@ -391,9 +391,10 @@ def main(*args):
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
-                elif in1.nst == 2:
+                elif in1.nst == 2 or in1.nst == 1:
                     #Plot multiple particle trajectories
-                    pc.showMultiTrajectories("ELECTRON TRAJ", s1.partd, early=in1.ntt)
+                    pc.showMultiTrajectories("ELECTRON TRAJ", s1.partd, s1.itt, in1.t0, \
+                        in1.ntt*in1.dt, 1, title='Test Electron Trajectories', early=in1.ntt)
 
                     # phase space diagnostic
         if (in1.nts > 0):

@@ -199,18 +199,33 @@ class DrawTrajectory(DrawOptions, KeyList):
         axes.plot(xax, self.ydata[1:])
         self.drawTime(fig, axes)
 
-class DrawMultipleTrajectories(DrawOptions, KeyList):
-    def __init__(self, name, data, graphoptions=None, title=None):
+class DrawMultipleTrajectories(DrawOptions):
+    def __init__(self, name, data, itt, t0, dt, defaultplot, graphoptions=None, title=None):
         DrawOptions.__init__(self)
-        self.setupKeylist(DrawOptions.defaultKeylist)
         self.data = data
+        self.itt = itt
         self.plottype = name
+        self.title = title
+        self.t0 = t0
+        self.dt = dt
+        d1,d2,d3 = np.shape(data)
+        # Check if default plot is not out of bounds, d2
+        assert( defaultplot >= 0 and defaultplot < d2)
+        self.whichplot = defaultplot
 
     def drawPlot(self, fig, axes):
-        self.syncParameters()
-        self.setAxesType(self.PaxesType)
-        self.updateAxes(fig, axes)
-        axes.plot([0,1,2,3],[2,3,4,5])
+        numpoints, ts, plotnum = np.shape(self.data)
+        if self.itt < 1: #Must include at least 1 data point to draw
+            return
+        xax = np.linspace(self.t0, self.t0 + (self.itt-1)*self.dt, self.itt)
+        for i in range(plotnum):
+            axes.plot(xax, self.data[0:self.itt,self.whichplot,i])
+        if self.title is not None:
+            axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
+        else:
+            axes.set_title(self.plottype, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
+        axes.set_xlabel("Time")
+        axes.set_ylabel("Position")
         self.drawTime(fig, axes)
 
 
@@ -581,27 +596,6 @@ class DrawPhase(DrawOptions):
         if self.title is None:
             self.title = self.plottype
         axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
-
-
-# (self, partd, itt, comp)
-class DrawMultiTraj(DrawOptions):
-    def __init__(self, partd, itt, comp):
-        # DrawOptions.__init__(self)
-        self.partd = partd
-        self.itt = itt
-        self.comp = comp
-        self.plottype = "DRAWMULTITRAJ"
-
-    def drawPlot(self, fig, axes):
-        x, y, z = np.shape(self.partd)
-        if self.comp >= y:
-            print "DrawMultiTraj is being asked to draw an out of bounds compent ", self.comp
-            return
-        for i in range(z):
-            axes.plot(self.partd[0:self.itt, self.comp, i], label=str(i))
-            # axes.plot(self.pos, self.vel, ',b')
-            # axes.legend()
-        self.drawTime(fig, axes)
 
 
 class DrawFastPhase(DrawOptions):

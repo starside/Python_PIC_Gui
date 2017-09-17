@@ -383,14 +383,14 @@ class PlasmaContext():
         dv1 = Graphs.DrawTrajectory(data)
         self._sendplot(dv1)
 
-    def showMultiTrajectories(self, name, data, graphoptions=None, title=None, early=None):
+    def showMultiTrajectories(self, name, data, itt, t0, dt, defaultplot, graphoptions=None, title=None, early=None):
         if self.norun:
             return
         if not self.isGraphing(name):
             return
         if early is not None:
             self.graphBeforeEndOfFF(name[0], early)
-        dv1 = Graphs.DrawMultipleTrajectories(name, data, graphoptions=graphoptions, title=title)
+        dv1 = Graphs.DrawMultipleTrajectories(name, data, itt, t0, dt, defaultplot, graphoptions=graphoptions, title=title)
         self._sendplot(dv1)
 
 
