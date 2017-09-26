@@ -389,7 +389,7 @@ class PlasmaContext():
         if not self.isGraphing(name):
             return
         if early is not None:
-            self.graphBeforeEndOfFF(name[0], early)
+            self.graphBeforeEndOfFF(name, early)
         dv1 = Graphs.DrawMultipleTrajectories(name, data, itt, t0, dt, defaultplot, graphoptions=graphoptions, title=title)
         self._sendplot(dv1)
 

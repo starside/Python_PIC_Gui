@@ -174,6 +174,7 @@ class LeftPanel(wx.Panel):
         # self.axes.imshow(mpimg.imread('gui/default.png'), interpolation='nearest', aspect='auto')
         self.mycanvas.mpl_connect('button_press_event', self.onclick)
         self.mycanvas.mpl_connect('motion_notify_event', self.onmotion)
+        self.mycanvas.mpl_connect('resize_event', self.onresize)
         self.toolbar = wx.BoxSizer(orient=wx.HORIZONTAL)
         self.navMenu = MyCustomToolbar(self.mycanvas)
         self.toolbar.Add(self.navMenu)
@@ -240,7 +241,6 @@ class LeftPanel(wx.Panel):
             self.currentEvent.data.setParams(self.arbGraphParameters)  # pass paramters to plot
         except AttributeError:
             True
-
         rax = self.currentEvent.data.drawPlot(self.figure, self.axes)
         if rax != None:  # This allows the graph to reconfigure its own axes, instead of allowing the panel to handle it
             self.axes = rax
@@ -309,6 +309,11 @@ class LeftPanel(wx.Panel):
             # self.slopeStack.append(x1)
             self.measuring = True
             self.DrawPlot()
+
+    def onresize(self, event):
+        [w,h] = self.figure.get_size_inches()
+        bottom = 0.5/h
+        self.figure.subplots_adjust(bottom=bottom)
 
     def onclick(self, event):
         if event.inaxes == None or self.measuring == False:
