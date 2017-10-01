@@ -597,7 +597,8 @@ class DrawPhase(DrawOptions):
         if self.tp is None or self.tp < 0 or self.tp > la:
             axes.plot(self.pos, self.vel, ',r')
         else: #Color beam particles red
-            npxb = int(abs(np.sum(self.lbl)))
+            #This is not efficient.
+            npxb = np.sum(self.lbl < 0)
             # Data for blue points
             bluesp = 0 # blue stack pointer
             bluevel = np.empty(npxb)
@@ -612,10 +613,11 @@ class DrawPhase(DrawOptions):
                     redvel[redsp] = self.vel[i]
                     redpos[redsp] = self.pos[i]
                     redsp += 1
-                else:
+                else: # Otherwise they are blue
                     bluevel[bluesp] = self.vel[i]
                     bluepos[bluesp] = self.pos[i]
                     bluesp += 1
+            # Plot the two different sets of particles
             axes.plot(redpos, redvel, ',r')
             axes.plot(bluepos, bluevel, ',b')
 
