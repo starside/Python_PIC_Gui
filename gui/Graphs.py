@@ -579,18 +579,47 @@ class DrawEnergy(DrawOptions):
 
 
 class DrawPhase(DrawOptions):
-    def __init__(self, data, title=None):
+    def __init__(self, data, title=None, twophase=None):
         # DrawOptions.__init__(self)
         self.vel = data[1]
         self.pos = data[0]
+        self.lbl = None
+        if twophase is not None:
+            self.lbl = data[twophase] #particle labels
+        self.tp = twophase #Draw particles past twophasedivide a different color
         self.plottype = "DRAWPHASE"
         self.title = title
 
     def drawPlot(self, fig, axes):
-        la = len(self.pos) - 1
+        la = len(self.pos)
         # self.updateAxes(fig,axes)
         axes.set_xlim(NP.amin(self.pos), NP.amax(self.pos))
-        axes.plot(self.pos, self.vel, ',b')
+        if self.tp is None or self.tp < 0 or self.tp > la:
+            axes.plot(self.pos, self.vel, ',r')
+        else: #Color beam particles red
+            npxb = int(abs(np.sum(self.lbl)))
+            # Data for blue points
+            bluesp = 0 # blue stack pointer
+            bluevel = np.empty(npxb)
+            bluepos = np.empty(npxb)
+            # Data for red points
+            redsp = 0 # red stack pointer
+            redvel = np.empty(la - npxb)
+            redpos = np.empty(la - npxb)
+            # Categorize data in to red or blue
+            for i in range(la):
+                if self.lbl[i] < 0: # Marked particles are red
+                    redvel[redsp] = self.vel[i]
+                    redpos[redsp] = self.pos[i]
+                    redsp += 1
+                else:
+                    bluevel[bluesp] = self.vel[i]
+                    bluepos[bluesp] = self.pos[i]
+                    bluesp += 1
+            axes.plot(redpos, redvel, ',r')
+            axes.plot(bluepos, bluevel, ',b')
+
+
         self.drawTime(fig, axes)
         #Set title
         if self.title is None:

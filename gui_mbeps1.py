@@ -218,7 +218,6 @@ def main(*args):
     """
     initialize_menus(pc)
     PopMenus(pc, in1)
-    
     # sends data the GUI may want to know about the simulation
     pc.updateSimInfo({"tend": in1.tend})    #End time of the simulation
     #
@@ -403,7 +402,7 @@ def main(*args):
                 # plot electrons vx versus x
                 if ((in1.nds == 1) or (in1.nds == 3)):
                     graf2.dpmgrasp1(s1.ppart, s1.kpic, 'ELECTRON Vx vs X', ntime, 999, nx, 2,
-                                    1, in1.ntsc, irc, early=in1.nts)
+                                    1, in1.ntsc, irc, early=in1.nts, twophase=True)
                     if (irc[0] == 1):
                         break
                     irc[0] = 0

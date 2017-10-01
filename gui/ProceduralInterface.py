@@ -330,7 +330,7 @@ class PlasmaContext():
         self._sendplot(dv1)
 
     def showPhase(self, ppart, kpic,
-                  plottype=None, title=None, early=None):  # data is the particle data, ppart.  kpic is array of num particles per tile
+                  plottype=None, title=None, early=None, twophase=None):  # data is the particle data, ppart.  kpic is array of num particles per tile
         if self.norun:
             return
         pt = plottype
@@ -344,14 +344,16 @@ class PlasmaContext():
         numPart = np.sum(kpic)  # number of particles
         numTiles = np.size(kpic)  # number of tiles
 
-        xvInTile = np.zeros((2, numPart), ppart.dtype)
+        xvInTile = np.zeros((2 + 1, numPart), ppart.dtype)
         isum = 0
         for k, kk in enumerate(kpic):  # De-tile particles in to one big fat array
             xvInTile[0, isum:kk + isum] = ppart[0, 0:kk, k]
             xvInTile[1, isum:kk + isum] = ppart[1, 0:kk, k]
+            if twophase is not None:
+                xvInTile[twophase, isum:kk + isum] = ppart[twophase, 0:kk, k]
             isum += kk
 
-        dv1 = Graphs.DrawPhase(xvInTile, title=title)  # copy the data
+        dv1 = Graphs.DrawPhase(xvInTile, title=title, twophase=twophase)  # copy the data
         if plottype != None:
             dv1.plottype = plottype
         self._sendplot(dv1)

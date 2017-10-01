@@ -83,8 +83,8 @@ MPCC = gcc -fopenmp
 
 CC = gcc
 
-PFC = f2py --fcompiler=gnu95
-PCC = f2py --compiler=unix
+PFC = python f2py --fcompiler=gnu95
+PCC = python f2py --compiler=unix
 
 OPTS90 = -O3
 #OPTS90 = -O3 -fdefault-real-8 -fdefault-double-8
@@ -456,7 +456,7 @@ dtimer.so : dtimer_h.pyf dtimer.c
 	$(PCC) -m dtimer -c dtimer_h.pyf dtimer.c
 
 dtimer_h.pyf : dtimer_hpy.f90
-	f2py --overwrite-signature -m dtimer -h dtimer_h.pyf dtimer_hpy.f90
+	python f2py --overwrite-signature -m dtimer -h dtimer_h.pyf dtimer_hpy.f90
 
 fomplib.so : omplib.f90
 	$(PFC) --f90flags="$(OPTS90)" $(LOPTS) -m fomplib -c omplib.f90

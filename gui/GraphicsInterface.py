@@ -50,14 +50,21 @@ class GraphicsInterface:
             self.pc.graphBeforeEndOfFF(label, early)
         self.pc.showVelocity(fv, s[:h], fvm=fvm, plottype=label, title=title)
 
-    def dpmgrasp1(self, ppart, kpic, label, itime, isc, nx, iyp, ixp, ntsc, irc, early=None):
+    def dpmgrasp1(self, ppart, kpic, label, itime, isc, nx, iyp, ixp, ntsc, irc, early=None, twophase=None):
         a, b, c = numpy.shape(ppart)
-        phasearr = numpy.empty((2, b, c), dtype=ppart.dtype)
+        idimp = a - 1 # Particle tags are last
+        phasearr = numpy.empty((3, b, c), dtype=ppart.dtype)
         phasearr[1, :, :] = ppart[iyp - 1, :, :]
         phasearr[0, :, :] = ppart[ixp - 1, :, :]
+        phasearr[idimp, :, :] = ppart[idimp, :, :]
+
+        labelindex = None
+        if twophase is not None:
+            labelindex = idimp
+
         if early is not None:
             self.pc.graphBeforeEndOfFF(label, early)
-        self.pc.showPhase(phasearr, kpic, plottype=label)
+        self.pc.showPhase(phasearr, kpic, plottype=label, twophase=labelindex)
 
     def dvector1(self, f, label, itime, isc, ist, idm, nx, irc, axislabels=["y", "z"], early=None):
         edenx = range(nx)
