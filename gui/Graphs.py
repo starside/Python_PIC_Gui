@@ -595,7 +595,7 @@ class DrawPhase(DrawOptions):
         # self.updateAxes(fig,axes)
         axes.set_xlim(NP.amin(self.pos), NP.amax(self.pos))
         if self.tp is None or self.tp < 0 or self.tp > la:
-            axes.plot(self.pos, self.vel, ',r')
+            axes.plot(self.pos, self.vel, ',b')
         else: #Color beam particles red
             #This is not efficient.
             npxb = np.sum(self.lbl < 0)

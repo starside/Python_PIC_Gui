@@ -401,8 +401,11 @@ def main(*args):
             if (ntime == in1.nts * it):
                 # plot electrons vx versus x
                 if ((in1.nds == 1) or (in1.nds == 3)):
+                    phaselabels = False
+                    if in1.ntsc > 0: # Do we have labelled particles to draw?
+                	    phaselabels = True
                     graf2.dpmgrasp1(s1.ppart, s1.kpic, 'ELECTRON Vx vs X', ntime, 999, nx, 2,
-                                    1, in1.ntsc, irc, early=in1.nts, twophase=True)
+                                    1, in1.ntsc, irc, early=in1.nts, twophase=phaselabels )
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
