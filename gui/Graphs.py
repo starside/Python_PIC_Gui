@@ -601,12 +601,12 @@ class DrawPhase(DrawOptions):
             npxb = np.sum(self.lbl < 0)
             # Data for blue points
             bluesp = 0 # blue stack pointer
-            bluevel = np.empty(npxb)
-            bluepos = np.empty(npxb)
+            bluevel = np.empty(la - npxb)
+            bluepos = np.empty(la - npxb)
             # Data for red points
             redsp = 0 # red stack pointer
-            redvel = np.empty(la - npxb)
-            redpos = np.empty(la - npxb)
+            redvel = np.empty(npxb)
+            redpos = np.empty(npxb)
             # Categorize data in to red or blue
             for i in range(la):
                 if self.lbl[i] < 0: # Marked particles are red
