@@ -70,7 +70,9 @@ To exit the virtual environment type `deactivate`.  Later, if you want run the P
 Installation on Anaconda should work for both Mac OS X and Linux.  It will probably work for Windows if you can figure out how to compile the Fortran.
 
 ### Disable OpenMP
-In the file mbeps1.source/Makefile disable OpenMP.  For whatever reason, Anaconda's numpy does not correctly compile with OpenMP support.
+In the file mbeps1.source/Makefile disable OpenMP.  For whatever reason, Anaconda's numpy does not correctly compile with OpenMP support.  
+
+Comment out lines 78 and 79 in mbeps1.source/Makefile then comment in 81 and 82.
 
 ### Simple Method
 Install the requirements listed in the Requirements section.  You will probably have to downgrade numpy to 1.11 or lower (If you do not want to downgrade, read the section below).  Anaconda has a version of wxPython (3.0.0).  On Apple, wxPython should also install python.app, if not you should install it.  Once everything is installed type
