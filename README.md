@@ -73,7 +73,7 @@ Installation on Anaconda should work for both Mac OS X and Linux.  It will proba
 In the file mbeps1.source/Makefile disable OpenMP.  For whatever reason, Anaconda's numpy does not correctly compile with OpenMP support.
 
 ### Simple Method
-Install the requirements listed in the Requirements section.  You will probably have to downgrade numpy to 1.11 or lower.  Anaconda has a version of wxPython (3.0.0).  On Apple, wxPython should also install python.app, if not you should install it.  Once everything is installed type
+Install the requirements listed in the Requirements section.  You will probably have to downgrade numpy to 1.11 or lower (If you do not want to downgrade, read the section below).  Anaconda has a version of wxPython (3.0.0).  On Apple, wxPython should also install python.app, if not you should install it.  Once everything is installed type
 
     cd Python_PIC_Gui
     make python
@@ -82,5 +82,27 @@ On Apple, run the application by typing
     
     python.app gui_mbeps1.py
     
-Using `python.app` is very important, otherwise the GUI will fail to start.
+Using `python.app` is very important, otherwise the GUI will fail to start. 
+
+On Linux you can simply type 
+    python gui_mbeps1.py
     
+### Anaconda Virtual Environment
+
+Anaconda supports its own virtual environment.  This section describes how to install in an Anaconda virtual environment so you do not have to downgrade numpy or other packages.
+
+Download the code then create and activate the virtual environment
+    git clone https://github.com/starside/Python_PIC_Gui
+    cd Python_PIC_Gui
+    conda create -n ENV python=2.7
+    source activate ENV
+    
+Install required packages
+    conda install -n ENV "numpy<=1.11"
+    conda install -n ENV wxpython
+    conda install -n ENV matplotlib
+    pip install f90nml
+    
+    
+    
+  
