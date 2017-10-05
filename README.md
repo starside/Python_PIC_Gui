@@ -18,4 +18,43 @@ To compile the Fortran backend a fortran compiler such as gfortran and a c compi
 
 Python_PIC_Gui should run well on OS X, either the native python or Anaconda.  We provide install instructions for both (the native python version looks slightly nicer).  To avoid conflicts with any versions python packages currently installed, we recommend installing in a virtual environment.
 
-### 
+### Install using Apple's Python
+
+Check if virtualenv is installed by typing in Terminal
+
+    virtualenv
+    
+If the command was found, move on.  Otherwise install virtualenv.  We recommend using easy_install
+
+    sudo easy_install virtualenv
+    
+The above command should be the only time root access is required, however virtualenv can be installed by other means without root (we do not decribe them here).
+
+Now download the software:
+
+    git clone https://github.com/starside/Python_PIC_Gui
+    cd Python_PIC_Gui
+    
+Create the and activate the virtualenv
+
+    virtualenv ENV --python=/usr/bin/python
+    source ENV/bin/activate
+    
+The `--python=/usr/bin/python` tells the virtualenv to use Apple's python even if other version of python are installed.  Now install the dependencies.
+
+    pip install --upgrade pip
+    pip install -r requirements.txt
+    
+Now build the Fortran.  Note you must perform the steps above first, as the Fortran build process requires numpy.
+
+    make python
+    
+Almost everything is in place.  On Apple, a special version of python is required to access the GUI.  Copying Apple's `pythonw` to our virtualenv works.
+
+    cp /usr/bin/pythonw ENV/bin/python
+
+To run the application (for example the Electrostatic code) type
+
+    python gui_mbeps1.py
+    
+If all went well, the application should appear.
