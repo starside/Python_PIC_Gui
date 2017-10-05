@@ -6,11 +6,11 @@ Python_PIC_Gui will run on all major platforms that support python, however Wind
 
 There are four required packages to run the software, and the version is very important.  Numpy greater than version 1.11 is incompatible.
 
-numpy 1.7.1 to 1.11 (1.13 or greater does not work)
-matplotlib 2.0.2 
-wxPython 3.0.0 or 4.0.0a2 (anything larger does not work)
-f90nml
-ffmpeg (optional)
+* numpy 1.7.1 to 1.11 (1.13 or greater does not work)
+* matplotlib 2.0.2 
+* wxPython 3.0.0 or 4.0.0a2 (anything larger does not work)
+* f90nml
+* ffmpeg (optional)
 
 To compile the Fortran backend a fortran compiler such as gfortran and a c compiler are recommended.  We use gcc or clang on apple.
 
@@ -65,3 +65,22 @@ To exit the virtual environment type `deactivate`.  Later, if you want run the P
     source ENV/bin/activate
     python gui_mbeps1.py
     deactivate
+    
+## Installing on Anaconda
+Installation on Anaconda should work for both Mac OS X and Linux.  It will probably work for Windows if you can figure out how to compile the Fortran.
+
+### Disable OpenMP
+In the file mbeps1.source/Makefile disable OpenMP.  For whatever reason, Anaconda's numpy does not correctly compile with OpenMP support.
+
+### Simple Method
+Install the requirements listed in the Requirements section.  You will probably have to downgrade numpy to 1.11 or lower.  Anaconda has a version of wxPython (3.0.0).  On Apple, wxPython should also install python.app, if not you should install it.  Once everything is installed type
+
+    cd Python_PIC_Gui
+    make python
+    
+On Apple, run the application by typing
+    
+    python.app gui_mbeps1.py
+    
+Using `python.app` is very important, otherwise the GUI will fail to start.
+    
