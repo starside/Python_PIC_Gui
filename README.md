@@ -105,6 +105,17 @@ Install required packages
     conda install -n ENV matplotlib
     pip install f90nml
     
+Disable OpenMP in the mbeps1.source/Makefile and run  
+
+    make python
+    
+ To run the application type
+ 
+    python.app gui_mbeps1.py
+   
+    
+
+    
     
     
   
