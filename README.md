@@ -92,12 +92,14 @@ On Linux you can simply type
 Anaconda supports its own virtual environment.  This section describes how to install in an Anaconda virtual environment so you do not have to downgrade numpy or other packages.
 
 Download the code then create and activate the virtual environment
+
     git clone https://github.com/starside/Python_PIC_Gui
     cd Python_PIC_Gui
     conda create -n ENV python=2.7
     source activate ENV
     
 Install required packages
+
     conda install -n ENV "numpy<=1.11"
     conda install -n ENV wxpython
     conda install -n ENV matplotlib
