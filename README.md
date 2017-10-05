@@ -58,3 +58,10 @@ To run the application (for example the Electrostatic code) type
     python gui_mbeps1.py
     
 If all went well, the application should appear.
+
+To exit the virtual environment type `deactivate`.  Later, if you want run the PIC gui simple cd to the Python_PIC_Gui directory and run `source ENV/bin/activate`.  Below is the whole sequence of commands, that activates the virtual environment, runs the application, and then deactivates virtualenv.
+
+    cd Python_PIC_Gui
+    source ENV/bin/activate
+    python gui_mbeps1.py
+    deactivate
