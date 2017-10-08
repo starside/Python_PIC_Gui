@@ -72,16 +72,16 @@ class InputEditor(wx.Frame):
         saveb.Bind(wx.EVT_BUTTON, self.OnSave)
         upb = wx.Button(self, -1, "Update Changes")
         upb.Bind(wx.EVT_BUTTON, self.OnUpdate)
-        navb.Add(item=saveb, flag=wx.ALIGN_LEFT)
+        navb.Add(saveb, flag=wx.ALIGN_LEFT)
         # navb.AddStretchSpacer(1)
         stxt = wx.StaticText(self, -1, "Red variables can be updated while running")
         stxt.SetForegroundColour(wx.Colour(255, 0, 0))
-        navb.Add(item=stxt, flag=wx.ALIGN_CENTER, proportion=1)
-        navb.Add(item=upb, flag=wx.ALIGN_RIGHT | wx.EXPAND)
+        navb.Add(stxt, flag=wx.ALIGN_CENTER, proportion=1)
+        navb.Add(upb, flag=wx.ALIGN_RIGHT | wx.EXPAND)
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(item=navb, flag=wx.EXPAND, border=2)
-        self.sizer.Add(item=self.editor, flag=wx.EXPAND | wx.ALL, proportion=1)
+        self.sizer.Add(navb, flag=wx.EXPAND, border=2)
+        self.sizer.Add(self.editor, flag=wx.EXPAND | wx.ALL, proportion=1)
 
         self.statusbar = self.CreateStatusBar()
 

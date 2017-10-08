@@ -75,11 +75,11 @@
 # Makefile gfortran compiler with Linux
 
 # OpenMP
-#MPFC = gfortran -fopenmp
-#MPCC = gcc -fopenmp
+MPFC = gfortran -fopenmp
+MPCC = gcc -fopenmp
 #NoOpenMP
-MPFC = gfortran
-MPCC = gcc
+#MPFC = gfortran
+#MPCC = gcc
 
 CC = gcc
 
