@@ -538,4 +538,5 @@ def main(*args):
     # close graphics device
     graf1.close_graphs()
 
-PlasmaContext.runMain(main)
+if __name__ == "__main__":
+    PlasmaContext.runMain(main)

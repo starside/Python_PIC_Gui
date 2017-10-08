@@ -106,7 +106,7 @@ class DefaultControlPanel(BaseControlPanel):
         self.axesTypeList = wx.ComboBox(self, -1, choices=["Linear-Linear", "Log-Linear", "Linear-Log", "Log-Log"],
                                         style=wx.CB_READONLY)
         self.axesTypeList.SetStringSelection(self.PaxesType)
-        hs1.Add(item=self.axesTypeList)
+        hs1.Add(self.axesTypeList)
 
         vsizer1.Add(hs1)
 
@@ -415,7 +415,7 @@ class DrawEnergyControlPanel(BaseControlPanel):
         self.offset_choices = ["Offset Energies", "Magnitude"]
         cb = wx.ComboBox(self, -1, choices=self.offset_choices, style=wx.CB_READONLY)
         cb.SetStringSelection(self.offset_choices[0] if self._PV["EnergyOffset"] else self.offset_choices[1])
-        hs1.Add(item=cb, flag=wx.ALL | wx.EXPAND)
+        hs1.Add(cb, flag=wx.ALL | wx.EXPAND)
         cb.Bind(wx.EVT_COMBOBOX, self.OnSelectOffset)
 
 
@@ -423,7 +423,7 @@ class DrawEnergyControlPanel(BaseControlPanel):
         self.axesTypeList = wx.ComboBox(self, -1, choices=["Linear-Linear", "Log-Linear", "Linear-Log", "Log-Log"],
                                         style=wx.CB_READONLY)
         self.axesTypeList.SetStringSelection(self._PV["Axis-Type"])
-        hs1.Add(item=self.axesTypeList, flag=wx.ALL | wx.EXPAND)
+        hs1.Add(self.axesTypeList, flag=wx.ALL | wx.EXPAND)
 
         # List to store the dynamically generate combo boxes
         self.energyTypeList = []
@@ -437,7 +437,7 @@ class DrawEnergyControlPanel(BaseControlPanel):
             etl.SetStringSelection(selection_value)
             self.energyTypeList.append([etl, selection_value])  # Append tuple with the selected value of the box
             etl.Bind(wx.EVT_COMBOBOX, self.OnSelectWK)
-            hs1.Add(item=etl, flag=wx.ALL | wx.EXPAND)
+            hs1.Add(etl, flag=wx.ALL | wx.EXPAND)
         vsizer1.Add(hs1)
         self.axesTypeList.Bind(wx.EVT_COMBOBOX, self.OnSelect)
         return vsizer1
@@ -618,8 +618,8 @@ class DrawPhase(DrawOptions):
                     bluepos[bluesp] = self.pos[i]
                     bluesp += 1
             # Plot the two different sets of particles
-            axes.plot(redpos, redvel, ',r')
-            axes.plot(bluepos, bluevel, ',b')
+            axes.plot(redpos, redvel, color=(1,0,0,0.5), marker=',', linestyle='None')
+            axes.plot(bluepos, bluevel, color=(0,0,1,0.5), marker=',', linestyle='None')
 
 
         self.drawTime(fig, axes)

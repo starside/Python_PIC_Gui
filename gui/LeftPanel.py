@@ -205,7 +205,7 @@ class LeftPanel(wx.Panel):
         else:
             # self.figure = matplotlib.figure.Figure()
             # self.axes = self.figure.add_subplot(111)
-            self.currentEvent = event
+            self.currentEvent = CopyResultEvent(event) # Copy because event is a C++ object that gets deleted
             self.currentEvent.data._PV = self.persistentVars  # Gives the plot a simple dictionary to save persistent vars
             try:
                 self.DrawPlot()

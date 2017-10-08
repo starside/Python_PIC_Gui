@@ -91,6 +91,13 @@ class ResultEvent(wx.PyEvent):
         self.name = data.plottype
         self.data.simTime = time
 
+class CopyResultEvent:
+    def __init__(self, result):
+        if hasattr(result, 'data'):
+            self.data = result.data
+            self.name = result.data.plottype
+        if hasattr(result, 'time'):
+            self.data.simTime = result.time
 
 class ControlEvent(wx.PyEvent):
     """Simple event to carry arbitrary result data."""
