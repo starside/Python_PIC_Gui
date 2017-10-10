@@ -16,17 +16,19 @@ To compile the Fortran backend a fortran compiler such as gfortran and a c compi
 
 ## Installation on Linux
 
-The installation process on Linux is the same as on OS X.  Using Anacondia it should be identical.  This software was developed on Ubuntu 16.04.  The install procedure should follow the Apple Native install instructions, except Linux does not use easy_install.  Instead use your distro's package manager.  On Ubuntu, installing virtualenv would look like 
+The installation process on Linux is the similar to the direction on OS X.  Using Anacondia the procedure should be identical to OS X, except you do not need to do the step of copying pythonw, or running with python.app.  
+
+For non-Anaconda installation, the procedure should follow the Apple Native install instructions (read it!), except Linux does not use easy_install.  Instead use your distro's package manager.  On Ubuntu, installing virtualenv would look like 
 
     sudo apt-get install virtualenv
     
-The only tricky part is getting wxPython.  Pip will likely try to build from source, so remove wxPython from requirements.txt and see if you can find a binary install of wxPython4 for your distribution.  wxPython provides binary packages for some platforms
+The only tricky part is getting wxPython.  Pip will likely try to build it from source (which will almost certainly fail), so remove wxPython from requirements.txt and see if you can find a binary install of wxPython for your distribution.  wxPython provides binary packages for some platforms
 
 https://extras.wxpython.org/wxPython4/extras/linux/
 
-You can also use wxPython3, however it will not install in a virtualenv, so you will have to install everything else outside of a virtualenv.
+You can also use wxPython 3.0, however it will not install in a virtualenv, so you will have to install everything else outside of a virtualenv.
 
-For Ubuntu, and other Linux distros you can try installing with
+For Ubuntu, and other Linux distros you can try installing the dependencies with
 
      pip install -r requirements_ununtu1604.txt
      
