@@ -8,11 +8,23 @@ There are four required packages to run the software, and the version is very im
 
 * numpy 1.7.1 to 1.11 (1.13 or greater does not work)
 * matplotlib 2.0.2 
-* wxPython 3.0.0 or 4.0.0a2 (anything larger does not work)
+* wxPython 3.0.0 or 4.0.0b1 (anything larger does not work)
 * f90nml
 * ffmpeg (optional)
 
 To compile the Fortran backend a fortran compiler such as gfortran and a c compiler are recommended.  We use gcc or clang on apple.
+
+## Installation on Linux
+
+The installation process on Linux is the same as on OS X.  Using Anacondia it should be identical.  This software was developed on Ubuntu 16.04.  The install procedure should follow the Apple Native install instructions, except Linux does not use easy_install.  Instead use your distro's package manager.  On Ubuntu, installing virtualenv would look like 
+
+    sudo apt-get install virtualenv
+    
+The only tricky part is getting wxPython.  Pip will likely try to build from source, so remove wxPython from requirements.txt and see if you can find a binary install of wxPython4 for your distribution.  wxPython provides binary packages for some platforms
+
+https://extras.wxpython.org/wxPython4/extras/linux/
+
+You can also use wxPython3, however it will not install in a virtualenv, so you will have to install everything else outside of a virtualenv.
 
 ## Installation on OS X
 
@@ -27,6 +39,8 @@ Check if virtualenv is installed by typing in Terminal
 If the command was found, move on.  Otherwise install virtualenv.  We recommend using easy_install
 
     sudo easy_install virtualenv
+    
+The native install instructions should work even if you have Anaconda installed. However, if Anaconda installed a version of virtualenv, you cannot use it for the native install!  The work around is to replace `virtualenv` with `/usr/local/bin/virtualenv` everywhere in this section of the install guide.  You can check the version by typing `which virtualenv`.
     
 The above command should be the only time root access is required, however virtualenv can be installed by other means without root (we do not decribe them here).
 
