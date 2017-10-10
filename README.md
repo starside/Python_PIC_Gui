@@ -26,6 +26,13 @@ https://extras.wxpython.org/wxPython4/extras/linux/
 
 You can also use wxPython3, however it will not install in a virtualenv, so you will have to install everything else outside of a virtualenv.
 
+For Ubuntu, and other Linux distros you can try installing with
+
+     pip install -r requirements_ununtu1604.txt
+     
+The file `requirements_ununtu1604.txt` can be modified to install any binary version of wxPython in https://extras.wxpython.org/wxPython4/extras/linux/ to suit your distro.
+
+
 ## Installation on OS X
 
 Python_PIC_Gui should run well on OS X, either the native python or Anaconda.  We provide install instructions for both (the native python version looks slightly nicer).  To avoid conflicts with any versions python packages currently installed, we recommend installing in a virtual environment.
