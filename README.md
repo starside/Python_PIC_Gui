@@ -14,27 +14,6 @@ There are four required packages to run the software, and the version is very im
 
 To compile the Fortran backend a fortran compiler such as gfortran and a c compiler are recommended.  We use gcc or clang on apple.
 
-## Installation on Linux
-
-The installation process on Linux is the similar to the direction on OS X.  Using Anacondia the procedure should be identical to OS X, except you do not need to do the step of copying pythonw, or running with python.app.  
-
-For non-Anaconda installation, the procedure should follow the Apple Native install instructions (read it!), except Linux does not use easy_install.  Instead use your distro's package manager.  On Ubuntu, installing virtualenv would look like 
-
-    sudo apt-get install virtualenv
-    
-The only tricky part is getting wxPython.  Pip will likely try to build it from source (which will almost certainly fail), so remove wxPython from requirements.txt and see if you can find a binary install of wxPython for your distribution.  wxPython provides binary packages for some platforms
-
-https://extras.wxpython.org/wxPython4/extras/linux/
-
-You can also use wxPython 3.0, however it will not install in a virtualenv, so you will have to install everything else outside of a virtualenv.
-
-For Ubuntu, and other Linux distros you can try installing the dependencies with
-
-     pip install -r requirements_ununtu1604.txt
-     
-The file `requirements_ununtu1604.txt` can be modified to install any binary version of wxPython in https://extras.wxpython.org/wxPython4/extras/linux/ to suit your distro.
-
-
 ## Installation on OS X
 
 Python_PIC_Gui should run well on OS X, either the native python or Anaconda.  We provide install instructions for both (the native python version looks slightly nicer).  To avoid conflicts with any versions python packages currently installed, we recommend installing in a virtual environment.
@@ -139,7 +118,25 @@ Disable OpenMP in the mbeps1.source/Makefile and run
     python.app gui_mbeps1.py
    
     
+## Installation on Linux
 
+The installation process on Linux is the similar to the direction on OS X.  Using Anacondia the procedure should be identical to OS X, except you do not need to do the step of copying pythonw, or running with python.app.  
+
+For non-Anaconda installation, the procedure should follow the Apple Native install instructions (read it!), except Linux does not use easy_install.  Instead use your distro's package manager.  On Ubuntu, installing virtualenv would look like 
+
+    sudo apt-get install virtualenv
+    
+The only tricky part is getting wxPython.  Pip will likely try to build it from source (which will almost certainly fail), so remove wxPython from requirements.txt and see if you can find a binary install of wxPython for your distribution.  wxPython provides binary packages for some platforms
+
+https://extras.wxpython.org/wxPython4/extras/linux/
+
+You can also use wxPython 3.0, however it will not install in a virtualenv, so you will have to install everything else outside of a virtualenv.
+
+For Ubuntu, and other Linux distros you can try installing the dependencies with
+
+     pip install -r requirements_ununtu1604.txt
+     
+The file `requirements_ununtu1604.txt` can be modified to install any binary version of wxPython in https://extras.wxpython.org/wxPython4/extras/linux/ to suit your distro.
     
     
     
