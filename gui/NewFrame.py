@@ -119,7 +119,7 @@ class NewFrame(wx.Frame, DefaultsCommLink):
         self.loader.saveToFile()
 
     def OnFocus(self, event):
-        self.InitMenu()
+        wx.CallAfter(self.InitMenu)
         self.mainframe.activeFrame = self
         self.OnMove(None)
 

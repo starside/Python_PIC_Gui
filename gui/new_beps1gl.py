@@ -73,7 +73,7 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
         self.Show(True)
 
     def OnFocus(self, event):
-        self.InitMenu()
+        wx.CallAfter(self.InitMenu)
 
     def InitMenu(self):
         menubar = wx.MenuBar()
