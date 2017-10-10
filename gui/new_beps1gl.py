@@ -69,6 +69,11 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
         EVT_CLEARGRAPHSTACK(self, self.OnClearGraphStack)
         self.windowList = []  # list of frames
         self.InitMenu()
+        self.Bind(wx.EVT_ACTIVATE, self.OnFocus) # We rebuild the menu every focus to deal with Mac
+        self.Show(True)
+
+    def OnFocus(self, event):
+        self.InitMenu()
 
     def InitMenu(self):
         menubar = wx.MenuBar()
@@ -77,7 +82,6 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
         menubar.Append(fileMenu, '&File')
         self.SetMenuBar(menubar)
         self.Bind(wx.EVT_MENU, self.OnExit, fitem)
-        self.Show(True)
 
     def OnExit(self, event):
         self.pEvents.put(ExitSignal())  # Tell main thread to exit

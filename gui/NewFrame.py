@@ -42,6 +42,7 @@ class NewFrame(wx.Frame, DefaultsCommLink):
         self.Bind(wx.EVT_ACTIVATE, self.OnFocus)
         self.Bind(wx.EVT_MOVE, self.OnMove)
         self.mainframe.activeFrame = self
+        self.Show()
 
     def InitData(self):
         self.displayAreas = deque()
@@ -96,8 +97,6 @@ class NewFrame(wx.Frame, DefaultsCommLink):
         self.Bind(wx.EVT_MENU, self.SaveDefault, savedef)
         self.Bind(wx.EVT_MENU, self.LocateCBar, viewcbar)
 
-        self.Show(True)
-
     def LocateCBar(self, event):
         af = self.mainframe.activeFrame
         (x, y, w, h) = af.GetScreenRect()
@@ -120,6 +119,7 @@ class NewFrame(wx.Frame, DefaultsCommLink):
         self.loader.saveToFile()
 
     def OnFocus(self, event):
+        self.InitMenu()
         self.mainframe.activeFrame = self
         self.OnMove(None)
 
