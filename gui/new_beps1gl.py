@@ -23,6 +23,7 @@ from RightPanel import *
 from GraphStack import *
 from PipeSim import *
 from Signals import *
+from Events import *
 
 # TODO:  Use nplots as default window size
 # print pyfft1mod.fft1d.pycal()
@@ -104,7 +105,8 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
 
     def OnResultPre(self, event):
         # Find a home for the event
-        self.OnResult(event)  # Call the result handler in the Dispatcher mixin
+        # Do not pass raw wxPython result
+        self.OnResult(CopyResultEvent(event))  # Call the result handler in the Dispatcher mixin
 
     def OnClearGraphStack(self, event):
         if hasattr(event, "codename"):

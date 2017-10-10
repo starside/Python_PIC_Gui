@@ -2,6 +2,7 @@ import wx
 import wx.stc as stc
 
 from LeftPanel import *
+from Events import *
 
 
 class Dumb(LeftPanel):
@@ -42,10 +43,9 @@ class Dumb(LeftPanel):
 
     def PopupHandler(self, event):
         self.resetGraph()
-
-        for g in self.centralDispatcher:
+        for g in self.centralDispatcher: #Remove self from central dispatch.  Clean up the old cruft
             g.RemoveListener(self)
-        self.centralDispatcher[event.GetId() - 1].AddListener(self)
+        self.centralDispatcher[event.GetId() - 1].AddListener(self) # Add self to central dispatch
         re = self.centralDispatcher[event.GetId() - 1].getRecent()
         if re != None:
             self.currentEvent = re

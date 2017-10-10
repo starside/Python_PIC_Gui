@@ -15,6 +15,7 @@ from subprocess import Popen, PIPE
 import copy
 # import Image
 import os, sys
+import pdb
 
 from Events import *
 import Graphs
@@ -174,7 +175,6 @@ class LeftPanel(wx.Panel):
         # self.axes.imshow(mpimg.imread('gui/default.png'), interpolation='nearest', aspect='auto')
         self.mycanvas.mpl_connect('button_press_event', self.onclick)
         self.mycanvas.mpl_connect('motion_notify_event', self.onmotion)
-        self.mycanvas.mpl_connect('resize_event', self.onresize)
         self.toolbar = wx.BoxSizer(orient=wx.HORIZONTAL)
         self.navMenu = MyCustomToolbar(self.mycanvas)
         self.toolbar.Add(self.navMenu)
@@ -205,7 +205,7 @@ class LeftPanel(wx.Panel):
         else:
             # self.figure = matplotlib.figure.Figure()
             # self.axes = self.figure.add_subplot(111)
-            self.currentEvent = CopyResultEvent(event) # Copy because event is a C++ object that gets deleted
+            self.currentEvent = event # Copy because event is a C++ object that gets deleted
             self.currentEvent.data._PV = self.persistentVars  # Gives the plot a simple dictionary to save persistent vars
             try:
                 self.DrawPlot()
@@ -231,12 +231,12 @@ class LeftPanel(wx.Panel):
             True
 
     def DrawPlot(self):
-        try:
-            self.currentEvent.data._PV
-        except AttributeError:
-            self.currentEvent.data._PV = self.persistentVars
-        #self.axes.cla()
-        self.resetGraph()
+    	if not hasattr(self.currentEvent, "data"): # Check if there is a data field set
+    		return # If does not exist, return and wait for data
+    	# Check if persistent vars _PV exists in data
+        if not hasattr(self.currentEvent.data, "_PV"):
+            self.currentEvent.data._PV = self.persistentVars # Create is if not
+        self.resetGraph()	# Reset the graph
         try:
             self.currentEvent.data.setParams(self.arbGraphParameters)  # pass paramters to plot
         except AttributeError:
@@ -291,6 +291,7 @@ class LeftPanel(wx.Panel):
         if self.newCP == None:  # Only allow one options window at a time
             try:
                 self.newCP = self.currentEvent.data.makeControlPanel(self)
+                self.newCP.Move(event.EventObject.GetScreenPosition() )
             except AttributeError:
                 True
 
@@ -309,11 +310,6 @@ class LeftPanel(wx.Panel):
             # self.slopeStack.append(x1)
             self.measuring = True
             self.DrawPlot()
-
-    def onresize(self, event):
-        [w,h] = self.figure.get_size_inches()
-        bottom = 0.5/h
-        self.figure.subplots_adjust(bottom=bottom)
 
     def onclick(self, event):
         if event.inaxes == None or self.measuring == False:

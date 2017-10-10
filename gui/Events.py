@@ -1,6 +1,7 @@
 import wx
 import wx.stc as stc
 import numpy as NP
+import pdb
 
 # Define notification event for thread completion
 # Step 1, Define a new event ID
@@ -93,9 +94,17 @@ class ResultEvent(wx.PyEvent):
 
 class CopyResultEvent:
     def __init__(self, result):
+    	# This line it to prevent bugs.  This class converts a wxPython event
+    	# to a sanitized event the simulation logic can work with.  The prevents
+    	# extraneous CopyResultEvent objects from being made, which indicates
+    	# a misunderstanding of how the data flow works
+    	if not type(result) == ResultEvent:
+    		raise TypeError
         if hasattr(result, 'data'):
             self.data = result.data
             self.name = result.data.plottype
+        else:
+        	pdb.set_trace()
         if hasattr(result, 'time'):
             self.data.simTime = result.time
 
