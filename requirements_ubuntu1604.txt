@@ -1,0 +1,4 @@
+numpy<=1.11
+f90nml>=0.21
+matplotlib>=2.0.2
+https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04/wxPython-4.0.0b1-cp27-cp27mu-linux_x86_64.whl
