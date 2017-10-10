@@ -103,14 +103,14 @@ class DefaultControlPanel(BaseControlPanel):
         vsizer1 = wx.BoxSizer(orient=wx.VERTICAL)
         hs1 = wx.BoxSizer(orient=wx.HORIZONTAL)
 
-        self.axesTypeList = wx.ComboBox(self, -1, choices=["Linear-Linear", "Log-Linear", "Linear-Log", "Log-Log"],
+        self.axesTypeList = wx.Choice(self, -1, choices=["Linear-Linear", "Log-Linear", "Linear-Log", "Log-Log"],
                                         style=wx.CB_READONLY)
         self.axesTypeList.SetStringSelection(self.PaxesType)
         hs1.Add(self.axesTypeList)
 
         vsizer1.Add(hs1)
 
-        self.axesTypeList.Bind(wx.EVT_COMBOBOX, self.OnSelect)
+        self.axesTypeList.Bind(wx.EVT_CHOICE, self.OnSelect)
 
         return vsizer1
 
@@ -413,14 +413,14 @@ class DrawEnergyControlPanel(BaseControlPanel):
 
         # To offset energy or not
         self.offset_choices = ["Offset Energies", "Magnitude"]
-        cb = wx.ComboBox(self, -1, choices=self.offset_choices, style=wx.CB_READONLY)
+        cb = wx.Choice(self, -1, choices=self.offset_choices, style=wx.CB_READONLY)
         cb.SetStringSelection(self.offset_choices[0] if self._PV["EnergyOffset"] else self.offset_choices[1])
         hs1.Add(cb, flag=wx.ALL | wx.EXPAND)
-        cb.Bind(wx.EVT_COMBOBOX, self.OnSelectOffset)
+        cb.Bind(wx.EVT_CHOICE, self.OnSelectOffset)
 
 
         #Select axis type
-        self.axesTypeList = wx.ComboBox(self, -1, choices=["Linear-Linear", "Log-Linear", "Linear-Log", "Log-Log"],
+        self.axesTypeList = wx.Choice(self, -1, choices=["Linear-Linear", "Log-Linear", "Linear-Log", "Log-Log"],
                                         style=wx.CB_READONLY)
         self.axesTypeList.SetStringSelection(self._PV["Axis-Type"])
         hs1.Add(self.axesTypeList, flag=wx.ALL | wx.EXPAND)
@@ -432,14 +432,14 @@ class DrawEnergyControlPanel(BaseControlPanel):
         for item in self.labels:
             item_data = self._PV["EnergyTypes"][item]
             is_on = item_data["on"]
-            etl = wx.ComboBox(self, -1, choices=augmentedLabels, style=wx.CB_READONLY)
+            etl = wx.Choice(self, -1, choices=augmentedLabels, style=wx.CB_READONLY)
             selection_value = item if is_on else "Off"
             etl.SetStringSelection(selection_value)
             self.energyTypeList.append([etl, selection_value])  # Append tuple with the selected value of the box
-            etl.Bind(wx.EVT_COMBOBOX, self.OnSelectWK)
+            etl.Bind(wx.EVT_CHOICE, self.OnSelectWK)
             hs1.Add(etl, flag=wx.ALL | wx.EXPAND)
         vsizer1.Add(hs1)
-        self.axesTypeList.Bind(wx.EVT_COMBOBOX, self.OnSelect)
+        self.axesTypeList.Bind(wx.EVT_CHOICE, self.OnSelect)
         return vsizer1
 
     def OnSelect(self, event):
@@ -702,13 +702,13 @@ class PhiControlPanel(BaseControlPanel):
         sld.Bind(wx.EVT_SCROLL, self.OnMaxFrameScroll)
         sld.Bind(wx.EVT_SCROLL_CHANGED, self.OnSliderRelease)
 
-        self.timeDir = wx.ComboBox(self.panel, -1, choices=["Positive Omega", "Negative Omega"], style=wx.CB_READONLY)
+        self.timeDir = wx.Choice(self.panel, -1, choices=["Positive Omega", "Negative Omega"], style=wx.CB_READONLY)
         if self._PV["DISP_OMD"] == 1.0:
             self.timeDir.SetStringSelection("Positive Omega")
         else:
             self.timeDir.SetStringSelection("Negative Omega")
         hs3.Add(self.timeDir)
-        self.timeDir.Bind(wx.EVT_COMBOBOX, self.OnOmegaSelect)
+        self.timeDir.Bind(wx.EVT_CHOICE, self.OnOmegaSelect)
 
         # Lower Bound
         """self.lbVal = wx.StaticText(self.panel, label="", pos=(20, 90))
