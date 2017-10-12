@@ -70,7 +70,7 @@ class KeyList:
 class BaseControlPanel(wx.Frame, KeyList):
     def __init__(self, parent, keylist=[["axesType", "Linear-Linear"]]):  # remember to delete self at some point
         """Create the MainFrame."""
-        wx.Frame.__init__(self, parent, style=wx.FRAME_TOOL_WINDOW | wx.STAY_ON_TOP)
+        wx.Frame.__init__(self, parent, style=wx.FRAME_TOOL_WINDOW | wx.STAY_ON_TOP | wx.SYSTEM_MENU)
         self.keyList = keylist  # parameter name in dictionary + default value
         self.stf = parent
         self.setDict(self.stf.arbGraphParameters)
