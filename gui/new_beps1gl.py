@@ -42,7 +42,7 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
     def __init__(self, parent, id, loader, pipemode=None, que=None, timedir=None, events=None, outq=None):
         """Create the MainFrame."""
         wx.Frame.__init__(self, parent, id, 'Control Panel',
-                          style=wx.DEFAULT_FRAME_STYLE | wx.STAY_ON_TOP)
+                          style=wx.DEFAULT_FRAME_STYLE)
         self.loader = loader
         self.loader.loadFromFile()
         self.initStack()
