@@ -136,9 +136,10 @@ class LeftPanel(wx.Panel):
             # self.movieWriter.setup(self.figure, self.movieFileName, self.dpi)
             fps = 15
             self.recordingSize = self.mycanvas.GetSize()
+            print self.recordingSize
             self.moviePipe = Popen(
                 ['ffmpeg', '-f', 'rawvideo','-pix_fmt','argb','-s:v',str(self.recordingSize[0])+'x' +
-                    str(self.recordingSize[1]) ,'-framerate', '24', '-i', '-', '-c:v', 'mpeg4', '-r',
+                    str(self.recordingSize[1]) ,'-framerate', '24', '-i', '-', '-c:v', 'libx264', '-preset', 'veryslow', '-crf', '0','-r',
                     '24', '-y', self.movieFileName], stdin=PIPE)
             # Prevent frame resizing while recording
             self.mainframe.lockFrame()
