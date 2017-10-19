@@ -476,6 +476,7 @@ class DrawEnergyControlPanel(BaseControlPanel):
             self._PV["EnergyOffset"] = True
         else:
             self._PV["EnergyOffset"] = False
+        wx.PostEvent(self.stf, RefreshGraphEvent())
 
 def _upperpowerof2(x):
     x = int(abs(x))
@@ -550,7 +551,7 @@ class DrawEnergy(DrawOptions):
                 ydata = self.edata[0:self.timeindex, data_index]
                 if len(ydata) > 0 and self._PV["EnergyOffset"]:
                 	ydata -= ydata[0]
-                axes.plot(xdata, ydata, "x", label=self.labels[data_index])
+                axes.plot(xdata, ydata, "-", label=self.labels[data_index])
                 # Calculate y-axis limits
                 [bottom, top] = axisPowerOfTwo(ydata)
                 ax_top = max(ax_top, top)

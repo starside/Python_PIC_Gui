@@ -384,6 +384,7 @@ def main(*args):
             if (ntime == in1.ntt * it):
                 s1.traj_diag1(s1.ppart, s1.kpic, s1.partd, s1.fvtp, s1.fvmtp)
                 if (in1.nst == 3):
+                    print "Moments are ", s1.fvmtp
                     # display velocity distributions
                     graf2.displayfv1(s1.fvtp, s1.fvmtp, 'ELECTRON TRAJ', ntime, in1.nmv,
                                      1, irc, title='Electron Trajectory Velocity Histogram', early=in1.ntt)
