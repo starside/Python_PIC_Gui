@@ -283,10 +283,10 @@ def main(*args):
                     if ((in1.nddi == 2) or (in1.nddi == 3)):
                         # display frequency spectrum
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE+", s1.pkwdi[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax), title='Ion Density Omega vs Mode +', early=in1.ntdi,
+                                           extent=(0, in1.modesxdi, in1.wimin, in1.wimax), title='Ion Density Omega vs Mode +', early=in1.ntdi,
                                            ticks_scale=spectrum_scale)
                         pc.showSimpleImage("ION DENSITY OMEGA VS MODE-", s1.pkwdi[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                           extent=(0, in1.modesxdi, in1.wmin, in1.wmax),  title='Ion Density Omega vs Mode -', early=in1.ntdi,
+                                           extent=(0, in1.modesxdi, in1.wimin, in1.wimax),  title='Ion Density Omega vs Mode -', early=in1.ntdi,
                                            ticks_scale=spectrum_scale)
                         graf1.dmscaler1(s1.wkdi, 'ION DENSITY OMEGA VS MODE',
                                         ntime, 999, 1, in1.modesxdi, s1.cwk, irc)
