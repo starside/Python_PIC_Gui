@@ -83,8 +83,11 @@ MPCC = gcc -fopenmp
 
 CC = gcc
 
-PFC = python f2py --fcompiler=gnu95
-PCC = python f2py --compiler=unix
+PYTHON = python
+F2PY = $(PYTHON) f2py
+
+PFC = $(F2PY) --fcompiler=gnu95
+PCC = $(F2PY) --compiler=unix
 
 OPTS90 = -O3
 #OPTS90 = -O3 -fdefault-real-8 -fdefault-double-8
@@ -188,6 +191,8 @@ EDMODS = modmdpush1.o
 #Tektronix
 #GOBJS = libt1.o plot10.o libplt10.o dlibgks1.o libgks1.o libgraf1_h.o \
 #modgraf1.o
+# Postcript printer
+#GOBJS = libpsp.o dlibgks1.o libgks1.o  libgraf1_h.o modgraf1.o
 # X11 graphics needs Ygl from http://www.thp.uni-duisburg.de/Ygl/
 #GOBJS = libygl.o dlibgks1.o libgks1.o libgraf1_h.o modgraf1.o
 #No graphics
@@ -218,13 +223,13 @@ EDPYOBJS = pymdpush1.o
 # Python Graphics
 
 #Tektronix
-#GMODSRC = modgraf1.f90 libt1.f90
+#GMODSRC = gks1/modgraf1.f90 gks1/libt1.f90
 #GPYOBJS = pymlibgks1.o pymdlibgks1.o pymlibplt10.o pymplot10.o
 # X11 graphics needs Ygl from http://www.thp.uni-duisburg.de/Ygl/
-#GMODSRC = modgraf1.f90
+#GMODSRC = gks1/modgraf1.f90
 #GPYOBJS = pymlibgks1.o pymdlibgks1.o pymlibygl.o
 #No graphics
-GMODSRC = modgraf1.f90
+GMODSRC = gks1/modgraf1.f90
 GPYOBJS = pymnullgks1.o
 
 # Linkage rules
@@ -378,44 +383,47 @@ mdbeps1.o : mdbeps1.f90 msimul1.o mbsimul1.o mdsimul1.o modgraf1.o omplib.o
 
 # Fortran Graphics
 
-libt1.o : libt1.f90
-	$(MPFC) $(OPTS90) -o libt1.o -c libt1.f90
+libt1.o : gks1/libt1.f90
+	$(MPFC) $(OPTS90) -o libt1.o -c gks1/libt1.f90
 
-plot10.o : plot10.f
-	$(MPFC) $(OPTS90) -o plot10.o -c plot10.f
+plot10.o : gks1/plot10.f
+	$(MPFC) $(OPTS90) -o plot10.o -c gks1/plot10.f
 
-libplt10.o : libplt10.f
-	$(MPFC) $(OPTS90) -o libplt10.o -c libplt10.f
+libplt10.o : gks1/libplt10.f
+	$(MPFC) $(OPTS90) -o libplt10.o -c gks1/libplt10.f
 	
-libygl.o : libygl.f
-	$(MPFC) $(OPTS90) -o libygl.o -c libygl.f
+libygl.o : gks1/libygl.f
+	$(MPFC) $(OPTS90) -o libygl.o -c gks1/libygl.f
 
-dlibgks1.o : dlibgks1.f
-	$(MPFC) $(OPTS90) -o dlibgks1.o -c dlibgks1.f
+libpsp.o : gks1/libpsp.f
+	$(MPFC) $(OPTS90) -o libpsp.o -c gks1/libpsp.f
 
-libgks1.o : libgks1.f
-	$(MPFC) $(OPTS90) -o libgks1.o -c libgks1.f
+dlibgks1.o : gks1/dlibgks1.f
+	$(MPFC) $(OPTS90) -o dlibgks1.o -c gks1/dlibgks1.f
 
-nullgks1.o : nullgks1.f
-	$(MPFC) $(OPTS90) -o nullgks1.o -c nullgks1.f
+libgks1.o : gks1/libgks1.f
+	$(MPFC) $(OPTS90) -o libgks1.o -c gks1/libgks1.f
 
-libgraf1_h.o : libgraf1_h.f90
-	$(MPFC) $(OPTS90) -o libgraf1_h.o -c libgraf1_h.f90
+nullgks1.o : gks1/nullgks1.f
+	$(MPFC) $(OPTS90) -o nullgks1.o -c gks1/nullgks1.f
 
-modgraf1.o : modgraf1.f90 libgraf1_h.o
-	$(MPFC) $(OPTS90) -o modgraf1.o -c modgraf1.f90
+libgraf1_h.o : gks1/libgraf1_h.f90
+	$(MPFC) $(OPTS90) -o libgraf1_h.o -c gks1/libgraf1_h.f90
 
-libgks2.o : libgks2.f
-	$(MPFC) $(OPTS90) -o libgks2.o -c libgks2.f
+modgraf1.o : gks1/modgraf1.f90 libgraf1_h.o
+	$(MPFC) $(OPTS90) -o modgraf1.o -c gks1/modgraf1.f90
 
-libgraf2_h.o : libgraf2_h.f90
-	$(MPFC) $(OPTS90) -o libgraf2_h.o -c libgraf2_h.f90
+libgks2.o : gks1/libgks2.f
+	$(MPFC) $(OPTS90) -o libgks2.o -c gks1/libgks2.f
 
-modgraf2.o : modgraf2.f90 libgraf2_h.o
-	$(MPFC) $(OPTS90) -o modgraf2.o -c modgraf2.f90
+libgraf2_h.o : gks1/libgraf2_h.f90
+	$(MPFC) $(OPTS90) -o libgraf2_h.o -c gks1/libgraf2_h.f90
 
-nullgks2.o : nullgks2.f
-	$(MPFC) $(OPTS90) -o nullgks2.o -c nullgks2.f
+modgraf2.o : gks1/modgraf2.f90 libgraf2_h.o
+	$(MPFC) $(OPTS90) -o modgraf2.o -c gks1/modgraf2.f90
+
+nullgks2.o : gks1/nullgks2.f
+	$(MPFC) $(OPTS90) -o nullgks2.o -c gks1/nullgks2.f
 
 # Python
 
@@ -456,7 +464,7 @@ dtimer.so : dtimer_h.pyf dtimer.c
 	$(PCC) -m dtimer -c dtimer_h.pyf dtimer.c
 
 dtimer_h.pyf : dtimer_hpy.f90
-	python f2py --overwrite-signature -m dtimer -h dtimer_h.pyf dtimer_hpy.f90
+	$(F2PY) --overwrite-signature -m dtimer -h dtimer_h.pyf dtimer_hpy.f90
 
 fomplib.so : omplib.f90
 	$(PFC) --f90flags="$(OPTS90)" $(LOPTS) -m fomplib -c omplib.f90
@@ -475,23 +483,26 @@ libmdpush1.so : $(EDHOBJS) $(EDMODSRC) $(EDPYOBJS) pydtimer.o
 
 # Python Graphics
 
-pymplot10.o : plot10.f
-	$(MPFC) $(PYOPTS90) -o pymplot10.o -c plot10.f
+pymplot10.o : gks1/plot10.f
+	$(MPFC) $(PYOPTS90) -o pymplot10.o -c gks1/plot10.f
 
-pymlibplt10.o : libplt10.f
-	$(MPFC) $(PYOPTS90) -o pymlibplt10.o -c libplt10.f
+pymlibplt10.o : gks1/libplt10.f
+	$(MPFC) $(PYOPTS90) -o pymlibplt10.o -c gks1/libplt10.f
 
-pymlibygl.o : libygl.f
-	$(MPFC) $(PYOPTS90) -o pymlibygl.o -c libygl.f
+pymlibygl.o : gks1/libygl.f
+	$(MPFC) $(PYOPTS90) -o pymlibygl.o -c gks1/libygl.f
 
-pymdlibgks1.o : dlibgks1.f
-	$(MPFC) $(PYOPTS90) -o pymdlibgks1.o -c dlibgks1.f
+pymlibpsp.o : gks1/libpsp.f
+	$(MPFC) $(PYOPTS90) -o pymlibpsp.o -c gks1/libpsp.f
 
-pymlibgks1.o : libgks1.f
-	$(MPFC) $(PYOPTS90) -o pymlibgks1.o -c libgks1.f
+pymdlibgks1.o : gks1/dlibgks1.f
+	$(MPFC) $(PYOPTS90) -o pymdlibgks1.o -c gks1/dlibgks1.f
 
-pymnullgks1.o : nullgks1.f
-	$(MPFC) $(PYOPTS90) -o pymnullgks1.o -c nullgks1.f
+pymlibgks1.o : gks1/libgks1.f
+	$(MPFC) $(PYOPTS90) -o pymlibgks1.o -c gks1/libgks1.f
+
+pymnullgks1.o : gks1/nullgks1.f
+	$(MPFC) $(PYOPTS90) -o pymnullgks1.o -c gks1/nullgks1.f
 
 fgraf1.so : libgraf1_h.o $(GMODSRC) $(GPYOBJS)
 	$(PFC) --f90flags="$(OPTS90)" $(LOPTS) $(LGOPTS) -m fgraf1 \

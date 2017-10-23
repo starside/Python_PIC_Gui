@@ -1,13 +1,14 @@
 !-----------------------------------------------------------------------
+! Input for 1-2/2D MPI/OpenMP PIC codes
 !
       module in1
 !
 ! input1mod.f defines namelists containing input and output variables:
-! readnml1 read namelist from unit iuin
-! writnml1 write final diagnostic metafile to unit iudm
+! readnml1 reads namelist from unit iuin
+! writnml1 writes final diagnostic metafile to unit iudm
 ! written by viktor k. decyk, ucla
 ! copyright 2011, regents of the university of california
-! update: january 13, 2017
+! update: October 11, 2017
 !
       implicit none
 !
@@ -25,7 +26,7 @@
 !     integer :: psolve = PERIODIC_2D
 ! relativity = (no,yes) = (0,1) = relativity is used
       integer :: relativity = 0
-! ci = reciprical of velocity of light
+! ci = recipr0cal of velocity of light
       real :: ci = 0.1
 ! xtras = fraction of extra particles needed for particle management
       real :: xtras = 0.2
@@ -80,8 +81,8 @@
 !                        hyperbolic secant squared=4,exponential=5)
 ! for ndprof = 0, n(x) = n0
 ! for ndprof = 1, n(x) = n0*(1 + ampdx*(x/nx - 0.5))
-! for ndprof = 2, n(x) = n0*(1 + ampdx*sin(x/scaledx - shift))
-! for ndprof = (3,4,5), n(x) = n0*(1 + ampdx*f((x - shift)/scaledx))
+! for ndprof = 2, n(x) = n0*(1 + ampdx*sin(x/scaledx - shiftdx))
+! for ndprof = (3,4,5), n(x) = n0*(1 + ampdx*f((x - shiftdx)/scaledx))
 ! where f = (exp(-x**2/2),sech(x)**2,exp(x))
 ! n0 is determined by the requirement that the integral over density
 ! equals the total number of particles distributed by the function
@@ -397,8 +398,8 @@
 ! farname = file name for vector potential diagnostic
       character(len=32) :: farname = 'vpotrk1.0'
 ! define namelist
-      namelist /vpotr1d/ idrun, indx, ntar, ndar, modesxar, ndim, omx,  &
-     &omy, omz, ci, narrec, t0, tend, dt, ceng, farname
+      namelist /vpotr1d/ idrun, indx, ntar, modesxar, ndim, omx, omy,   &
+     &omz, ci, narrec, t0, tend, dt, ceng, farname
 !
 ! Namelist output for ion density diagnostic
 ! fdname = file name for ion density diagnostic
@@ -463,6 +464,14 @@
       open(unit=iudm,file=trim(fname),form='formatted',status='replace')
 ! write out global input parameters
       write (iudm,input1)
+! write out electromagnetic input parameters
+      if ((emf==1).or.(emf==2)) then
+         write (iudm,input1b)
+      endif
+! write out darwin input parameters
+      if (emf==2) then
+         write (iudm,input1d)
+      endif
 ! electron density diagnostic
       if (ntde > 0) then
          write (iudm,dene1d)

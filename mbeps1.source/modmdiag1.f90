@@ -13,6 +13,7 @@
 !          calls CSPECT1
 ! micspect1 performs incremental frequency analysis of complex scalar
 !           time series for one time step
+!           calls ICSPECT1
 ! mivcspect1 performs incremental frequency analysis of complex vector 
 !            time series for one time step
 !            calls IVCSPECT1
@@ -37,7 +38,7 @@
 !           calls STPBEAM1 or STPBEAM13
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: january 7, 2017
+! update: may 30, 2017
 !
       use libmdiag1_h
       implicit none

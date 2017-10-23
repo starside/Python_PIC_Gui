@@ -34,9 +34,11 @@
 !        calls GPPOST1L
 ! wmpush1 generic procedure to push particles
 !         calls mrpushf11, mpushf11, mrpush11, or mpush11
+! wmpush1zf generic procedure to push particles with fixed velocity
+!           calls mpush1zf, mpushf1zf, mrpush1zf, or mrpushf1zf
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: december 19, 2016
+! update: may 16, 2017
 !
       use libmpush1_h
       implicit none
@@ -403,7 +405,7 @@
       integer, dimension(:,:,:), intent(inout) :: ihole
 ! also calculate list of particles leaving tile
       if (plist) then
-! updates ppart, wke, ncl, ihole, irc
+! updates ppart, ek, ncl, ihole, irc
          if (relativity==1) then
             call mrpushf11(ppart,fx,kpic,ncl,ihole,qbm,dt,ci,ek,tpush,nx&
      &,mx,irc)
@@ -416,7 +418,7 @@
          endif
 ! do not also calculate list of particles leaving tile
       else
-! updates ppart and wke
+! updates ppart and ek
          if (relativity==1) then
             call mrpush11(ppart,fx,kpic,qbm,dt,ci,ek,tpush,nx,mx,ipbc)
          else
@@ -442,7 +444,7 @@
       integer, dimension(:,:,:), intent(inout) :: ihole
 ! also calculate list of particles leaving tile
       if (plist) then
-! updates ppart, wke, ncl, ihole, irc
+! updates ppart, ek, ncl, ihole, irc
          if (relativity==1) then
             call mrpushf1zf(ppart,kpic,ncl,ihole,dt,ci,ek,tpush,nx,mx,  &
      &irc)
@@ -454,7 +456,7 @@
          endif
 ! do not also calculate list of particles leaving tile
       else
-! updates ppart and wke
+! updates ppart and ek
          if (relativity==1) then
             call mrpush1zf(ppart,kpic,dt,ci,ek,tpush,nx,ipbc)
          else

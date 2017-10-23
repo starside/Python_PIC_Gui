@@ -31,7 +31,7 @@
 !           id in particle location 5
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: january 7, 2017
+! update: may 30, 2017
 !-----------------------------------------------------------------------
       subroutine CSPECT1(fc,wm,pkw,t0,dt,nt,iw,modesx,ntd,iwd,modesxd)
 ! this subroutine performs frequency analysis of complex time series,
@@ -48,8 +48,8 @@
 ! iw = number of (positive) frequencies
 ! modesx = number of modes in x direction
 ! ntd = dimension of input array, ntd >= nt
-! iwd = dimension of frequency array iw >= iw
-! modesxd = dimension of output array pott, modesxd >= modesx
+! iwd = dimension of frequency array iwd >= iw
+! modesxd = dimension of input array fc, modesxd >= modesx
       implicit none
       integer nt, iw, modesx, ntd, iwd, modesxd
       real t0, dt
@@ -115,7 +115,6 @@
 ! should be initialized to zero
 ! time = current time value
 ! t0 = starting time value
-! itw current time index
 ! nt = number of input data points (for normalization)
 ! iw = number of (positive) frequencies
 ! modesx = number of modes in x direction
@@ -124,7 +123,7 @@
 ! norm = 1 for potential or norm = -1 for density gives spectrum as
 !        electric field energy
 ! ntd = dimension of input array, ntd >= nt
-! iwd = dimension of frequency array iw >= iw
+! iwd = dimension of frequency array iwd >= iw
 ! modesxd = dimension of input array fc, modesxd >= modesx
       implicit none
       integer nt, iw, modesx, nx, norm, iwd, modesxd
@@ -198,7 +197,6 @@
 ! should be initialized to zero
 ! time = current time value
 ! t0 = starting time value
-! itw current time index
 ! nt = number of input data points (for normalization)
 ! iw = number of (positive) frequencies
 ! modesx = number of modes in x direction
@@ -207,7 +205,7 @@
 ! norm = 1 for vector potential or norm = -1 for current density gives
 !        spectrum as magnetic field energy
 ! ntd = dimension of input array, ntd >= nt
-! iwd = dimension of frequency array iw >= iw
+! iwd = dimension of frequency array iwd >= iw
 ! modesxd = second dimension of input array fvc, modesxd >= modesx
       implicit none
       integer nt, iw, modesx, nx, norm, iwd, modesxd

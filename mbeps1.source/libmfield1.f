@@ -49,7 +49,7 @@
 !           unpacked array and stores them into a packed array
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: october 12, 2016
+! update: april 21, 2017
 !-----------------------------------------------------------------------
       subroutine POIS1(q,fx,isign,ffc,ax,affp,we,nx)
 ! this subroutine solves 1d poisson's equation in fourier space for
@@ -949,7 +949,7 @@
 ! this subroutine averages current in fourier space for 1-2/2d code
 ! input: all except cuave, output: cuave
 ! cunew(i,j),cuold(i,j) = complex current densities to be averaged
-! cuave(i,n) = average complex current density
+! cuave(i,j) = average complex current density
 ! for component i, all for fourier mode (j-1)
 ! nx = system length in x direction
 ! nxvh = first dimension of field arrays, must be >= nxh

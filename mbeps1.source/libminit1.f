@@ -42,7 +42,7 @@
 !          for a gaussian density profile with no background density
 ! written by Viktor K. Decyk, UCLA
 ! copyright 2016, regents of the university of california
-! update: january 21, 2017
+! update: may 15, 2017
 !-----------------------------------------------------------------------
       subroutine NEXTRAN1(nextrand,ndim,np)
 ! for 1d code, this subroutine skips over nextrand groups of random
@@ -222,7 +222,7 @@
             xt = xt - f/fp
             xt = max(edgelx,min(xt,anx))
 ! bisection method
-         else if (f.gt.0.) then
+         else if (f.gt.0.0) then
             fp = 0.5*abs(xt0 - xt)
             xt = xt0 - fp
          else
@@ -319,7 +319,7 @@
             xt = xt - f/fp
             xt = max(edgelx,min(xt,anx))
 ! bisection method
-         else if (f.gt.0.) then
+         else if (f.gt.0.0) then
             fp = 0.5*abs(xt0 - xt)
             xt = xt0 - fp
          else
@@ -343,8 +343,8 @@
 ! for 1d code, this subroutine calculates initial particle
 ! velocity with maxwellian velocity with drift
 ! part(2,n) = velocity vx of particle n
-! vtx = thermal velocity of electrons in x direction
-! vdx = drift velocity of beam electrons in x direction
+! vtx = thermal velocity of particles in x direction
+! vdx = drift velocity of particles in x direction
 ! jstart = starting location in particle array
 ! npx = number of particles distributed in x direction
 ! idimp = size of phase space = 2
@@ -384,8 +384,8 @@
 ! part(2,n) = velocity vx of particle n
 ! part(3,n) = velocity vy of particle n
 ! part(4,n) = velocity vz of particle n
-! vtx/vty/vtz = thermal velocity of electrons in x/y/z direction
-! vdx/vdy/vdz = drift velocity of beam electrons in x/y/z direction
+! vtx/vty/vtz = thermal velocity of particles in x/y/z direction
+! vdx/vdy/vdz = drift velocity of particles in x/y/z direction
 ! jstart = starting location in particle array
 ! npx = number of particles distributed in x direction
 ! idimp = size of phase space = 4
@@ -446,8 +446,8 @@
 ! satisfied if we set the individual components j as follows:
 ! pj/m0 = ptj*vth*sqrt(1 + (pt/4c)**2)
 ! part(2,n) = momentum px of particle n
-! vtx = thermal velocity of electrons in x direction
-! vdx = drift momenum of beam electrons in x direction
+! vtx = thermal velocity of particles in x direction
+! vdx = drift momenum of particles in x direction
 ! ci = reciprocal of velocity of light
 ! jstart = starting location in particle array
 ! npx = number of particles distributed in x direction
@@ -466,7 +466,7 @@
       js = jstart - 1
       if ((js+npx).gt.nop) return
       ci4 = 0.25*ci*ci
-! maxwell-juttner velocity distribution
+! maxwell-juttner momentum distribution
       do 10 j = 1, npx
       pt = vtx*ranorm()
       part(2,j+js) = pt*sqrt(1.0 + pt*pt*ci4)
@@ -500,8 +500,8 @@
 ! part(2,n) = momentum px of particle n
 ! part(3,n) = momentum py of particle n
 ! part(4,n) = momentum pz of particle n
-! vtx/vty/vtz = thermal velocity of electrons in x/y/z direction
-! vdx/vdy/vdz = drift momentum of beam electrons in x/y/z direction
+! vtx/vty/vtz = thermal velocity of particles in x/y/z direction
+! vdx/vdy/vdz = drift momentum of particles in x/y/z direction
 ! ci = reciprocal of velocity of light
 ! jstart = starting location in particle array
 ! npx = number of particles distributed in x direction
@@ -520,7 +520,7 @@
       js = jstart - 1
       if ((js+npx).gt.nop) return
       ci4 = 0.25*ci*ci
-! maxwell-juttner velocity distribution
+! maxwell-juttner momentum distribution
       do 10 j = 1, npx
       ptx = vtx*ranorm()
       pty = vty*ranorm()
@@ -558,8 +558,8 @@
 ! for 1d code, this subroutine calculates initial particle
 ! velocity with waterbag velocity distribution with drift
 ! part(2,n) = velocity vx of particle n
-! vtx = maximum velocity of electrons in x direction
-! vdx = drift velocity of beam electrons in x direction
+! vtx = maximum velocity of particles in x direction
+! vdx = drift velocity of particles in x direction
 ! jstart = starting location in particle array
 ! npx = number of particles distributed in x direction
 ! idimp = size of phase space = 2
@@ -600,8 +600,8 @@
 ! part(2,n) = velocity vx of particle n
 ! part(3,n) = velocity vy of particle n
 ! part(4,n) = velocity vz of particle n
-! vtx/vty/vtz = maximum velocity of electrons in x/y/z direction
-! vdx/vdy/vdz = drift velocity of beam electrons in x/y/z direction
+! vtx/vty/vtz = maximum velocity of particles in x/y/z direction
+! vdx/vdy/vdz = drift velocity of particles in x/y/z direction
 ! jstart = starting location in particle array
 ! npx = number of particles distributed in x direction
 ! idimp = size of phase space = 4
