@@ -543,17 +543,20 @@ class DrawEnergy(DrawOptions):
         # Draw the plots that are on
         ax_top = None;
         ax_bot = None;
+        #Plot all enabled plots
         for item in self._PV["EnergyTypes"].iteritems():
             state = item[1]
             if state["on"]: #Plot if state is on
                 data_index = state["index"]
                 xdata = self.itw[0:self.timeindex]
                 ydata = self.edata[0:self.timeindex, data_index]
+                # Offset energy from original value?
+                yoffset = 0.0
                 if len(ydata) > 0 and self._PV["EnergyOffset"]:
-                	ydata -= ydata[0]
-                axes.plot(xdata, ydata, "-", label=self.labels[data_index])
+                	yoffset = ydata[0]
+                axes.plot(xdata, ydata - yoffset, "-", label=self.labels[data_index])
                 # Calculate y-axis limits
-                [bottom, top] = axisPowerOfTwo(ydata)
+                [bottom, top] = axisPowerOfTwo(ydata - yoffset)
                 ax_top = max(ax_top, top)
                 ax_bot = min(ax_bot, bottom) if ax_bot is not None else bottom
         # Set the limits if valid values are specified
