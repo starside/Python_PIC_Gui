@@ -17,7 +17,6 @@ from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 from Events import *
 from lib import *
 
-
 class KeyList:
     # set the location of the dictionary
     def setDict(self, curdict):
@@ -354,13 +353,15 @@ class DrawVelocity(DrawOptions, KeyList):
         pidx = 0
         for i, ydata in enumerate(self.ydata):
             axes.plot(self.xax, ydata[1:], '-x', label=self.labels[i])
-            extText = ""
-            if self.fvm != None:
-                try:
-                    extText = "  VTX = " + str(self.fvm[i][1])
-                except:
-                    True  # extText = "  VTX = " + str(self.fvm[i][1]  )
-        self.drawTime(fig, axes, extText)
+        #Display x axis label with moment info
+        extText = ""
+        if self.fvm != None:
+        	extText = "VD=" + str(self.fvm[0][0][0])
+        	extText += "   VTH=" + str(self.fvm[0][0][1])
+        axes.set_xlabel(r"Velocity"
+           "\n" + extText)
+        fig.tight_layout()
+        self.drawTime(fig, axes, "")
         self.scaleYAxis(fig, axes, ydata[1:], 2.0)
         leg = axes.legend()
         if leg is not None:
@@ -368,7 +369,6 @@ class DrawVelocity(DrawOptions, KeyList):
         if self.title is None:
             self.title = self.plottype
         axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
-
 
 class DrawPotential(DrawOptions, KeyList):
     def __init__(self, ydata):
