@@ -750,7 +750,7 @@ def main(*args):
                 sb1.evelocity_diag13(s1.ppart, s1.kpic, s1.fv, s1.fvm, s1.fvtm)
                 # display electron velocity distributions
                 if ((in1.ndv == 1) or (in1.ndv == 3)):
-                    pc.showVelocity(s1.fv[:, :], ["x", "y", "z"], fvm=s1.fvm[0], plottype="EVELOCITY", early=in1.ntv)
+                    pc.showVelocity(s1.fv[:, :], ["x", "y", "z"], fvm=s1.fvm, plottype="EVELOCITY", early=in1.ntv)
                     graf1.displayfv1(s1.fv, s1.fvm, ' ELECTRON', ntime, in1.nmv, 2,
                                      irc)
                     if (irc[0] == 1):
@@ -763,7 +763,7 @@ def main(*args):
                                          s1.fvtmi)
                     # display ion velocity distributions
                     if ((in1.ndv == 2) or (in1.ndv == 3)):
-                        pc.showVelocity(s1.fvi[:, :], ["x", "y", "z"], fvm=s1.fvmi[0], plottype="IVELOCITY", early=in1.ntv)
+                        pc.showVelocity(s1.fvi[:, :], ["x", "y", "z"], fvm=s1.fvmi, plottype="IVELOCITY", early=in1.ntv)
                         graf1.displayfv1(s1.fvi, s1.fvmi, ' ION', ntime, in1.nmv, 2,
                                          irc)
                         if (irc[0] == 1):
@@ -777,7 +777,7 @@ def main(*args):
                 sb1.traj_diag13(s1.ppart, s1.kpic, s1.partd, s1.fvtp, s1.fvmtp)
                 if (in1.nst == 3):
                     # display velocity distributions
-                    pc.showVelocity(s1.fvtp[:, :], ["x", "y", "z"], fvm=s1.fvmtp[0], plottype="TRAJECTORY", early=in1.ntt)
+                    pc.showVelocity(s1.fvtp[:, :], ["x", "y", "z"], fvm=s1.fvmtp, plottype="TRAJECTORY", early=in1.ntt)
                     graf1.displayfv1(s1.fvtp, s1.fvmtp, ' ELECTRON', ntime, in1.nmv,
                                      2, irc)
                     if (irc[0] == 1):
