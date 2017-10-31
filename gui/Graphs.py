@@ -356,8 +356,11 @@ class DrawVelocity(DrawOptions, KeyList):
         #Display x axis label with moment info
         extText = ""
         if self.fvm != None:
-        	extText = "VD=" + str(self.fvm[0][0][0])
-        	extText += "   VTH=" + str(self.fvm[0][0][1])
+            try:
+                extText = "VD=" + str(self.fvm[0][0][0])
+                extText += "   VTH=" + str(self.fvm[0][0][1])
+            except:
+                True
         axes.set_xlabel(r"Velocity"
            "\n" + extText)
         fig.tight_layout()
