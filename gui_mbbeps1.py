@@ -601,10 +601,10 @@ def main(*args):
                 if ((in1.ndp == 2) or (in1.ndp == 3)):
                     # display frequency spectrum
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE+", s1.pkw[::, :, 0], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wrmin, in1.wrmax), early=in1.ntp,
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), early=in1.ntp,
                                        ticks_scale=spectrum_scale)
                     pc.showSimpleImage("POTENTIAL OMEGA VS MODE-", s1.pkw[::, :, 1], "Time=" + str(ntime * in1.dt),
-                                       extent=(0, in1.modesxp, in1.wrmin, in1.wrmax), early=in1.ntp,
+                                       extent=(0, in1.modesxp, in1.wmin, in1.wmax), early=in1.ntp,
                                        ticks_scale=spectrum_scale)
                     wax = numpy.array(range(in1.modesxp))
                     pc.showSimple(["POTENTIAL OMEGA VS MODE LINE", "+OMEGA", "-OMEGA"], [wax, wax],
@@ -777,7 +777,7 @@ def main(*args):
                 sb1.traj_diag13(s1.ppart, s1.kpic, s1.partd, s1.fvtp, s1.fvmtp)
                 if (in1.nst == 3):
                     # display velocity distributions
-                    pc.showVelocity(s1.fvtp[:, :], ["x", "y", "z"], fvm=s1.fvmtp, plottype="TRAJECTORY", early=in1.ntt)
+                    pc.showVelocity(s1.fvtp[:, :], ["x", "y", "z"], fvm=s1.fvmtp[0], plottype="TRAJECTORY", early=in1.ntt)
                     graf1.displayfv1(s1.fvtp, s1.fvmtp, ' ELECTRON', ntime, in1.nmv,
                                      2, irc)
                     if (irc[0] == 1):
