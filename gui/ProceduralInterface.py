@@ -145,7 +145,7 @@ class PlasmaContext():
         return False
 
 
-    # Low Level method to communicate with gui thread.  Serialized and sends objects
+    # Low Level method to communicate with gui thread.  Serializes and sends objects
     def _sendplot(self, obj):
         if self.norun:
             return
@@ -284,6 +284,16 @@ class PlasmaContext():
                 self.showGraphs(True)
         else:
             return
+
+    # Plot a user defined graph
+    def showUserDefined(self, name, definedplot, early=None):
+        if self.norun:
+            return
+        if not self.isGraphing(name[0]):
+            return
+        if early is not None:
+            self.graphBeforeEndOfFF(name[0], early)
+        self._sendplot(definedplot)
 
     # Plottype is optional.  Use it to rename the dv1 plottype
     def showVelocity(self, data, labels, fvm=None, plottype=None, title=None, early=None):

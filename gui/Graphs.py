@@ -251,6 +251,9 @@ class DrawElectronDensity(DrawOptions, KeyList):
         # well defined axis here
 
 
+"""
+This plot draws a simple line plot
+"""
 class DrawSimple(DrawOptions, KeyList):
     def __init__(self, name, xdata, ydata, text, graphoptions=None, title=None):
         DrawOptions.__init__(self)
@@ -482,21 +485,49 @@ class DrawEnergyControlPanel(BaseControlPanel):
             self._PV["EnergyOffset"] = False
         wx.PostEvent(self.stf, RefreshGraphEvent())
 
+#Finds the nearest power of 2, greater than or equal to x
 def _upperpowerof2(x):
-    x = int(abs(x))
     c = 0
-    while(x) > 0:
-        c += 1
-        x = x >> 1
-    return 2**c
-
-def _lowerpowerof2(x):
+    ox = x
+    lessThanOne = False
+    if x == 0.0:
+        return 0
+    if abs(x) < 1.0:
+        x = 1.0/x
+        c = -1
+        lessThanOne = True
     x = int(abs(x))
-    c = -1
     while(x) > 0:
         c += 1
         x = x >> 1
-    return int(2**c)
+    if lessThanOne:
+        result = 0.5**c
+    else:
+        result = 2.0**c
+    assert(result >= ox)
+    return result
+
+# Finds the nearest power of 2, less than or equal to x
+def _lowerpowerof2(x):
+    c = -1
+    ox = x
+    lessThanOne = False
+    if x == 0.0:
+        return 0
+    if abs(x) < 1.0:
+        x = 1.0/x
+        c = 0
+        lessThanOne = True
+    x = int(abs(x))
+    while(x) > 0:
+        c += 1
+        x = x >> 1
+    if lessThanOne:
+        result = 0.5**c
+    else:
+        result = 2.0**c
+    assert(result <= ox)
+    return result
 
 def upperpowerof2(x):
     if x < 0:

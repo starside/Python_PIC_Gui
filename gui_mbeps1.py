@@ -74,6 +74,7 @@ def initialize_menus(pc):
     if (in1.ntw > 0):
         pc.addGraph("ENERGY", "Energy", priority=150)  # Enable electron velocity
 
+
 def main(*args):
     # init GUI
     pc = PlasmaContext(in1, *args)  # Create GUI
