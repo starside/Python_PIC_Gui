@@ -15,7 +15,6 @@ from subprocess import Popen, PIPE
 import copy
 # import Image
 import os, sys
-import pdb
 
 from Events import *
 import Graphs
@@ -27,9 +26,9 @@ class RecordPanel(wx.Frame):
 
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, -1, 'Movie Options', style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
-        self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.parent = parent
         self.SetupControls()
+        self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Show()
 
     def SetupControls(self):
@@ -47,14 +46,28 @@ class RecordPanel(wx.Frame):
         hs1.Add(lbl1)
         hs1.Add(self.saveName)
 
-        self.cbox1 = wx.CheckBox(self, -1, "Check to begin recording")
-        self.cbox1.SetValue(rec)
-        self.sizer.Add(self.cbox1)
+        self.cbox1 = wx.ToggleButton(self, -1, "Record/Pause")
+        self.cbox1.Bind(wx.EVT_TOGGLEBUTTON, self.OnClickRecord)
+        self._RecButtonValue()
         self.sizer.Add(hs1)
+        self.sizer.Add(self.cbox1)
 
         self.SetSizerAndFit(self.sizer)
 
+    def _RecButtonValue(self):
+        rec, text, overwrite = self.parent.getRecordStatus()
+        self.cbox1.SetValue(rec)
+        if rec:
+            self.cbox1.SetLabel("Pause")
+        else:
+            self.cbox1.SetLabel("Record")
+
     def OnClose(self, event):
+        self.Hide()
+        self.Destroy()
+
+
+    def OnClickRecord(self, event):
         svname = self.saveName.GetValue()
         recval = self.cbox1.GetValue()
         overwrite = self.cbox2.GetValue()
@@ -76,8 +89,7 @@ class RecordPanel(wx.Frame):
                 self.currentlyWritingFiles.remove(svname)
             except ValueError:
                 True
-        self.Hide()
-        self.Destroy()
+        self._RecButtonValue() #Update button
 
     def addActiveWritingFile(self, fname):
         if fname in self.currentlyWritingFiles:
