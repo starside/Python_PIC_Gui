@@ -1,10 +1,18 @@
  &input1
- IDRUN = 12
- INDX =   9, NPX =   184320, NPXB = 184320
- NTW = 1, NTV = 1, NTS = 1, NTSC = 1
- NTP = 1, MODESXP = 41
- TEND = 200.000, DT =   0.100
- VTX =   1.000, VX0 =   -3.000
- VTDX = 1.0, VDX = 3.0
+ IDRUN = 23
+ INDX =   9, NPX =   18432, NPXB = 0
+ NTW = 1, NTV = 5
+ NTP = 0, MODESXP = 41, NDP=2
+ TEND = 500.000, DT =   0.0250, CI = 0.1
+ VTX =   1.000, VTY =   1.000, VTZ = 1.000
+ VX0 =   0.000, VY0 =   0.000, VZ0 =   0.000
+ WMIN = 0.0; WMAX = 8.0, DW = 0.01
  NPLOT = 3
  /
+ &input1b
+ OMX = 0.0, OMY = 0.0, OMZ = 0.4
+ NTA = 0, MODESXA = 41, NDA = 3
+ NTET = 5, MODESXET = 41, NDET = 2
+ NTAR = 5, MODESXAR = 41, NDAR =2
+ /
+

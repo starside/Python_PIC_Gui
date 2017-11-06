@@ -125,21 +125,18 @@ def initialize_menus(pc):
                     "Vector Potential Diagnostic/Vector Potential:Z OMEGA vs MODE Trace", autoadd=False)
 
     if (in1.ntet > 0):
-        pc.addGraph("TRANSVERSE E FIELD",
-                    "Transverse Electric Field/Transverse Electric Field")  # Enable electron velocity
-        pc.addGraph("TRANSVERSE E.F. Y OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Y Electric Field, Omega vs Mode", autoadd=False)
-        pc.addGraph("TRANSVERSE E.F. Z OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Z Electric Field, Omega vs Mode", autoadd=False)
-
-        pc.addGraph("FT TRANSVERSE E.F. Y +OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode")
-        pc.addGraph("FT TRANSVERSE E.F. Y -OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode", autoadd=False)
-        pc.addGraph("FT TRANSVERSE E.F. Z +OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode", autoadd=False)
-        pc.addGraph("FT TRANSVERSE E.F. Z -OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode", autoadd=False)
+        if ((in1.ndet == 1) or (in1.ndet == 3)):
+            pc.addGraph("TRANSVERSE E FIELD",
+                        "Transverse Electric Field/Transverse Electric Field")  # Enable electron velocity
+        if ((in1.ndet == 2) or (in1.ndet == 3)):
+            pc.addGraph("FT TRANSVERSE E.F. Y +OMEGA VS MODE",
+                        "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode")
+            pc.addGraph("FT TRANSVERSE E.F. Y -OMEGA VS MODE",
+                        "Transverse Electric Field/Transverse Y Electric Field, -Omega vs Mode", autoadd=False)
+            pc.addGraph("FT TRANSVERSE E.F. Z +OMEGA VS MODE",
+                        "Transverse Electric Field/Transverse Z Electric Field, +Omega vs Mode")
+            pc.addGraph("FT TRANSVERSE E.F. Z -OMEGA VS MODE",
+                        "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode", autoadd=False)
 
     if (in1.ntb > 0):
         pc.addGraph("BFIELD", "Magnetic Field")  # Enable electron velocity
@@ -150,9 +147,9 @@ def initialize_menus(pc):
         pc.addGraph("TRAJECTORY", "Particle Trajectory")  # Enable electron velocity
 
     if (in1.ntar > 0):
-        pc.addGraph(' RADIATIVE VPOTENTIAL',
-                    "Radiative Vector Potential Diagnostic/Radiative Vector Potential")  # Enable electron velocity
-
+        if ((in1.ndar == 1) or (in1.ndar == 3)):
+            pc.addGraph(' RADIATIVE VPOTENTIAL',
+                        "Radiative Vector Potential Diagnostic/Radiative Vector Potential")  # Enable electron velocity
         pc.addGraph("RADVECPOT Y +OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Y +Omega")
         pc.addGraph("RADVECPOT Y -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Y -Omega",
                     autoadd=False)
