@@ -547,7 +547,12 @@ def axisPowerOfTwo(data):
         return (None,None)
     minv = np.amin(data)
     maxv = np.amax(data)
-    return (lowerpowerof2(minv), upperpowerof2(maxv))
+    try:
+        rv = (lowerpowerof2(minv), upperpowerof2(maxv))
+    except OverflowError:
+        print (minv, maxv)
+        rv = (-1,1)
+    return rv
 
 
 class DrawEnergy(DrawOptions):

@@ -67,19 +67,19 @@ def initialize_menus(pc):
         if (in1.ntdi > 0):
             pc.addGraph("IDENSITY", "Density/Ion Density")  # Enable ion velocity
             pc.addGraph("ION DENSITY OMEGA VS MODE+", "Ion Dispersion/Ion Density Dispersion +")
-            pc.addGraph("ION DENSITY OMEGA VS MODE-", "Ion Dispersion/Ion Density Dispersion -")
+            pc.addGraph("ION DENSITY OMEGA VS MODE-", "Ion Dispersion/Ion Density Dispersion -", autoadd=False)
             #pc.addGraph("ION DENSITY OMEGA VS MODE LINE", "Ion Dispersion/Ion Density Dispersion Trace")
 
             pc.addGraph("ION CURRENT OMEGA VS MODEY+", "Ion Dispersion/Ion Current Dispersion Y+")
             pc.addGraph("ION CURRENT OMEGA VS MODEZ+", "Ion Dispersion/Ion Current Dispersion Z+")
-            pc.addGraph("ION CURRENT OMEGA VS MODEY-", "Ion Dispersion/Ion Current Dispersion Y-")
-            pc.addGraph("ION CURRENT OMEGA VS MODEZ-", "Ion Dispersion/Ion Current Dispersion Z-")
+            pc.addGraph("ION CURRENT OMEGA VS MODEY-", "Ion Dispersion/Ion Current Dispersion Y-", autoadd=False)
+            pc.addGraph("ION CURRENT OMEGA VS MODEZ-", "Ion Dispersion/Ion Current Dispersion Z-", autoadd=False)
 
             # initialize potential diagnostic: allocates pkw, wk
     if (in1.ntp > 0):
         pc.addGraph("DRAWPOT", "Potential/Potential")  # Enable electron velocity
         pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
-        pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -")
+        pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -", autoadd=False)
         #pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace")
 
     # initialize longitudinal efield diagnostic
@@ -98,11 +98,11 @@ def initialize_menus(pc):
         pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y+",
                     "Vector Potential Diagnostic/Vector Potential:Y+ OMEGA vs MODE")
         pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y-",
-                    "Vector Potential Diagnostic/Vector Potential:Y- OMEGA vs MODE")
+                    "Vector Potential Diagnostic/Vector Potential:Y- OMEGA vs MODE", autoadd=False)
         pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z+",
                     "Vector Potential Diagnostic/Vector Potential:Z+ OMEGA vs MODE")
         pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z-",
-                    "Vector Potential Diagnostic/Vector Potential:Z- OMEGA vs MODE")
+                    "Vector Potential Diagnostic/Vector Potential:Z- OMEGA vs MODE", autoadd=False)
 
         #pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y LINE",
         #            "Vector Potential Diagnostic/Vector Potential:Y OMEGA vs MODE Trace")
@@ -122,11 +122,11 @@ def initialize_menus(pc):
         pc.addGraph("FT TRANSVERSE E.F. Y +OMEGA VS MODE",
                     "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode")
         pc.addGraph("FT TRANSVERSE E.F. Y -OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode")
+                    "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode", autoadd=False)
         pc.addGraph("FT TRANSVERSE E.F. Z +OMEGA VS MODE",
                     "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode")
         pc.addGraph("FT TRANSVERSE E.F. Z -OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode")
+                    "Transverse Electric Field/Transverse Z Electric Field, -Omega vs Mode", autoadd=False)
 
     # initialize darwin magnetic field diagnostic
     if (in1.ntb > 0):

@@ -100,11 +100,12 @@ def initialize_menus(pc):
         pc.addGraph("EDENSITY", "Density/Electron Density")  # Enable electron velocity
 
     if (in1.ntp > 0):
-        pc.addGraph("DRAWPOT", "Potential/Potential")  # Enable electron velocity
+        if in1.ndp == 1 or in1.ndp == 3:
+            pc.addGraph("DRAWPOT", "Potential/Potential")  # Enable electron velocity
         if in1.ndp == 2 or in1.ndp == 3:
             pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
             pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -", autoadd=False)
-            pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace", autoadd=False)
+            #pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace", autoadd=False)
 
     if (in1.ntel > 0):
         pc.addGraph("ELFIELD", "E-Field/Longitudinal E-Field")
