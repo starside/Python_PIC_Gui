@@ -68,7 +68,7 @@ def initialize_menus(pc):
             pc.addGraph("IDENSITY", "Density/Ion Density")  # Enable ion velocity
             pc.addGraph("ION DENSITY OMEGA VS MODE+", "Ion Dispersion/Ion Density Dispersion +")
             pc.addGraph("ION DENSITY OMEGA VS MODE-", "Ion Dispersion/Ion Density Dispersion -")
-            pc.addGraph("ION DENSITY OMEGA VS MODE LINE", "Ion Dispersion/Ion Density Dispersion Trace")
+            #pc.addGraph("ION DENSITY OMEGA VS MODE LINE", "Ion Dispersion/Ion Density Dispersion Trace")
 
             pc.addGraph("ION CURRENT OMEGA VS MODEY+", "Ion Dispersion/Ion Current Dispersion Y+")
             pc.addGraph("ION CURRENT OMEGA VS MODEZ+", "Ion Dispersion/Ion Current Dispersion Z+")
@@ -80,7 +80,7 @@ def initialize_menus(pc):
         pc.addGraph("DRAWPOT", "Potential/Potential")  # Enable electron velocity
         pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
         pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -")
-        pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace")
+        #pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace")
 
     # initialize longitudinal efield diagnostic
     if (in1.ntel > 0):
@@ -104,20 +104,20 @@ def initialize_menus(pc):
         pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z-",
                     "Vector Potential Diagnostic/Vector Potential:Z- OMEGA vs MODE")
 
-        pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y LINE",
-                    "Vector Potential Diagnostic/Vector Potential:Y OMEGA vs MODE Trace")
-        pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z LINE",
-                    "Vector Potential Diagnostic/Vector Potential:Z OMEGA vs MODE Trace")
+        #pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y LINE",
+        #            "Vector Potential Diagnostic/Vector Potential:Y OMEGA vs MODE Trace")
+        #pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z LINE",
+        #            "Vector Potential Diagnostic/Vector Potential:Z OMEGA vs MODE Trace")
 
     # initialize darwin transverse efield diagnostic:
     # allocates vpkwet, vwket
     if (in1.ntet > 0):
         pc.addGraph("TRANSVERSE E FIELD",
                     "Transverse Electric Field/Transverse Electric Field")  # Enable electron velocity
-        pc.addGraph("TRANSVERSE E.F. Y OMEGA VS MODE",
+        """pc.addGraph("TRANSVERSE E.F. Y OMEGA VS MODE",
                     "Transverse Electric Field/Transverse Y Electric Field, Omega vs Mode")
         pc.addGraph("TRANSVERSE E.F. Z OMEGA VS MODE",
-                    "Transverse Electric Field/Transverse Z Electric Field, Omega vs Mode")
+                    "Transverse Electric Field/Transverse Z Electric Field, Omega vs Mode")"""
 
         pc.addGraph("FT TRANSVERSE E.F. Y +OMEGA VS MODE",
                     "Transverse Electric Field/Transverse Y Electric Field, +Omega vs Mode")

@@ -80,9 +80,10 @@ def initialize_menus(pc):
     if (in1.movion == 1):
         if (in1.ntdi > 0):
             pc.addGraph("IDENSITY", "Density/Ion Density")  # Enable ion velocity
-            pc.addGraph("ION DENSITY OMEGA VS MODE+", "Ion Dispersion/Ion Density Dispersion +")
-            pc.addGraph("ION DENSITY OMEGA VS MODE-", "Ion Dispersion/Ion Density Dispersion -", autoadd=False)
-            pc.addGraph("ION DENSITY OMEGA VS MODE LINE", "Ion Dispersion/Ion Density Dispersion Trace")
+            if ((in1.nddi == 2) or (in1.nddi == 3)):
+                pc.addGraph("ION DENSITY OMEGA VS MODE+", "Ion Dispersion/Ion Density Dispersion +")
+                pc.addGraph("ION DENSITY OMEGA VS MODE-", "Ion Dispersion/Ion Density Dispersion -", autoadd=False)
+                #pc.addGraph("ION DENSITY OMEGA VS MODE LINE", "Ion Dispersion/Ion Density Dispersion Trace")
 
     if (in1.movion == 1):
         if (in1.ntji > 0):
@@ -100,9 +101,10 @@ def initialize_menus(pc):
 
     if (in1.ntp > 0):
         pc.addGraph("DRAWPOT", "Potential/Potential")  # Enable electron velocity
-        pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
-        pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -", autoadd=False)
-        pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace", autoadd=False)
+        if in1.ndp == 2 or in1.ndp == 3:
+            pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
+            pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -", autoadd=False)
+            pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace", autoadd=False)
 
     if (in1.ntel > 0):
         pc.addGraph("ELFIELD", "E-Field/Longitudinal E-Field")
@@ -110,19 +112,20 @@ def initialize_menus(pc):
     if (in1.nta > 0):
         if ((in1.nda == 1) or (in1.nda == 3)):
             pc.addGraph(' VECTOR POTENTIAL', "Vector Potential Diagnostic/Vector Potential")  # Enable electron velocity
-        pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y+",
-                    "Vector Potential Diagnostic/Vector Potential:Y+ OMEGA vs MODE")
-        pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y-",
-                    "Vector Potential Diagnostic/Vector Potential:Y- OMEGA vs MODE", autoadd=False)
-        pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z+",
-                    "Vector Potential Diagnostic/Vector Potential:Z+ OMEGA vs MODE", autoadd=False)
-        pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z-",
-                    "Vector Potential Diagnostic/Vector Potential:Z- OMEGA vs MODE", autoadd=False)
+        if ((in1.nda == 2) or (in1.nda == 3)):
+            pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y+",
+                        "Vector Potential Diagnostic/Vector Potential:Y+ OMEGA vs MODE")
+            pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y-",
+                        "Vector Potential Diagnostic/Vector Potential:Y- OMEGA vs MODE", autoadd=False)
+            pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z+",
+                        "Vector Potential Diagnostic/Vector Potential:Z+ OMEGA vs MODE", autoadd=False)
+            pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z-",
+                        "Vector Potential Diagnostic/Vector Potential:Z- OMEGA vs MODE", autoadd=False)
 
-        pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y LINE",
+        """pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Y LINE",
                     "Vector Potential Diagnostic/Vector Potential:Y OMEGA vs MODE Trace")
         pc.addGraph("VECTOR POTENTIAL OMEGA VS MODE Z LINE",
-                    "Vector Potential Diagnostic/Vector Potential:Z OMEGA vs MODE Trace", autoadd=False)
+                    "Vector Potential Diagnostic/Vector Potential:Z OMEGA vs MODE Trace", autoadd=False)"""
 
     if (in1.ntet > 0):
         if ((in1.ndet == 1) or (in1.ndet == 3)):
@@ -150,13 +153,14 @@ def initialize_menus(pc):
         if ((in1.ndar == 1) or (in1.ndar == 3)):
             pc.addGraph(' RADIATIVE VPOTENTIAL',
                         "Radiative Vector Potential Diagnostic/Radiative Vector Potential")  # Enable electron velocity
-        pc.addGraph("RADVECPOT Y +OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Y +Omega")
-        pc.addGraph("RADVECPOT Y -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Y -Omega",
-                    autoadd=False)
-        pc.addGraph("RADVECPOT Z +OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Z +Omega",
-                    autoadd=False)
-        pc.addGraph("RADVECPOT Z -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Z -Omega",
-                    autoadd=False)
+        if ((in1.ndar == 2) or (in1.ndar == 3)):
+            pc.addGraph("RADVECPOT Y +OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Y +Omega")
+            pc.addGraph("RADVECPOT Y -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Y -Omega",
+                        autoadd=False)
+            pc.addGraph("RADVECPOT Z +OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Z +Omega",
+                        autoadd=False)
+            pc.addGraph("RADVECPOT Z -OMEGA", "Radiative Vector Potential Diagnostic/OMEGA VS MODE Fourier: Z -Omega",
+                        autoadd=False)
 
 def main(*args):
     # init GUI
