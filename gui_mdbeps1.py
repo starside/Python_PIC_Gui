@@ -77,9 +77,11 @@ def initialize_menus(pc):
 
             # initialize potential diagnostic: allocates pkw, wk
     if (in1.ntp > 0):
-        pc.addGraph("DRAWPOT", "Potential/Potential")  # Enable electron velocity
-        pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
-        pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -", autoadd=False)
+        if in1.ndp == 1 or in1.ndp == 3:
+            pc.addGraph("DRAWPOT", "Potential/Potential")  # Enable electron velocity
+        if in1.ndp == 2 or in1.ndp == 3:
+            pc.addGraph("POTENTIAL OMEGA VS MODE+", "Potential/Potential Omega vs Mode +")
+            pc.addGraph("POTENTIAL OMEGA VS MODE-", "Potential/Potential Omega vs Mode -", autoadd=False)
         #pc.addGraph("POTENTIAL OMEGA VS MODE LINE", "Potential/Potential Omega vs Mode Trace")
 
     # initialize longitudinal efield diagnostic

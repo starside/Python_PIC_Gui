@@ -514,6 +514,7 @@ def main(*args):
                     # display radiative vector potential
                     xax = numpy.array(range(len(sb1.vfield[0, :-2])))
                     # pc.showSimple(["RADVECPOTENTIAL","y","z"],[xax,xax],[sb1.vfield[0,:-2],sb1.vfield[1,:-2]],"Time="+str(ntime*in1.dt))
+                    print numpy.amin(sb1.vfield)
                     graf2.dvector1(sb1.vfield, ' RADIATIVE VPOTENTIAL', ntime, 999, 0, 2, nx, irc, early=in1.ntar)
                     if (irc[0] == 1):
                         break
