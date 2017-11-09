@@ -180,6 +180,14 @@ class PlasmaContext():
         to.defaults = defaults
         self.que.put(cPickle.dumps(to))
 
+    # Create a new dynamic variable for the input edit
+    def newDynamicVariable(self, varname):
+        if self.norun:
+            return
+        to = NewDynamicVariable()
+        to.varname = varname
+        self.que.put(cPickle.dumps(to))
+
     def runOnce(self):
         #This really should directly press the step button
         if self.norun:
@@ -289,10 +297,11 @@ class PlasmaContext():
     def showUserDefined(self, name, definedplot, early=None):
         if self.norun:
             return
-        if not self.isGraphing(name[0]):
+        if not self.isGraphing(name):
             return
         if early is not None:
-            self.graphBeforeEndOfFF(name[0], early)
+            self.graphBeforeEndOfFF(name, early)
+        definedplot.plottype = name
         self._sendplot(definedplot)
 
     # Plottype is optional.  Use it to rename the dv1 plottype
@@ -427,12 +436,12 @@ class PlasmaContext():
                 dv1.plottype = plottype
             self._sendplot(dv1)
 
-    def showSimpleImage(self, name, data, text, extent=(), labl=("", ""), title=None, early=None,ticks_scale=None):
+    def showSimpleImage(self, name, data, text, extent=(), labl=("", ""), title=None, early=None,ticks_scale=None, norm='Log'):
         if not self.isGraphing(name):
             return
         if early is not None:
             self.graphBeforeEndOfFF(name, early)
-        dv1 = Graphs.DrawSimpleImage(name, data, text, extent=extent, labl=labl, title=title, ticks_scale=ticks_scale)
+        dv1 = Graphs.DrawSimpleImage(name, data, text, extent=extent, labl=labl, title=title, ticks_scale=ticks_scale, norm=norm)
         self._sendplot(dv1)
 
     def showMultiTrajectory(self, partd, itt, comp):

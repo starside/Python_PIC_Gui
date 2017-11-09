@@ -52,6 +52,8 @@ class PipeSimulation():
             wx.PostEvent(self._notify_window, _tcs)
         elif temp_obj.signame == "SIMDATA":
             self.simdata = temp_obj.data
+        elif temp_obj.signame == "NEWDYNAMICVAR":
+            wx.PostEvent(self._notify_window, ControlEvent(temp_obj, self.curTime))
 
     def controlPath(self, temp_obj):
         if temp_obj == "RUNCONTROL":

@@ -11,12 +11,12 @@ class TC: pass
 
 
 class EditorPart(stc.StyledTextCtrl):
-    def __init__(self, parent, style=wx.SIMPLE_BORDER):
+    def __init__(self, parent, style=wx.SIMPLE_BORDER, realTimeVars = []):
         stc.StyledTextCtrl.__init__(self, parent, style=style)
         self.parent = parent
         self.SetMinSize((500, 500))
-        self.realTimeUpdate = ["NTS", "NTP", "NTV", "NTW", "NTPHI", "SLOWPHI", "NTT", "NTDE", "NTEL", "SLOWPHASE",
-                               "FASTFORWARD"]
+        # List of parameters highlighred red than can be updated during the simulation run
+        self.realTimeUpdate = realTimeVars
         self.presentVars = []
 
     def loadInput(self):
@@ -62,10 +62,10 @@ class EditorPart(stc.StyledTextCtrl):
 
 
 class InputEditor(wx.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, realTimeVars = []):
         wx.Frame.__init__(self, parent, -1, 'input1 editor', style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
         self.parent = parent
-        self.editor = EditorPart(self)
+        self.editor = EditorPart(self, realTimeVars=realTimeVars)
         # define nav bar
         navb = wx.BoxSizer(wx.HORIZONTAL)
         saveb = wx.Button(self, -1, "Save to input1")

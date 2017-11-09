@@ -105,7 +105,11 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
         wx.CallAfter(self.rpanel.OnStart, None)  # Run one time step is necessary to reset
 
     def OnControl(self, event):
-        self.rpanel.makeNewFrame(event.data.layout, event.data.defaults)
+        if event.data.signame == "OPENFRAME":
+            self.rpanel.makeNewFrame(event.data.layout, event.data.defaults)
+        elif event.data.signame == "NEWDYNAMICVAR":
+            print "New Var " + event.data.varname
+            self.rpanel.realTimeVars.append(event.data.varname)
 
     def OnResultPre(self, event):
         # Find a home for the event

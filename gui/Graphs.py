@@ -884,7 +884,7 @@ class DrawPhi(KeyList):
 
 
 class DrawSimpleImage(KeyList):
-    def __init__(self, name, data, text, labl=["", ""], extent=(), title=None, ticks_scale=None):
+    def __init__(self, name, data, text, labl=["", ""], extent=None, title=None, ticks_scale=None, norm='Log'):
         self.text = text
         self.plottype = name
         self.img = data
@@ -892,6 +892,7 @@ class DrawSimpleImage(KeyList):
         self.extent = extent
         self.title = title
         self.ticks_scale = ticks_scale
+        self.norm = norm
 
     def drawPlot(self, fig, axes):
         (t, k) = np.shape(self.img)
@@ -900,10 +901,14 @@ class DrawSimpleImage(KeyList):
         fig.delaxes(axes)
         fig.clf()
         axes = fig.add_subplot(111)
+        if self.norm=='Log':
+            normalization = LogNorm()
+        else:
+            normalization = None
 
         try:
             mim = axes.imshow(np.transpose(self.img), cmap=cm.rainbow, interpolation='none', aspect='auto',
-                                  norm=LogNorm(), origin='lower', extent=self.extent)
+                                  norm=normalization, origin='lower', extent=self.extent)
             fig.colorbar(mim)
         except:
             mim = axes.imshow(np.transpose(self.img), cmap=cm.rainbow, interpolation='none', aspect='auto',

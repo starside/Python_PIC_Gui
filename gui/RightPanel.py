@@ -62,6 +62,8 @@ class RightPanel(wx.Panel):
         vsizer1.Add(self.pin)
         self.SetSizer(vsizer1)
         self._updateRunMode()
+        #Real time update varialbes
+        self.realTimeVars = [] #Fortran input file parameters
 
         self.lastMode = None
 
@@ -192,7 +194,7 @@ class RightPanel(wx.Panel):
         self.mainframe.windowList.append(nf)
 
     def OnOpenInput(self, event):
-        ie = InputEditor(self)
+        ie = InputEditor(self, self.realTimeVars)
         ie.editor.loadInput()
         ie.Show()
 

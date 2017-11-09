@@ -1,3 +1,4 @@
+#For GUI to sim
 class ResetSignal:
     def __init__(self):
         self.signame = "RESET"
@@ -27,6 +28,11 @@ class OpenFrame:
         self.signame = "OPENFRAME"
         self.layout = 1
         self.defaults = []
+
+class NewDynamicVariable:
+    def __init__(self):
+        self.signame = "NEWDYNAMICVAR"
+        self.varname = ""
 
 
 class SetFrameTime:
