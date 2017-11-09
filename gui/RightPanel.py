@@ -18,6 +18,7 @@ class RightPanel(wx.Panel):
         newb2 = self.makeButtonNew()
         newb3 = self.makeInputButton()
         newb4 = self.makeResetButton()
+        newb4c = self.makeCommandButton()
         newb4.Hide()
         newb5 = self.makeRunLongButton()
         self.RunLongButton = newb5  # Need to bind/unbind this button
@@ -56,6 +57,7 @@ class RightPanel(wx.Panel):
         vsizer1.Add(newb2, proportion=1, flag=wx.EXPAND | wx.ALL, border=2)
         vsizer1.Add(newb3)
         vsizer1.Add(newb4)
+        vsizer1.Add(newb4c)
 
         self.pin = wx.CheckBox(self, -1, "Unpin This Window?")
         self.pin.SetValue(True)
@@ -178,6 +180,11 @@ class RightPanel(wx.Panel):
         b1.Bind(wx.EVT_BUTTON, self.OnOpenInput)
         return b1
 
+    def makeCommandButton(self):
+        b1 = wx.Button(self, wx.NewId(), "Open Command File (command1)")
+        b1.Bind(wx.EVT_BUTTON, self.OnOpenCommand)
+        return b1
+
     def makeResetButton(self):
         button1 = wx.Button(self, wx.NewId(), "Reset Simulation")
         button1.Bind(wx.EVT_BUTTON, self.fsm4)
@@ -195,6 +202,11 @@ class RightPanel(wx.Panel):
 
     def OnOpenInput(self, event):
         ie = InputEditor(self, self.realTimeVars)
+        ie.editor.loadInput()
+        ie.Show()
+
+    def OnOpenCommand(self, event):
+        ie = InputEditor(self, self.realTimeVars, filename='command1')
         ie.editor.loadInput()
         ie.Show()
 

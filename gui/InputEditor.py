@@ -18,10 +18,11 @@ class EditorPart(stc.StyledTextCtrl):
         # List of parameters highlighred red than can be updated during the simulation run
         self.realTimeUpdate = realTimeVars
         self.presentVars = []
+        self.filename = "input1"
 
     def loadInput(self):
         self.ClearAll()
-        with open("input1", "r") as fp:
+        with open(self.filename, "r") as fp:
             rb = fp.read()
         self.StyleSetForeground(1, wx.NamedColour('red'))
         self.AddText(rb)
@@ -34,20 +35,20 @@ class EditorPart(stc.StyledTextCtrl):
                 self.presentVars.append(p)
 
     def saveInput(self):
-        with open("input1", "w") as fp:
+        with open(self.filename, "w") as fp:
             fp.write(self.GetText())
 
     def updateChanges(self):
         to = TC()  # create temp object
         nmo = ""
-        with open("input1") as fp:  # read original
+        with open(self.filename) as fp:  # read original
             nmo = fp.read()
-        with open(".temp_input1", "w") as fp:  # backup
+        with open(".temp_" + self.filename, "w") as fp:  # backup
             fp.write(nmo)
         self.saveInput()  # save namelist
         # loadNamelist(to, "input1") #load changes in to software
-        loadNamelistRaw(to, "input1")
-        with open("input1", "w") as fp:  # resote original
+        loadNamelistRaw(to, self.filename)
+        with open(self.filename, "w") as fp:  # resote original
             fp.write(nmo)
         ns = VarChangeSignal()
         pEvents = self.parent.parent.simframe.pEvents  # Kind of a not flexible way to do this shit
@@ -62,13 +63,15 @@ class EditorPart(stc.StyledTextCtrl):
 
 
 class InputEditor(wx.Frame):
-    def __init__(self, parent, realTimeVars = []):
-        wx.Frame.__init__(self, parent, -1, 'input1 editor', style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
-        self.parent = parent
+    def __init__(self, parent, realTimeVars = [], filename='input1'):
+        wx.Frame.__init__(self, parent, -1, style=wx.FRAME_FLOAT_ON_PARENT | wx.DEFAULT_FRAME_STYLE)
         self.editor = EditorPart(self, realTimeVars=realTimeVars)
+        self.editor.filename = filename
+        self.SetTitle(self.editor.filename)
+        self.parent = parent
         # define nav bar
         navb = wx.BoxSizer(wx.HORIZONTAL)
-        saveb = wx.Button(self, -1, "Save to input1")
+        saveb = wx.Button(self, -1, "Save to " + self.editor.filename)
         saveb.Bind(wx.EVT_BUTTON, self.OnSave)
         upb = wx.Button(self, -1, "Update Changes")
         upb.Bind(wx.EVT_BUTTON, self.OnUpdate)
@@ -90,7 +93,7 @@ class InputEditor(wx.Frame):
 
     def OnSave(self, event):
         self.editor.saveInput()
-        self.statusbar.SetStatusText("Save text to file input1")
+        self.statusbar.SetStatusText("Save text to file " + self.editor.filename)
 
     def OnUpdate(self, event):
         self.editor.updateChanges()

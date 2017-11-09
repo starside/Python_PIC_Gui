@@ -69,6 +69,7 @@ def main(*args):
     """
     initialize_menus(pc)
     pc.newDynamicVariable("NTP")
+    pc.newDynamicVariable("JOSH")
     pc.newFrame("Layout2v", ["NOPLOT","weierstrass"])
     # sends data the GUI may want to know about the simulation
     pc.updateSimInfo({"tend": in1.tend})    #End time of the simulation
@@ -84,6 +85,8 @@ def main(*args):
         pc.setTime(curtime, in1.dt)
         if hasattr(in1, 'ntp'):
             print in1.ntp
+        if hasattr(in1, 'josh'):
+            print in1.josh
         pc.getEvents()  #Waits here for GUI
         pc.fastForward()
 
