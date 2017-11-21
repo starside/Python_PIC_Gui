@@ -353,7 +353,7 @@ def main(*args):
                 # Potential vs Time
                 potentialimage = numpy.append(potentialimage, s1.sfield[0:nx])
                 randim = scaleByColumn(numpy.reshape(potentialimage, (len(potentialimage)/nx, nx) ))
-                pc.showSimpleImage('POTENTIALvTIME', randim, "Time=" + str(ntime * in1.dt),
+                pc.showSimpleImage('POTENTIALvTIME', numpy.transpose(randim), "Time=" + str(ntime * in1.dt),
                     extent=(0, ntime*in1.dt, 0, nx), title="Potential vs Time", early=in1.ntp, norm=None)
 
                     # longitudinal efield diagnostic: updates sfield=longitudinal efield

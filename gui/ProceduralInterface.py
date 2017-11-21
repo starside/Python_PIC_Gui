@@ -349,7 +349,8 @@ class PlasmaContext():
         self._sendplot(dv1)
 
     def showPhase(self, ppart, kpic,
-                  plottype=None, title=None, early=None, twophase=None):  # data is the particle data, ppart.  kpic is array of num particles per tile
+                  plottype=None, title=None, early=None, twophase=None,
+                  plotlabels=["Position", "Velocity"]):  # data is the particle data, ppart.  kpic is array of num particles per tile
         if self.norun:
             return
         pt = plottype
@@ -358,7 +359,7 @@ class PlasmaContext():
         if not self.isGraphing(pt):
             return
         if early is not None:
-            self.graphBeforeEndOfFF("DRAWPHASE", early)
+            self.graphBeforeEndOfFF(plottype, early)
         # shape is the bounds of the histogram, [[xmin,xmax], [ymin,ymax]]
         numPart = np.sum(kpic)  # number of particles
         numTiles = np.size(kpic)  # number of tiles
@@ -372,7 +373,8 @@ class PlasmaContext():
                 xvInTile[twophase, isum:kk + isum] = ppart[twophase, 0:kk, k]
             isum += kk
 
-        dv1 = Graphs.DrawPhase(xvInTile, title=title, twophase=twophase)  # copy the data
+        dv1 = Graphs.DrawPhase(xvInTile, title=title, twophase=twophase, 
+                plotlabels=plotlabels)  # copy the data
         if plottype != None:
             dv1.plottype = plottype
         self._sendplot(dv1)

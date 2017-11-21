@@ -189,20 +189,20 @@ EDMODS = modmdpush1.o
 # Fortran Graphics
 
 #Tektronix
-GOBJS = libt1.o plot10.o libplt10.o dlibgks1.o libgks1.o libgraf1_h.o \
-modgraf1.o
+#GOBJS = libt1.o plot10.o libplt10.o dlibgks1.o libgks1.o libgraf1_h.o \
+# modgraf1.o
 # Postcript printer
 #GOBJS = libpsp.o dlibgks1.o libgks1.o  libgraf1_h.o modgraf1.o
 # X11 graphics needs Ygl from http://www.thp.uni-duisburg.de/Ygl/
 #GOBJS = libygl.o dlibgks1.o libgks1.o libgraf1_h.o modgraf1.o
 #No graphics
-#GOBJS = nullgks1.o libgraf1_h.o modgraf1.o
+GOBJS = nullgks1.o libgraf1_h.o modgraf1.o
 
 #GOBJS = libt1.o plot10.o libplt10.o dlibgks1.o libgks1.o libgraf1_h.o \
 #modgraf1.o libgks2.o libgraf2_h.o modgraf2.o
 #No graphics
-#GOBJS = nullgks1.o nullgks2.o libgraf1_h.o modgraf1.o libgraf2_h.o \
-#modgraf2.o
+GOBJS = nullgks1.o nullgks2.o libgraf1_h.o modgraf1.o libgraf2_h.o \
+modgraf2.o
 
 # Python
 
@@ -223,14 +223,14 @@ EDPYOBJS = pymdpush1.o
 # Python Graphics
 
 #Tektronix
-GMODSRC = gks1/modgraf1.f90 gks1/libt1.f90
-GPYOBJS = pymlibgks1.o pymdlibgks1.o pymlibplt10.o pymplot10.o
+#GMODSRC = gks1/modgraf1.f90 gks1/libt1.f90
+#GPYOBJS = pymlibgks1.o pymdlibgks1.o pymlibplt10.o pymplot10.o
 # X11 graphics needs Ygl from http://www.thp.uni-duisburg.de/Ygl/
 #GMODSRC = gks1/modgraf1.f90
 #GPYOBJS = pymlibgks1.o pymdlibgks1.o pymlibygl.o
 #No graphics
-#GMODSRC = gks1/modgraf1.f90
-#GPYOBJS = pymnullgks1.o
+GMODSRC = gks1/modgraf1.f90
+GPYOBJS = pymnullgks1.o
 
 # Linkage rules
 

@@ -623,7 +623,7 @@ class DrawEnergy(DrawOptions):
 
 
 class DrawPhase(DrawOptions):
-    def __init__(self, data, title=None, twophase=None):
+    def __init__(self, data, title=None, twophase=None, plotlabels=["Position", "Velocity"]):
         # DrawOptions.__init__(self)
         self.vel = data[1]
         self.pos = data[0]
@@ -633,6 +633,7 @@ class DrawPhase(DrawOptions):
         self.tp = twophase #Draw particles past twophasedivide a different color
         self.plottype = "DRAWPHASE"
         self.title = title
+        self.plabels = plotlabels
 
     def drawPlot(self, fig, axes):
         la = len(self.pos)
@@ -664,6 +665,9 @@ class DrawPhase(DrawOptions):
             # Plot the two different sets of particles
             axes.plot(redpos, redvel, color=(1,0,0,0.5), marker=',', linestyle='None')
             axes.plot(bluepos, bluevel, color=(0,0,1,0.5), marker=',', linestyle='None')
+        axes.set_xlabel(self.plabels[0])
+        axes.set_ylabel(self.plabels[1])
+        fig.tight_layout()
 
 
         self.drawTime(fig, axes)
