@@ -140,6 +140,11 @@ class LeftPanel(wx.Panel):
 
         EVT_CLOSEOP(self, self.OnCloseCP)
         EVT_REFRESHGRAPH(self, self.OnRefreshGraph)
+        self.Bind(wx.EVT_SIZE, self.OnResize)
+
+    def OnResize(self, event):
+        self.OnRefreshGraph(event)
+        event.Skip() # This is required to pass events up the chain.
 
     def setRecordStatus(self, record, fname, overwrite):
         self.movieFileName = fname
@@ -299,6 +304,7 @@ class LeftPanel(wx.Panel):
 
     def OnRefreshGraph(self, event):
         self.DrawPlot()
+
 
     def OnOptions(self, event):  # Open options menu
         if self.newCP == None:  # Only allow one options window at a time

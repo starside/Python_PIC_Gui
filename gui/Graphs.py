@@ -343,7 +343,7 @@ class DrawVelocity(DrawOptions, KeyList):
         vmax = self.ydata[0][0]
         vmin = -vmax
         self.xax = NP.linspace(vmin, vmax, NP.size(self.ydata[0][1:]))
-        self.fvm = [fvm]
+        self.fvm = fvm
         self.title = title
 
     def drawPlot(self, fig, axes):
@@ -358,24 +358,21 @@ class DrawVelocity(DrawOptions, KeyList):
             axes.plot(self.xax, ydata[1:], '-x', label=self.labels[i])
         #Display x axis label with moment info
         extText = ""
+        dimlabels = ["x","y","z"]
         if self.fvm != None:
-            try:  # Why do I have to do this?
-                extText = "VD=" + str(self.fvm[0][0][0])
-                extText += "   VTH=" + str(self.fvm[0][0][1])
-            except:
-                print "fvm formatted incorrectly"
-                True
+            for i, dim in enumerate(self.fvm): # Iterate through dimensions
+                extText += dimlabels[i]+": VD=" + str(dim[0])
+                extText += "   VTH=" + str(dim[1]) + "\n"
         axes.set_xlabel(r"Velocity"
            "\n" + extText)
-        fig.tight_layout()
         self.drawTime(fig, axes, "")
-        self.scaleYAxis(fig, axes, ydata[1:], 2.0)
         leg = axes.legend()
         if leg is not None:
             leg.get_frame().set_alpha(0.2)
         if self.title is None:
             self.title = self.plottype
         axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
+        fig.tight_layout(rect=[0,0,1,0.95])
 
 class DrawPotential(DrawOptions, KeyList):
     def __init__(self, ydata):

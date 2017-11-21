@@ -314,7 +314,7 @@ class PlasmaContext():
         if not self.isGraphing(pt):
             return
         if early is not None:
-            self.graphBeforeEndOfFF("DRAWVELOCITY", early)
+            self.graphBeforeEndOfFF(pt, early)
         dv1 = Graphs.DrawVelocity(data, labels, fvm=fvm, title=title)
         if plottype is not None:
             dv1.plottype = plottype
@@ -359,7 +359,7 @@ class PlasmaContext():
         if not self.isGraphing(pt):
             return
         if early is not None:
-            self.graphBeforeEndOfFF(plottype, early)
+            self.graphBeforeEndOfFF(pt, early)
         # shape is the bounds of the histogram, [[xmin,xmax], [ymin,ymax]]
         numPart = np.sum(kpic)  # number of particles
         numTiles = np.size(kpic)  # number of tiles
