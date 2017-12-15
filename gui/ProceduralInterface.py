@@ -82,6 +82,18 @@ def initGui(q, que, td, events, outqueue):
 
 ##PlasmaContext is the interface the sim process uses to talk to the GUI.
 class PlasmaContext():
+    """
+        Constructor for an interface object.  Only one should be needed per
+        application.  The returned object has all the required methods for
+        communicating with the GUI.
+
+        :param obj: Container object, this can be anything.  It minimally must
+            have two attributes dt and tend, both floats.  dt is a time step
+            and tend is end time of the simulation.  For example, dt could be
+            0.1 and tend might be 100.0
+        :param args*: Parameters passed to main(args*).  See Tutorials 1 for
+            an example of useage. 
+    """
     def __init__(self, obj, *args):
         assert(len(args) == 6)
         self.simObj = obj
@@ -104,11 +116,20 @@ class PlasmaContext():
         self.callbacks["RESET"] = resetCallback
         self.callbacks["EXIT"] = exitCallback
 
-    #This function launches the main simulation function in a child process.
-    #This is necessary, becase on OS X for whatever reason the GUI fails to
-    #respond if launched in the child process
     @staticmethod
     def runMain(func):
+        """
+        This function launches the main simulation function in a child process.
+        This is necessary, becase on OS X for whatever reason the GUI fails to
+        respond if launched in the child process.
+
+        :param func: The name of a function, which should take a single parameter.
+            From the host process you would call PlasmaContext.runMain(main). 
+            main would be defined with prototype main(args*). main(args*) will
+            call something like: pc = PlasmaContext(in1,*args) to create an
+            interface object.
+
+        """
         #create bidirectional comm channels
         manager = Manager()
         async = manager.dict()  # synch or async mode
@@ -123,11 +144,13 @@ class PlasmaContext():
         #run gui in parent process
         initGui(child_conn, que, timeDir, events, async)
 
-    #This is a test to see if the object obj to be sent to the GUI for 
-    #rendering/processing has been flaged for early plotting.  If so,
-    #calculate if the sim is close enough to the end of the fast forward
-    #to plot
     def _sendEarly(self, obj):
+        """
+        This is a test to see if the object obj to be sent to the GUI for 
+        rendering/processing has been flaged for early plotting.  If so,
+        calculate if the sim is close enough to the end of the fast forward
+        to plot
+        """
         try:
             obj.plottype
         except:
@@ -144,9 +167,13 @@ class PlasmaContext():
             return False
         return False
 
-
-    # Low Level method to communicate with gui thread.  Serializes and sends objects
     def _sendplot(self, obj):
+        """Low level method to send an object to the GUI processes via pipe.
+           It also serializes the object using cPickle
+
+           :param obj: The object to send.
+
+        """
         if self.norun:
             return
         if self.graphEnabled or self._sendEarly(obj):  #self.graphEarly is set when fastforward is called
@@ -156,9 +183,12 @@ class PlasmaContext():
                 True
             iv = cPickle.dumps(obj)
             self.que.put(iv)
-            self.child_conn.get()
+            self.child_conn.get() # Wait for response.  This will block until response recieved
 
     def _sendplotasync(self, obj):
+        """
+        Sends a plot, asynchronously.  It will not wait for a response before returning.
+        """
         if self.norun:
             return
         self.que.put(cPickle.dumps(obj))
@@ -168,11 +198,28 @@ class PlasmaContext():
         Tells te system to graph any plot objects of type plottype at time interval # of steps
         before the fastforward ends.  This ensures that even if you fastforward past all of a plots
         graphing times, it will still draw the last one.
+
+        :param plottype: the string name of the plot
+        :param interval: how frequently the plot is generated.  In time steps
         """
         self.graphEarly[plottype] = interval
 
     # Takes a layout index between 1 and 4, and a list of default graphs to plot
     def newFrame(self, layout, defaults):
+        """
+        Creates a new frame with a specified layout.
+
+        :param layout: The type of layout specified by a string, currently 
+            there are four options: "Layout1", "Layout2v","Layout2h",
+            "Layout3", and "Layout4".  These correspond to one plot,
+            two plots arranged vertically, two plots arranged horizontally,
+            three plots and four plots.
+
+        :param defaults: a list of plot names to display.  If layout="Layout3"
+            then defaults must have length 3.  The plot names correspond to the
+            codename field in addGraph(codename, desc).
+
+        """
         if self.norun:
             return
         to = OpenFrame()
@@ -180,8 +227,18 @@ class PlasmaContext():
         to.defaults = defaults
         self.que.put(cPickle.dumps(to))
 
-    # Create a new dynamic variable for the input edit
     def newDynamicVariable(self, varname):
+        """
+        Create a dynamic variable, that can be changed in the simulation loop.  This
+        variable will appear as red in the built-in input editor.  When these variables
+        are updated they will appear automatically as attributes in the container object
+        specified in the constructor of PlasmaContext.  The automatically created field
+        will be all lowercase.
+
+        :param varname: A string specifying the name of the dynamic variable as it 
+            appears in the editor.  
+
+        """
         if self.norun:
             return
         to = NewDynamicVariable()
@@ -196,6 +253,11 @@ class PlasmaContext():
 
     # process events, such as callbacks and variable changes from the GUI
     def getEvents(self, pause=True):
+        """
+        This is an important function, and must be called once per loop of the simulation.
+        This function responds to input from the GUI.  If this function is not called, the
+        GUI will be unresponsive.
+        """
         obj = self.simObj
         if self.norun:
             return
@@ -228,8 +290,12 @@ class PlasmaContext():
         self.que.join_thread()
         self.p.join()
 
-    # Enable or disable graphics for speed reasons
+    # 
     def showGraphs(self, val):
+        """ Enable or disable graphics for performance reasons
+
+        :param val: True or False
+        """
         if self.norun:
             return
         self.graphEnabled = val
@@ -245,12 +311,15 @@ class PlasmaContext():
                 return False
         return True
 
-    # Set aync or sync mode
-    # def asyncMode(self,mode):
-    #   self.async.value = mode
-
-    # Set the global time in the control panel
     def setTime(self, time, dt):
+        """
+        Sets the time in the control panel.
+
+        :param time: Simulation time
+
+        :param dt: Time step size
+
+        """
         if self.norun:
             return
         # Let the graphs know the simulation time
@@ -261,14 +330,17 @@ class PlasmaContext():
         self.que.put(cPickle.dumps(obj))
 
     def pause(self):
+        """
+        Pauses the simulation
+        """
         if self.norun:
             return
         self._sendplotasync("PAUSE")
 
-
-    # Allow fast forwarding.  Stop sending graphics output when ctime is less than some value specified in
-    # inputlist variable fastforward
     def fastForward(self):
+        """
+        Allows the simulation to fast forward.  Call immediatly after getEvents()
+        """
         try:
             obj = self.simObj
         except:
@@ -453,24 +525,54 @@ class PlasmaContext():
         self._sendplot(dv1)
 
     def wait(self, obj):
-        #   self.asyncMode(1)
+        """
+        Call after simulation loop has run.  This command blocks and keeps the GUI responsive
+        """
         while True:
             self.getEvents(obj)
             time.sleep(1.0 / 30.0)
 
     def clearGraphList(self):
+        """ Clears the default items in the right-click menu.  This
+        is eventually going to be depracated
+
+        """
         if self.norun:
             return
         ptr = ClearGraphStack()
         self.que.put(cPickle.dumps(ptr))
 
     def updateSimInfo(self, data):
+        """
+        Updated simulation metadata.  Currently the only field is 'tend', the end time
+        of the simulation.  This is done by passing a dictionary with key 'tend' as a 
+        string, followed by a float.  For example, {'tend', 100.0}
+        """
         if self.norun:
             return
         ptr = SimData(data)
         self.que.put(cPickle.dumps(ptr))
 
     def addGraph(self, codename, desc, autoadd=True, priority=100):
+        """ 
+            Add a graph to the menu system.  This is required to
+            display a plot
+
+            :param codename: This is the computer's name for a plot.
+                It does not have to be human readable, but it never
+                hurts to use a name that makes sense.
+
+            :param desc: The human readable name for the plot.  This
+                is what will appear in the right-click menu.
+
+            :param autoadd: Controls whether the plot is automatically
+                displayed on startup.  If set, a new plotting area will
+                be automatically created.
+
+            :param priority: Automatically change order plots are 
+                displayed
+
+        """
         if self.norun:
             return
         ptr = ClearGraphStack()

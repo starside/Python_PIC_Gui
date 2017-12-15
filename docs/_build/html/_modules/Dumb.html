@@ -1,0 +1,149 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Dumb &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Dumb</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wx.stc</span> <span class="k">as</span> <span class="nn">stc</span>
+
+<span class="kn">from</span> <span class="nn">LeftPanel</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">Events</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="Dumb"><a class="viewcode-back" href="../source/Dumb.html#Dumb.Dumb">[docs]</a><span class="k">class</span> <span class="nc">Dumb</span><span class="p">(</span><span class="n">LeftPanel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">dlist</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centralDispatcher</span> <span class="o">=</span> <span class="n">dlist</span>
+        <span class="c1"># wx.Panel.__init__(self, parent, -1, wx.DefaultPosition, wx.DefaultSize, style=wx.SUNKEN_BORDER)</span>
+        <span class="n">LeftPanel</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mouseDownFlag</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_RIGHT_DOWN</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnRightDown</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_RIGHT_DOWN</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnRightDown</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetMinSize</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Size</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Dumb.OnRightDown"><a class="viewcode-back" href="../source/Dumb.html#Dumb.Dumb.OnRightDown">[docs]</a>    <span class="k">def</span> <span class="nf">OnRightDown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">menu</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Menu</span><span class="p">()</span>
+        <span class="n">md</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;root&quot;</span><span class="p">:</span> <span class="n">menu</span><span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">isFrozen</span><span class="p">():</span>  <span class="c1"># If we are currently recording video, do not allow chaning of movies</span>
+            <span class="n">ti</span> <span class="o">=</span> <span class="n">menu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Stop recording before changing graph type.&quot;</span><span class="p">)</span>
+            <span class="n">ti</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># Allow graph to change</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">centralDispatcher</span><span class="p">):</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">description</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>  <span class="c1"># Allow 1 level of folders in menu</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">ti</span> <span class="o">=</span> <span class="n">menu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">g</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">PopupHandler</span><span class="p">,</span> <span class="n">ti</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="n">folder</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">md</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+                        <span class="n">md</span><span class="p">[</span><span class="n">folder</span><span class="p">]</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Menu</span><span class="p">()</span>
+                        <span class="n">menu</span><span class="o">.</span><span class="n">AppendMenu</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">ID_ANY</span><span class="p">,</span> <span class="n">folder</span><span class="p">,</span> <span class="n">md</span><span class="p">[</span><span class="n">folder</span><span class="p">])</span>
+                    <span class="n">ti</span> <span class="o">=</span> <span class="n">md</span><span class="p">[</span><span class="n">folder</span><span class="p">]</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">PopupHandler</span><span class="p">,</span> <span class="n">ti</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Nested Folders are not currently supported</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PopupMenu</span><span class="p">(</span><span class="n">menu</span><span class="p">,</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">GetX</span><span class="p">(),</span> <span class="n">event</span><span class="o">.</span><span class="n">GetY</span><span class="p">()))</span>
+        <span class="n">menu</span><span class="o">.</span><span class="n">Destroy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Dumb.PopupHandler"><a class="viewcode-back" href="../source/Dumb.html#Dumb.Dumb.PopupHandler">[docs]</a>    <span class="k">def</span> <span class="nf">PopupHandler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resetGraph</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">centralDispatcher</span><span class="p">:</span> <span class="c1">#Remove self from central dispatch.  Clean up the old cruft</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">RemoveListener</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centralDispatcher</span><span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">GetId</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">AddListener</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="c1"># Add self to central dispatch</span>
+        <span class="n">re</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">centralDispatcher</span><span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">GetId</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">getRecent</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">re</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span> <span class="o">=</span> <span class="n">re</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DrawPlot</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Dumb.setGraphByName"><a class="viewcode-back" href="../source/Dumb.html#Dumb.Dumb.setGraphByName">[docs]</a>    <span class="k">def</span> <span class="nf">setGraphByName</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>  <span class="c1"># set the graph to display by name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movieFileName</span> <span class="o">=</span> <span class="s2">&quot;moviename.mp4&quot;</span>
+        <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">centralDispatcher</span><span class="p">:</span>
+            <span class="n">g</span><span class="o">.</span><span class="n">RemoveListener</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">centralDispatcher</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">g</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">AddListener</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                <span class="n">re</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">getRecent</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">re</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span> <span class="o">=</span> <span class="n">re</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">DrawPlot</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

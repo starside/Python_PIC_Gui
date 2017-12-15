@@ -1,0 +1,245 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>new_beps1gl &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for new_beps1gl</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">lib</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">NP</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wx.stc</span> <span class="k">as</span> <span class="nn">stc</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.cm</span> <span class="k">as</span> <span class="nn">cm</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="k">import</span> <span class="n">Axes3D</span>
+<span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="k">import</span> <span class="n">LogNorm</span>
+<span class="kn">from</span> <span class="nn">matplotlib.figure</span> <span class="k">import</span> <span class="n">Figure</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_wxagg</span> <span class="k">import</span> <span class="n">FigureCanvasWxAgg</span> <span class="k">as</span> <span class="n">FigureCanvas</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_wx</span> <span class="k">import</span> <span class="n">NavigationToolbar2Wx</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid.anchored_artists</span> <span class="k">import</span> <span class="n">AnchoredText</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">deque</span>
+
+<span class="kn">from</span> <span class="nn">defaults</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">NewFrame</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">RightPanel</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">GraphStack</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">PipeSim</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">Signals</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">Events</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="c1"># TODO:  Use nplots as default window size</span>
+<span class="c1"># print pyfft1mod.fft1d.pycal()</span>
+
+<span class="c1"># Button definitions</span>
+<span class="n">ID_START</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">()</span>
+<span class="n">ID_STOP</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">()</span>
+
+<span class="n">programDefaults</span> <span class="o">=</span> <span class="n">DefaultLoader</span><span class="p">(</span><span class="s2">&quot;foo.default&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># GUI Frame class that spins off the worker thread</span>
+<div class="viewcode-block" id="MainFrame"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainFrame">[docs]</a><span class="k">class</span> <span class="nc">MainFrame</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">,</span> <span class="n">Dispatcher</span><span class="p">,</span> <span class="n">DefaultsCommLink</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class MainFrame.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">pipemode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">que</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timedir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create the MainFrame.&quot;&quot;&quot;</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="s1">&#39;Control Panel&#39;</span><span class="p">,</span>
+                          <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">DEFAULT_FRAME_STYLE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loader</span> <span class="o">=</span> <span class="n">loader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">loadFromFile</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initStack</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CreateStatusBar</span><span class="p">()</span>  <span class="c1"># create status bar</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">SetStatusText</span><span class="p">(</span><span class="s2">&quot;Hola&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rpanel</span> <span class="o">=</span> <span class="n">RightPanel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>  <span class="c1"># create interface</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rpanel</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CLOSE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnExit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizerAndFit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="p">)</span>
+
+        <span class="c1"># self.Bind(wx.EVT_CLOSE, self.OnQuit)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pEvents</span> <span class="o">=</span> <span class="n">events</span>  <span class="c1"># Communicate with parent process, various GUI events</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outq</span> <span class="o">=</span> <span class="n">outq</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipemode</span> <span class="o">=</span> <span class="n">pipemode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">commKill</span> <span class="o">=</span> <span class="p">(</span><span class="n">pipemode</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">timedir</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">outq</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worker</span> <span class="o">=</span> <span class="n">PipeSimulation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pipemode</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">timedir</span><span class="p">,</span> <span class="n">outq</span><span class="p">)</span>
+        <span class="n">EVT_RESULT</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnResultPre</span><span class="p">)</span>  <span class="c1"># Link up events</span>
+        <span class="n">EVT_CONTROL</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnControl</span><span class="p">)</span>
+        <span class="n">EVT_NEWTIME</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnNewTime</span><span class="p">)</span>  <span class="c1"># link up sim time</span>
+        <span class="n">EVT_CLEARGRAPHSTACK</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnClearGraphStack</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">windowList</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list of frames</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">InitMenu</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_ACTIVATE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnFocus</span><span class="p">)</span> <span class="c1"># We rebuild the menu every focus to deal with Mac</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MainFrame.OnFocus"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainFrame.OnFocus">[docs]</a>    <span class="k">def</span> <span class="nf">OnFocus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">CallAfter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">InitMenu</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MainFrame.InitMenu"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainFrame.InitMenu">[docs]</a>    <span class="k">def</span> <span class="nf">InitMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">menubar</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">MenuBar</span><span class="p">()</span>
+        <span class="n">fileMenu</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Menu</span><span class="p">()</span>
+        <span class="n">fitem</span> <span class="o">=</span> <span class="n">fileMenu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">ID_EXIT</span><span class="p">,</span> <span class="s1">&#39;Quit&#39;</span><span class="p">,</span> <span class="s1">&#39;Exit Application&#39;</span><span class="p">)</span>
+        <span class="n">menubar</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">fileMenu</span><span class="p">,</span> <span class="s1">&#39;&amp;File&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetMenuBar</span><span class="p">(</span><span class="n">menubar</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnExit</span><span class="p">,</span> <span class="n">fitem</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MainFrame.OnExit"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainFrame.OnExit">[docs]</a>    <span class="k">def</span> <span class="nf">OnExit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pEvents</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">ExitSignal</span><span class="p">())</span>  <span class="c1"># Tell main thread to exit</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">CallAfter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rpanel</span><span class="o">.</span><span class="n">OnStart</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Call run to pump event loop</span></div>
+
+    <span class="c1"># EVT_RUNSTEP(self.rpanel,self.OnExitPhase2)  #Redirect running loop to an exit callback</span>
+
+<div class="viewcode-block" id="MainFrame.OnExitPhase2"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainFrame.OnExitPhase2">[docs]</a>    <span class="k">def</span> <span class="nf">OnExitPhase2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Destroy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="MainFrame.OnNewTime"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainFrame.OnNewTime">[docs]</a>    <span class="k">def</span> <span class="nf">OnNewTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">simdata</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s1">&#39;tend&#39;</span><span class="p">):</span>
+            <span class="n">te</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">simdata</span><span class="p">[</span><span class="s1">&#39;tend&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rpanel</span><span class="o">.</span><span class="n">timerText</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="s2">&quot;Time is &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">time</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; of &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">te</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rpanel</span><span class="o">.</span><span class="n">timerText</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="s2">&quot;Time is &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">time</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rpanel</span><span class="o">.</span><span class="n">displayTime</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">time</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MainFrame.OnReset"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainFrame.OnReset">[docs]</a>    <span class="k">def</span> <span class="nf">OnReset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pEvents</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">ResetSignal</span><span class="p">())</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">CallAfter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rpanel</span><span class="o">.</span><span class="n">OnStart</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Run one time step is necessary to reset</span></div>
+
+<div class="viewcode-block" id="MainFrame.OnControl"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainFrame.OnControl">[docs]</a>    <span class="k">def</span> <span class="nf">OnControl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">signame</span> <span class="o">==</span> <span class="s2">&quot;OPENFRAME&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rpanel</span><span class="o">.</span><span class="n">makeNewFrame</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">layout</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">defaults</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">signame</span> <span class="o">==</span> <span class="s2">&quot;NEWDYNAMICVAR&quot;</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;New Var &quot;</span> <span class="o">+</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">varname</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rpanel</span><span class="o">.</span><span class="n">realTimeVars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">varname</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="MainFrame.OnResultPre"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainFrame.OnResultPre">[docs]</a>    <span class="k">def</span> <span class="nf">OnResultPre</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="c1"># Find a home for the event</span>
+        <span class="c1"># Do not pass raw wxPython result</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OnResult</span><span class="p">(</span><span class="n">CopyResultEvent</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>  <span class="c1"># Call the result handler in the Dispatcher mixin</span></div>
+
+<div class="viewcode-block" id="MainFrame.OnClearGraphStack"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainFrame.OnClearGraphStack">[docs]</a>    <span class="k">def</span> <span class="nf">OnClearGraphStack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="s2">&quot;codename&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dispatchers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">GraphStack</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">codename</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">desc</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="bp">self</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispatchers</span><span class="p">[:]</span>  <span class="c1"># Delete all objects in dispatchers, defined in GraphStack.py</span></div>
+
+<div class="viewcode-block" id="MainFrame.GraphStackChanged"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainFrame.GraphStackChanged">[docs]</a>    <span class="k">def</span> <span class="nf">GraphStackChanged</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outq</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">num</span>  <span class="c1"># Tell the manager to change</span></div></div>
+
+
+<div class="viewcode-block" id="restart_program"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.restart_program">[docs]</a><span class="k">def</span> <span class="nf">restart_program</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Restarts the current program.</span>
+<span class="sd">    Note: this function does not return. Any cleanup action (like</span>
+<span class="sd">    saving data) must be done before calling this function.&quot;&quot;&quot;</span>
+    <span class="n">python</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">executable</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">execl</span><span class="p">(</span><span class="n">python</span><span class="p">,</span> <span class="n">python</span><span class="p">,</span> <span class="o">*</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainApp"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainApp">[docs]</a><span class="k">class</span> <span class="nc">MainApp</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">App</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class Main App.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">pipemode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">que</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timedir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">outq</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipemode</span> <span class="o">=</span> <span class="n">pipemode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span> <span class="o">=</span> <span class="n">que</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeDir</span> <span class="o">=</span> <span class="n">timedir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pEvents</span> <span class="o">=</span> <span class="n">events</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">outq</span> <span class="o">=</span> <span class="n">outq</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">App</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MainApp.OnInit"><a class="viewcode-back" href="../source/new_beps1gl.html#new_beps1gl.MainApp.OnInit">[docs]</a>    <span class="k">def</span> <span class="nf">OnInit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Init Main App.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">MainFrame</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">programDefaults</span><span class="p">,</span> <span class="n">pipemode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pipemode</span><span class="p">,</span> <span class="n">que</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="p">,</span> <span class="n">timedir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">timeDir</span><span class="p">,</span>
+                               <span class="n">events</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pEvents</span><span class="p">,</span> <span class="n">outq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">outq</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetTopWindow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">frame</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># main()</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">MainApp</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">MainLoop</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

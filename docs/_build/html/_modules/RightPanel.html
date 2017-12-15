@@ -1,0 +1,471 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>RightPanel &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for RightPanel</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wx.stc</span> <span class="k">as</span> <span class="nn">stc</span>
+<span class="kn">from</span> <span class="nn">InputEditor</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">NewFrame</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">Events</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="RightPanel"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel">[docs]</a><span class="k">class</span> <span class="nc">RightPanel</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Panel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">sim</span><span class="p">):</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">Panel</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">DefaultPosition</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">DefaultSize</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alive</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span> <span class="o">=</span> <span class="n">sim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loader</span> <span class="o">=</span> <span class="n">parent</span><span class="o">.</span><span class="n">loader</span>
+        <span class="n">vsizer1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+        <span class="n">newb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeButton</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runOnceButton</span> <span class="o">=</span> <span class="n">newb</span>
+        <span class="n">newb2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeButtonNew</span><span class="p">()</span>
+        <span class="n">newb3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeInputButton</span><span class="p">()</span>
+        <span class="n">newb4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeResetButton</span><span class="p">()</span>
+        <span class="n">newb4c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeCommandButton</span><span class="p">()</span>
+        <span class="n">newb4</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span>
+        <span class="n">newb5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">makeRunLongButton</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RunLongButton</span> <span class="o">=</span> <span class="n">newb5</span>  <span class="c1"># Need to bind/unbind this button</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timerText</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Simulation time: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">displayTime</span> <span class="o">=</span> <span class="mi">0</span>    <span class="c1">#This is updated by the main app</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timerText</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lblList</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Continuous&#39;</span><span class="p">,</span> <span class="s1">&#39;Time Chunks&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">RadioBox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Run Mode&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">choices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lblList</span><span class="p">,</span> <span class="n">majorDimension</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                   <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">RA_SPECIFY_ROWS</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_RADIOBOX</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnRunMode</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="p">)</span>
+
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">newb5</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="c1"># Fast Forward Feature</span>
+        <span class="n">ffs</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fftext</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Fast Forward to: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ffpoint</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">TextCtrl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">TE_PROCESS_ENTER</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ffstate</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">ffs</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fftext</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="n">ffs</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ffpoint</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">ffs</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ffstate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ffpoint</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_TEXT_ENTER</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnFFChange</span><span class="p">)</span>
+
+        <span class="n">rcs</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rcstext</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Jump Time: &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rcspoint</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">TextCtrl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">TE_PROCESS_ENTER</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rcspoint</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">)</span>
+        <span class="n">rcs</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rcstext</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="n">rcs</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rcspoint</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">rcs</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">)</span>
+
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">newb</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">newb2</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">newb3</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">newb4</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">newb4c</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pin</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">CheckBox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Unpin This Window?&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pin</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizer</span><span class="p">(</span><span class="n">vsizer1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_updateRunMode</span><span class="p">()</span>
+        <span class="c1">#Real time update varialbes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">realTimeVars</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1">#Fortran input file parameters</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastMode</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1">#Build Finit state machine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span> <span class="o">=</span> <span class="n">FiniteStateMachine</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">addStateChange</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;2sf&#39;</span><span class="p">,</span> <span class="s1">&#39;Running&#39;</span><span class="p">)</span>        <span class="c1">#Define transitions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">addStateChange</span><span class="p">(</span><span class="s1">&#39;2sf&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span><span class="s1">&#39;Paused&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">addStateChange</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;3&#39;</span><span class="p">,</span><span class="s1">&#39;selTC&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">addStateChange</span><span class="p">(</span><span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;selRC&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">addStateChange</span><span class="p">(</span><span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;Running&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">addStateChange</span><span class="p">(</span><span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;Paused&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">addStateChange</span><span class="p">(</span><span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="s1">&#39;Stay&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">defineState</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="p">[</span><span class="k">lambda</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsm1</span><span class="p">(</span><span class="kc">None</span><span class="p">)])</span>   <span class="c1">#Define states</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">defineState</span><span class="p">(</span><span class="s1">&#39;2sf&#39;</span><span class="p">,</span> <span class="p">[</span><span class="k">lambda</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsm2</span><span class="p">(</span><span class="kc">None</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">defineState</span><span class="p">(</span><span class="s1">&#39;3&#39;</span><span class="p">,</span> <span class="p">[</span><span class="k">lambda</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsm3</span><span class="p">(</span><span class="kc">None</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">defineState</span><span class="p">(</span><span class="s1">&#39;4&#39;</span><span class="p">,</span> <span class="p">[</span><span class="k">lambda</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsm4</span><span class="p">(</span><span class="kc">None</span><span class="p">)])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">setState</span><span class="p">(</span><span class="s1">&#39;1&#39;</span><span class="p">)</span>                                  <span class="c1">#Set the initial state</span>
+        <span class="c1">#self.fsm.runState(self.fsm.currentState)                #Execute state</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">CallAfter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">runState</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">currentState</span><span class="p">)</span>
+
+        <span class="n">EVT_RUNSTEP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnRunStep</span><span class="p">)</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">RunStepEvent</span><span class="p">())</span>
+
+<div class="viewcode-block" id="RightPanel.enableJumpBox"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.enableJumpBox">[docs]</a>    <span class="k">def</span> <span class="nf">enableJumpBox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rcstext</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rcspoint</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rcspoint</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rcstext</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rcspoint</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rcspoint</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="RightPanel.enableFFBox"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.enableFFBox">[docs]</a>    <span class="k">def</span> <span class="nf">enableFFBox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fftext</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ffpoint</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ffstate</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fftext</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ffpoint</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ffstate</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="RightPanel.enableBoxNav"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.enableBoxNav">[docs]</a>    <span class="k">def</span> <span class="nf">enableBoxNav</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rcstext</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rcspoint</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rcspoint</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fftext</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ffpoint</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ffstate</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_updateRunMode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">GetStringSelection</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">sel</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">lblList</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">enableFFBox</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">enableJumpBox</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runconText</span> <span class="o">=</span> <span class="s2">&quot;Run Chunk&quot;</span>
+        <span class="k">elif</span> <span class="n">sel</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">lblList</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">enableFFBox</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">enableJumpBox</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">runconText</span> <span class="o">=</span> <span class="s2">&quot;Run Continuously&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Fit</span><span class="p">()</span>
+
+<div class="viewcode-block" id="RightPanel.OnRunMode"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.OnRunMode">[docs]</a>    <span class="k">def</span> <span class="nf">OnRunMode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">trans</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lblList</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">GetStringSelection</span><span class="p">():</span>
+            <span class="n">trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">pumpEvent</span><span class="p">(</span><span class="s1">&#39;selRC&#39;</span><span class="p">)</span>  <span class="c1"># Send event to FSM</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">lblList</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">GetStringSelection</span><span class="p">():</span>
+            <span class="n">trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">pumpEvent</span><span class="p">(</span><span class="s1">&#39;selTC&#39;</span><span class="p">)</span>  <span class="c1"># Send event to FSM</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">runState</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>  <span class="c1"># get transition</span></div>
+
+<div class="viewcode-block" id="RightPanel.OnFFChange"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.OnFFChange">[docs]</a>    <span class="k">def</span> <span class="nf">OnFFChange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">cv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ffpoint</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">cvf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">cv</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># Cant convert to a number</span>
+            <span class="n">cvf</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">simdata</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s1">&#39;tend&#39;</span><span class="p">):</span>
+            <span class="n">te</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">simdata</span><span class="p">[</span><span class="s1">&#39;tend&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">cvf</span> <span class="o">&gt;</span> <span class="n">te</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ffstate</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cvf</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; is past end of sim.&quot;</span><span class="p">)</span>
+                <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ffpoint</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cvf</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ffstate</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="s2">&quot;FF Point Changed To: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">cvf</span><span class="p">))</span>
+        <span class="n">ns</span> <span class="o">=</span> <span class="n">VarChangeSignal</span><span class="p">()</span>
+        <span class="n">pEvents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">pEvents</span>
+        <span class="n">ns</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;fastforward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cvf</span>
+        <span class="n">pEvents</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>  <span class="c1"># Send the signal to update</span></div>
+        <span class="c1">#return True</span>
+
+    <span class="k">def</span> <span class="nf">_StopFF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ns</span> <span class="o">=</span> <span class="n">VarChangeSignal</span><span class="p">()</span>
+        <span class="n">pEvents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">pEvents</span>
+        <span class="n">ns</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="s2">&quot;fastforward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">pEvents</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span>  <span class="c1"># Send the signal to update</span>
+
+<div class="viewcode-block" id="RightPanel.makeButton"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.makeButton">[docs]</a>    <span class="k">def</span> <span class="nf">makeButton</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">button1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s2">&quot;Step&quot;</span><span class="p">)</span>
+        <span class="n">button1</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_BUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnStart</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">button1</span></div>
+
+<div class="viewcode-block" id="RightPanel.makeButtonNew"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.makeButtonNew">[docs]</a>    <span class="k">def</span> <span class="nf">makeButtonNew</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">button1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s2">&quot;New Frame&quot;</span><span class="p">)</span>
+        <span class="n">button1</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_BUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnNewFrame</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">button1</span></div>
+
+<div class="viewcode-block" id="RightPanel.makeInputButton"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.makeInputButton">[docs]</a>    <span class="k">def</span> <span class="nf">makeInputButton</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">b1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s2">&quot;Open Input File (input1)&quot;</span><span class="p">)</span>
+        <span class="n">b1</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_BUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnOpenInput</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">b1</span></div>
+
+<div class="viewcode-block" id="RightPanel.makeCommandButton"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.makeCommandButton">[docs]</a>    <span class="k">def</span> <span class="nf">makeCommandButton</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">b1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s2">&quot;Open Command File (command1)&quot;</span><span class="p">)</span>
+        <span class="n">b1</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_BUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnOpenCommand</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">b1</span></div>
+
+<div class="viewcode-block" id="RightPanel.makeResetButton"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.makeResetButton">[docs]</a>    <span class="k">def</span> <span class="nf">makeResetButton</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">button1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s2">&quot;Reset Simulation&quot;</span><span class="p">)</span>
+        <span class="n">button1</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_BUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsm4</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">button1</span></div>
+
+<div class="viewcode-block" id="RightPanel.makeRunLongButton"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.makeRunLongButton">[docs]</a>    <span class="k">def</span> <span class="nf">makeRunLongButton</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runconText</span> <span class="o">=</span> <span class="s2">&quot;Run Continuously&quot;</span>
+        <span class="n">button1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">ToggleButton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">runconText</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">button1</span></div>
+
+    <span class="c1"># A utitlity method to add new windows</span>
+<div class="viewcode-block" id="RightPanel.makeNewFrame"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.makeNewFrame">[docs]</a>    <span class="k">def</span> <span class="nf">makeNewFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">defaults</span><span class="p">):</span>
+        <span class="n">nf</span> <span class="o">=</span> <span class="n">NewFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="n">defaults</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">windowList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nf</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RightPanel.OnOpenInput"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.OnOpenInput">[docs]</a>    <span class="k">def</span> <span class="nf">OnOpenInput</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">ie</span> <span class="o">=</span> <span class="n">InputEditor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">realTimeVars</span><span class="p">)</span>
+        <span class="n">ie</span><span class="o">.</span><span class="n">editor</span><span class="o">.</span><span class="n">loadInput</span><span class="p">()</span>
+        <span class="n">ie</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="RightPanel.OnOpenCommand"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.OnOpenCommand">[docs]</a>    <span class="k">def</span> <span class="nf">OnOpenCommand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">ie</span> <span class="o">=</span> <span class="n">InputEditor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">realTimeVars</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;command1&#39;</span><span class="p">)</span>
+        <span class="n">ie</span><span class="o">.</span><span class="n">editor</span><span class="o">.</span><span class="n">loadInput</span><span class="p">()</span>
+        <span class="n">ie</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="RightPanel.OnStart"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.OnStart">[docs]</a>    <span class="k">def</span> <span class="nf">OnStart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">iAmRunning</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># start the sim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">runCounter</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># the number of times to run</span></div>
+
+<div class="viewcode-block" id="RightPanel.OnStartLong"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.OnStartLong">[docs]</a>    <span class="k">def</span> <span class="nf">OnStartLong</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Called when Run Continuously is called</span>
+<span class="sd">        :param event:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">iAmRunning</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OnFFChange</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RightPanel.OnPause"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.OnPause">[docs]</a>    <span class="k">def</span> <span class="nf">OnPause</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Called when the code has paused</span>
+<span class="sd">        :param event:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">iAmRunning</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="RightPanel.OnRunChunk"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.OnRunChunk">[docs]</a>    <span class="k">def</span> <span class="nf">OnRunChunk</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">event</span><span class="p">):</span>
+        <span class="n">cv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">displayTime</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">inc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rcspoint</span><span class="o">.</span><span class="n">GetValue</span><span class="p">())</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">inc</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">inc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">pumpEvent</span><span class="p">(</span><span class="s1">&#39;Stay&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">runState</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">cv</span> <span class="o">+=</span> <span class="n">inc</span>
+        <span class="k">if</span> <span class="n">cv</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">simdata</span><span class="p">[</span><span class="s1">&#39;tend&#39;</span><span class="p">]:</span>
+            <span class="n">cv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">simdata</span><span class="p">[</span><span class="s1">&#39;tend&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ffpoint</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cv</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OnFFChange</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ffpoint</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cv</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">iAmRunning</span> <span class="o">=</span> <span class="kc">True</span></div>
+        <span class="c1">#self.RunLongButton.SetValue(self.simframe.worker.iAmRunning)</span>
+
+
+<div class="viewcode-block" id="RightPanel.OnNewFrame"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.OnNewFrame">[docs]</a>    <span class="k">def</span> <span class="nf">OnNewFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">nf</span> <span class="o">=</span> <span class="n">NewFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">windowList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nf</span><span class="p">)</span></div>
+
+    <span class="c1">#The following states are for a finite state machine</span>
+<div class="viewcode-block" id="RightPanel.fsm1"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.fsm1">[docs]</a>    <span class="k">def</span> <span class="nf">fsm1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RunLongButton</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_TOGGLEBUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnStartLong</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>   <span class="c1">#Enable radio buttons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">SetStringSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblList</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableFFBox</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableJumpBox</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RunLongButton</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="s1">&#39;Run Continuously&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableBoxNav</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runOnceButton</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Fit</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="RightPanel.fsm2"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.fsm2">[docs]</a>    <span class="k">def</span> <span class="nf">fsm2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RunLongButton</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_TOGGLEBUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnPause</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>   <span class="c1">#Enable radio buttons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">SetStringSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblList</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableFFBox</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableJumpBox</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RunLongButton</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="s1">&#39;Pause&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableBoxNav</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runOnceButton</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Fit</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="RightPanel.fsm3"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.fsm3">[docs]</a>    <span class="k">def</span> <span class="nf">fsm3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RunLongButton</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_TOGGLEBUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnRunChunk</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RunLongButton</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>   <span class="c1">#Enable radio buttons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">SetStringSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblList</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableJumpBox</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableFFBox</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RunLongButton</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="s1">&#39;Run Chunk&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableBoxNav</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runOnceButton</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Fit</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="RightPanel.fsm4"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.fsm4">[docs]</a>    <span class="k">def</span> <span class="nf">fsm4</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RunLongButton</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_TOGGLEBUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnPause</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>   <span class="c1">#Enable radio buttons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runmode</span><span class="o">.</span><span class="n">SetStringSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lblList</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableJumpBox</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableFFBox</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RunLongButton</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="s1">&#39;Pause&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">enableBoxNav</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">runOnceButton</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Fit</span><span class="p">()</span></div>
+
+
+    <span class="c1"># This is the main loop.  Instead of looping in a while, at the end of the function</span>
+    <span class="c1"># it posts a wxEvent to call itself again.  Since this goes in to wxPython&#39;s event</span>
+    <span class="c1"># queue, the gui remains responsive</span>
+<div class="viewcode-block" id="RightPanel.OnRunStep"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.RightPanel.OnRunStep">[docs]</a>    <span class="k">def</span> <span class="nf">OnRunStep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">alive</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">Destroy</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="c1">#Generate toggle run state event</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastMode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lastMode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">iAmRunning</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">iAmRunning</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lastMode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">iAmRunning</span><span class="p">:</span>
+                <span class="n">trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">pumpEvent</span><span class="p">(</span><span class="s1">&#39;Running&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_StopFF</span><span class="p">()</span>
+                <span class="n">trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">pumpEvent</span><span class="p">(</span><span class="s1">&#39;Paused&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fsm</span><span class="o">.</span><span class="n">runState</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>  <span class="c1"># get transition</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lastMode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">iAmRunning</span>
+
+        <span class="c1">#Run a time step</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">Yield</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">RunStepEvent</span><span class="p">())</span></div></div>
+
+<div class="viewcode-block" id="FiniteStateMachine"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.FiniteStateMachine">[docs]</a><span class="k">class</span> <span class="nc">FiniteStateMachine</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>  <span class="c1">#Matrix of transitions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span> <span class="c1">#State definitions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentState</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="FiniteStateMachine.defineState"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.FiniteStateMachine.defineState">[docs]</a>    <span class="k">def</span> <span class="nf">defineState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">name</span><span class="p">,</span> <span class="n">funclist</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Takes a list of functions to call, with no arguments</span>
+<span class="sd">        :param funclist:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">funclist</span></div>
+
+<div class="viewcode-block" id="FiniteStateMachine.addStateChange"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.FiniteStateMachine.addStateChange">[docs]</a>    <span class="k">def</span> <span class="nf">addStateChange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state1</span><span class="p">,</span> <span class="n">state2</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a transition path from state1 to state2, triggered by event.</span>
+<span class="sd">        This is not bi-directional, as in it does not add a pth from state2 to state1</span>
+<span class="sd">        :param state1:</span>
+<span class="sd">        :param state2:</span>
+<span class="sd">        :param event:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">state1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">state1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="n">state1</span><span class="p">][</span><span class="n">event</span><span class="p">]</span> <span class="o">=</span> <span class="n">state2</span></div>
+
+<div class="viewcode-block" id="FiniteStateMachine.setState"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.FiniteStateMachine.setState">[docs]</a>    <span class="k">def</span> <span class="nf">setState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the current state to state</span>
+<span class="sd">        :param state:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentState</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span><span class="p">(</span><span class="s1">&#39;state must be defined before it is set as current&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FiniteStateMachine.pumpEvent"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.FiniteStateMachine.pumpEvent">[docs]</a>    <span class="k">def</span> <span class="nf">pumpEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Determine if there is a transition to a new event, and return it</span>
+<span class="sd">        :param event:</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentState</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nodes</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">currentState</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">s</span><span class="p">[</span><span class="n">event</span><span class="p">]</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="FiniteStateMachine.runState"><a class="viewcode-back" href="../source/RightPanel.html#RightPanel.FiniteStateMachine.runState">[docs]</a>    <span class="k">def</span> <span class="nf">runState</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentState</span> <span class="o">=</span> <span class="n">state</span>
+            <span class="n">funclist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">state</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">funclist</span><span class="p">:</span>
+                <span class="n">f</span><span class="p">()</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

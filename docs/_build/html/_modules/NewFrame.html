@@ -1,0 +1,326 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>NewFrame &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for NewFrame</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wx.stc</span> <span class="k">as</span> <span class="nn">stc</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">deque</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">defaults</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">Dumb</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<span class="c1"># I need an event to remove listeners when the window gets closed!</span>
+<div class="viewcode-block" id="NewFrame"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame">[docs]</a><span class="k">class</span> <span class="nc">NewFrame</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">,</span> <span class="n">DefaultsCommLink</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">dispatch</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">defaults</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sd">&quot;&quot;&quot;Create the MainFrame.&quot;&quot;&quot;</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;PIC Interface.  J. Kelly &amp; V. Decyk&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">DEFAULT_FRAME_STYLE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loader</span> <span class="o">=</span> <span class="n">loader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layoutName</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">InitData</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">InitMenu</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CreateStatusBar</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stf</span> <span class="o">=</span> <span class="n">dispatch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CLOSE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnQuit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span> <span class="o">=</span> <span class="n">parent</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetPosition</span><span class="p">((</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">layout</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">OnLayout1</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># default layout</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;On&quot;</span> <span class="o">+</span> <span class="n">layout</span><span class="p">)</span> <span class="ow">and</span> <span class="n">layout</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;Layout&quot;</span><span class="p">):</span>  <span class="c1"># We have the specified Layout</span>
+                <span class="n">cl</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;On&quot;</span> <span class="o">+</span> <span class="n">layout</span><span class="p">)</span>
+                <span class="n">cl</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>  <span class="c1"># create the layout</span>
+                <span class="c1"># Now populate with defaults</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">area</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">):</span>
+                        <span class="n">area</span><span class="o">.</span><span class="n">setGraphByName</span><span class="p">(</span><span class="n">defaults</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Not all graphs specified.  Not an issue</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># Fail if the specified layout does not exist</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="s2">&quot;The layout you specified &quot;</span> <span class="o">+</span> <span class="n">layout</span> <span class="o">+</span> <span class="s2">&quot; is not defined in NewFrame.py.  Expect a method name starting with OnLayout</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_ACTIVATE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnFocus</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MOVE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnMove</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">activeFrame</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
+
+<div class="viewcode-block" id="NewFrame.InitData"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.InitData">[docs]</a>    <span class="k">def</span> <span class="nf">InitData</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span> <span class="o">=</span> <span class="n">deque</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NewFrame.PruneDisplays"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.PruneDisplays">[docs]</a>    <span class="k">def</span> <span class="nf">PruneDisplays</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>  <span class="c1"># Prune displays down to number num</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">num</span><span class="p">:</span>
+            <span class="n">toDie</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">toDie</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="o">.</span><span class="n">dispatchers</span><span class="p">:</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">RemoveListener</span><span class="p">(</span><span class="n">toDie</span><span class="p">)</span>
+            <span class="n">toDie</span><span class="o">.</span><span class="n">Destroy</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_AddDisplay</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">toLive</span> <span class="o">=</span> <span class="n">Dumb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="o">.</span><span class="n">dispatchers</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">toLive</span>
+
+<div class="viewcode-block" id="NewFrame.RequestDisplays"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.RequestDisplays">[docs]</a>    <span class="k">def</span> <span class="nf">RequestDisplays</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">num</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">):</span>
+            <span class="n">nd</span> <span class="o">=</span> <span class="n">num</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nd</span><span class="p">):</span>  <span class="c1"># create nd new displays</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_AddDisplay</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="NewFrame.InitMenu"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.InitMenu">[docs]</a>    <span class="k">def</span> <span class="nf">InitMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">menubar</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">MenuBar</span><span class="p">()</span>
+        <span class="n">fileMenu</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Menu</span><span class="p">()</span>
+        <span class="n">layoutMenu</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Menu</span><span class="p">()</span>
+        <span class="n">viewMenu</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Menu</span><span class="p">()</span>
+        <span class="n">fitem</span> <span class="o">=</span> <span class="n">fileMenu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">ID_EXIT</span><span class="p">,</span> <span class="s1">&#39;Close&#39;</span><span class="p">,</span> <span class="s1">&#39;Close This Window&#39;</span><span class="p">)</span>
+        <span class="n">latem1</span> <span class="o">=</span> <span class="n">layoutMenu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s1">&#39;1 Graph&#39;</span><span class="p">)</span>
+        <span class="n">latem2h</span> <span class="o">=</span> <span class="n">layoutMenu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s1">&#39;2 Graphs - Horizontal&#39;</span><span class="p">)</span>
+        <span class="n">latem2v</span> <span class="o">=</span> <span class="n">layoutMenu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s1">&#39;2 Graphs - Vertical&#39;</span><span class="p">)</span>
+        <span class="n">latem3</span> <span class="o">=</span> <span class="n">layoutMenu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s1">&#39;3 Graphs&#39;</span><span class="p">)</span>
+        <span class="n">latem4</span> <span class="o">=</span> <span class="n">layoutMenu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s1">&#39;4 Graphs&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layoutItems</span> <span class="o">=</span> <span class="p">[</span><span class="n">latem1</span><span class="p">,</span> <span class="n">latem2h</span><span class="p">,</span> <span class="n">latem2v</span><span class="p">,</span> <span class="n">latem3</span><span class="p">,</span> <span class="n">latem4</span><span class="p">]</span>  <span class="c1"># Need this list to enable, disable the layouts</span>
+        <span class="n">viewcbar</span> <span class="o">=</span> <span class="n">viewMenu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s2">&quot;Locate Control Bar&quot;</span><span class="p">)</span>
+        <span class="n">hideba</span> <span class="o">=</span> <span class="n">viewMenu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s2">&quot;Hide/Show Nav bars&quot;</span><span class="p">)</span>
+        <span class="n">savedef</span> <span class="o">=</span> <span class="n">viewMenu</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">NewId</span><span class="p">(),</span> <span class="s2">&quot;Save Window Size/Position as default&quot;</span><span class="p">)</span>
+        <span class="n">menubar</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">fileMenu</span><span class="p">,</span> <span class="s1">&#39;&amp;File&#39;</span><span class="p">)</span>
+        <span class="n">menubar</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">layoutMenu</span><span class="p">,</span> <span class="s1">&#39;Layout&#39;</span><span class="p">)</span>
+        <span class="n">menubar</span><span class="o">.</span><span class="n">Append</span><span class="p">(</span><span class="n">viewMenu</span><span class="p">,</span> <span class="s1">&#39;View&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetMenuBar</span><span class="p">(</span><span class="n">menubar</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnQuit</span><span class="p">,</span> <span class="n">fitem</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnLayout1</span><span class="p">,</span> <span class="n">latem1</span><span class="p">)</span>
+        <span class="n">menubar</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_UPDATE_UI</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnLayoutMenuShow</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnLayout2h</span><span class="p">,</span> <span class="n">latem2h</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnLayout2v</span><span class="p">,</span> <span class="n">latem2v</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnLayout3</span><span class="p">,</span> <span class="n">latem3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnLayout4</span><span class="p">,</span> <span class="n">latem4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ToggleNav</span><span class="p">,</span> <span class="n">hideba</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SaveDefault</span><span class="p">,</span> <span class="n">savedef</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_MENU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">LocateCBar</span><span class="p">,</span> <span class="n">viewcbar</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NewFrame.LocateCBar"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.LocateCBar">[docs]</a>    <span class="k">def</span> <span class="nf">LocateCBar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">af</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">activeFrame</span>
+        <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">=</span> <span class="n">af</span><span class="o">.</span><span class="n">GetScreenRect</span><span class="p">()</span>
+        <span class="p">(</span><span class="n">mx</span><span class="p">,</span> <span class="n">my</span><span class="p">,</span> <span class="n">mw</span><span class="p">,</span> <span class="n">mh</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">GetScreenRect</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">Move</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Point</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">w</span> <span class="o">-</span> <span class="n">mw</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="NewFrame.enableLayoutMenu"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.enableLayoutMenu">[docs]</a>    <span class="k">def</span> <span class="nf">enableLayoutMenu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">lo</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layoutItems</span><span class="p">:</span>
+            <span class="n">lo</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NewFrame.OnLayoutMenuShow"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.OnLayoutMenuShow">[docs]</a>    <span class="k">def</span> <span class="nf">OnLayoutMenuShow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">freezeLayout</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">:</span>
+            <span class="n">freezeLayout</span> <span class="o">=</span> <span class="n">freezeLayout</span> <span class="ow">or</span> <span class="n">d</span><span class="o">.</span><span class="n">isFrozen</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">layoutItems</span><span class="p">:</span>
+            <span class="n">e</span><span class="o">.</span><span class="n">Enable</span><span class="p">(</span><span class="ow">not</span> <span class="n">freezeLayout</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NewFrame.SaveDefault"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.SaveDefault">[docs]</a>    <span class="k">def</span> <span class="nf">SaveDefault</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saveAsDefault</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="p">,</span> <span class="s2">&quot;NewFrame&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">layoutName</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">saveToFile</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NewFrame.OnFocus"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.OnFocus">[docs]</a>    <span class="k">def</span> <span class="nf">OnFocus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">CallAfter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">InitMenu</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">activeFrame</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OnMove</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="NewFrame.OnMove"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.OnMove">[docs]</a>    <span class="k">def</span> <span class="nf">OnMove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">border</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">af</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">activeFrame</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">rpanel</span><span class="o">.</span><span class="n">pin</span><span class="o">.</span><span class="n">GetValue</span><span class="p">():</span>
+            <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">=</span> <span class="n">af</span><span class="o">.</span><span class="n">GetScreenRect</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">Move</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Point</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">w</span> <span class="o">+</span> <span class="n">border</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="NewFrame.OnQuit"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.OnQuit">[docs]</a>    <span class="k">def</span> <span class="nf">OnQuit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># remove self from windowList</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">windowList</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="nb">print</span> <span class="s2">&quot;Could not remove frame from window list.  This should never happen!&quot;</span>
+                <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">PruneDisplays</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_resetMinSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetSize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetMinSize</span><span class="p">((</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_GoodSize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_resetMinSize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">readDefault</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="p">,</span> <span class="s2">&quot;NewFrame&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">layoutName</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NewFrame.OnLayout1"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.OnLayout1">[docs]</a>    <span class="k">def</span> <span class="nf">OnLayout1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layoutName</span> <span class="o">=</span> <span class="s2">&quot;Layout1&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PruneDisplays</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RequestDisplays</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizerAndFit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GoodSize</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NewFrame.OnLayout2h"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.OnLayout2h">[docs]</a>    <span class="k">def</span> <span class="nf">OnLayout2h</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layoutName</span> <span class="o">=</span> <span class="s2">&quot;Layout2h&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PruneDisplays</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RequestDisplays</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_CENTER</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizerAndFit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GoodSize</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NewFrame.OnLayout2v"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.OnLayout2v">[docs]</a>    <span class="k">def</span> <span class="nf">OnLayout2v</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layoutName</span> <span class="o">=</span> <span class="s2">&quot;Layout2v&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PruneDisplays</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RequestDisplays</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_CENTER</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizerAndFit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GoodSize</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NewFrame.ToggleNav"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.ToggleNav">[docs]</a>    <span class="k">def</span> <span class="nf">ToggleNav</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">:</span>
+            <span class="n">toggle</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">toolbar</span><span class="o">.</span><span class="n">IsShown</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">navMenu</span><span class="p">):</span>
+                <span class="n">toggle</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">toolbar</span><span class="o">.</span><span class="n">ShowItems</span><span class="p">(</span><span class="n">toggle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Layout</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NewFrame.OnLayout3"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.OnLayout3">[docs]</a>    <span class="k">def</span> <span class="nf">OnLayout3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layoutName</span> <span class="o">=</span> <span class="s2">&quot;Layout3&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PruneDisplays</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RequestDisplays</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+        <span class="n">topRow</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">topRow</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_CENTER</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">topRow</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_CENTER</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">topRow</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_CENTER</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizerAndFit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GoodSize</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NewFrame.OnLayout4"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.OnLayout4">[docs]</a>    <span class="k">def</span> <span class="nf">OnLayout4</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layoutName</span> <span class="o">=</span> <span class="s2">&quot;Layout4&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PruneDisplays</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RequestDisplays</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+        <span class="n">topRow</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="n">botRow</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">topRow</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">botRow</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_CENTER</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+            <span class="n">topRow</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_CENTER</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">botRow</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">displayAreas</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">],</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_CENTER</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizerAndFit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Layout</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_GoodSize</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="NewFrame.lockFrame"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.lockFrame">[docs]</a>    <span class="k">def</span> <span class="nf">lockFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sizeLocked&quot;</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sizeLocked</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sizeLocked</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">oldSize</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetMinSize</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetMaxSize</span><span class="p">())</span>
+            <span class="n">cps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetSize</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SetMinSize</span><span class="p">(</span><span class="n">cps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">SetMaxSize</span><span class="p">(</span><span class="n">cps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizeLocked</span> <span class="o">+=</span> <span class="mi">1</span>  <span class="c1"># Add a new lock</span></div>
+
+<div class="viewcode-block" id="NewFrame.unlockFrame"><a class="viewcode-back" href="../source/NewFrame.html#NewFrame.NewFrame.unlockFrame">[docs]</a>    <span class="k">def</span> <span class="nf">unlockFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;sizeLocked&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sizeLocked</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sizeLocked</span> <span class="o">+=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sizeLocked</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">SetMinSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oldSize</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">SetMaxSize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">oldSize</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

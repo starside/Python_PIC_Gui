@@ -1,0 +1,7 @@
+InputEditor\_orig module
+========================
+
+.. automodule:: InputEditor_orig
+    :members:
+    :undoc-members:
+    :show-inheritance:

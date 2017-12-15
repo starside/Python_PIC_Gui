@@ -1,0 +1,265 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>RightPanel module &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-RightPanel">
+<span id="rightpanel-module"></span><h1>RightPanel module<a class="headerlink" href="#module-RightPanel" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="RightPanel.FiniteStateMachine">
+<em class="property">class </em><code class="descclassname">RightPanel.</code><code class="descname">FiniteStateMachine</code><a class="reference internal" href="../_modules/RightPanel.html#FiniteStateMachine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.FiniteStateMachine" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="RightPanel.FiniteStateMachine.addStateChange">
+<code class="descname">addStateChange</code><span class="sig-paren">(</span><em>state1</em>, <em>state2</em>, <em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#FiniteStateMachine.addStateChange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.FiniteStateMachine.addStateChange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a transition path from state1 to state2, triggered by event.
+This is not bi-directional, as in it does not add a pth from state2 to state1
+:param state1:
+:param state2:
+:param event:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.FiniteStateMachine.defineState">
+<code class="descname">defineState</code><span class="sig-paren">(</span><em>name</em>, <em>funclist</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#FiniteStateMachine.defineState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.FiniteStateMachine.defineState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Takes a list of functions to call, with no arguments
+:param funclist:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.FiniteStateMachine.pumpEvent">
+<code class="descname">pumpEvent</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#FiniteStateMachine.pumpEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.FiniteStateMachine.pumpEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if there is a transition to a new event, and return it
+:param event:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.FiniteStateMachine.runState">
+<code class="descname">runState</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#FiniteStateMachine.runState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.FiniteStateMachine.runState" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.FiniteStateMachine.setState">
+<code class="descname">setState</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#FiniteStateMachine.setState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.FiniteStateMachine.setState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the current state to state
+:param state:
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="RightPanel.RightPanel">
+<em class="property">class </em><code class="descclassname">RightPanel.</code><code class="descname">RightPanel</code><span class="sig-paren">(</span><em>parent</em>, <em>sim</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wx._core.Panel</span></code></p>
+<dl class="method">
+<dt id="RightPanel.RightPanel.OnFFChange">
+<code class="descname">OnFFChange</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.OnFFChange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.OnFFChange" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.OnNewFrame">
+<code class="descname">OnNewFrame</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.OnNewFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.OnNewFrame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.OnOpenCommand">
+<code class="descname">OnOpenCommand</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.OnOpenCommand"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.OnOpenCommand" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.OnOpenInput">
+<code class="descname">OnOpenInput</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.OnOpenInput"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.OnOpenInput" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.OnPause">
+<code class="descname">OnPause</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.OnPause"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.OnPause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the code has paused
+:param event:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.OnRunChunk">
+<code class="descname">OnRunChunk</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.OnRunChunk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.OnRunChunk" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.OnRunMode">
+<code class="descname">OnRunMode</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.OnRunMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.OnRunMode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.OnRunStep">
+<code class="descname">OnRunStep</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.OnRunStep"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.OnRunStep" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.OnStart">
+<code class="descname">OnStart</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.OnStart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.OnStart" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.OnStartLong">
+<code class="descname">OnStartLong</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.OnStartLong"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.OnStartLong" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when Run Continuously is called
+:param event:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.enableBoxNav">
+<code class="descname">enableBoxNav</code><span class="sig-paren">(</span><em>val=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.enableBoxNav"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.enableBoxNav" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.enableFFBox">
+<code class="descname">enableFFBox</code><span class="sig-paren">(</span><em>val=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.enableFFBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.enableFFBox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.enableJumpBox">
+<code class="descname">enableJumpBox</code><span class="sig-paren">(</span><em>val=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.enableJumpBox"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.enableJumpBox" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.fsm1">
+<code class="descname">fsm1</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.fsm1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.fsm1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.fsm2">
+<code class="descname">fsm2</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.fsm2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.fsm2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.fsm3">
+<code class="descname">fsm3</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.fsm3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.fsm3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.fsm4">
+<code class="descname">fsm4</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.fsm4"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.fsm4" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.makeButton">
+<code class="descname">makeButton</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.makeButton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.makeButton" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.makeButtonNew">
+<code class="descname">makeButtonNew</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.makeButtonNew"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.makeButtonNew" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.makeCommandButton">
+<code class="descname">makeCommandButton</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.makeCommandButton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.makeCommandButton" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.makeInputButton">
+<code class="descname">makeInputButton</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.makeInputButton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.makeInputButton" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.makeNewFrame">
+<code class="descname">makeNewFrame</code><span class="sig-paren">(</span><em>layout</em>, <em>defaults</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.makeNewFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.makeNewFrame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.makeResetButton">
+<code class="descname">makeResetButton</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.makeResetButton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.makeResetButton" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="RightPanel.RightPanel.makeRunLongButton">
+<code class="descname">makeRunLongButton</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/RightPanel.html#RightPanel.makeRunLongButton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RightPanel.RightPanel.makeRunLongButton" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/source/RightPanel.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

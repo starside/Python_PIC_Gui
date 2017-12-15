@@ -1,0 +1,449 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>LeftPanel &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for LeftPanel</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wx.stc</span> <span class="k">as</span> <span class="nn">stc</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">NP</span>
+<span class="kn">import</span> <span class="nn">matplotlib.image</span> <span class="k">as</span> <span class="nn">mpimg</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">from</span> <span class="nn">distutils</span> <span class="k">import</span> <span class="n">spawn</span>
+<span class="kn">import</span> <span class="nn">matplotlib.cm</span> <span class="k">as</span> <span class="nn">cm</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="k">import</span> <span class="n">Axes3D</span>
+<span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="k">import</span> <span class="n">LogNorm</span>
+<span class="kn">from</span> <span class="nn">matplotlib.figure</span> <span class="k">import</span> <span class="n">Figure</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_wxagg</span> <span class="k">import</span> <span class="n">FigureCanvasWxAgg</span> <span class="k">as</span> <span class="n">FigureCanvas</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_wx</span> <span class="k">import</span> <span class="n">NavigationToolbar2Wx</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid.anchored_artists</span> <span class="k">import</span> <span class="n">AnchoredText</span>
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="k">import</span> <span class="n">Popen</span><span class="p">,</span> <span class="n">PIPE</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="c1"># import Image</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">Events</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">Graphs</span>
+
+
+<span class="c1"># class for the frame handling</span>
+<div class="viewcode-block" id="RecordPanel"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.RecordPanel">[docs]</a><span class="k">class</span> <span class="nc">RecordPanel</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+    <span class="n">currentlyWritingFiles</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Class variable, containing names of files currently recording</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Movie Options&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">FRAME_FLOAT_ON_PARENT</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">DEFAULT_FRAME_STYLE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetupControls</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CLOSE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnClose</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
+
+<div class="viewcode-block" id="RecordPanel.SetupControls"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.RecordPanel.SetupControls">[docs]</a>    <span class="k">def</span> <span class="nf">SetupControls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+        <span class="n">hs1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+
+        <span class="n">rec</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">overwrite</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">getRecordStatus</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbox2</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">CheckBox</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Overwrite Existing Movie File&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbox2</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">overwrite</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cbox2</span><span class="p">)</span>
+
+        <span class="n">lbl1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Movie File Name:&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saveName</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">TextCtrl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">140</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="n">text</span><span class="p">)</span>
+        <span class="n">hs1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">lbl1</span><span class="p">)</span>
+        <span class="n">hs1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saveName</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbox1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">ToggleButton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Record/Pause&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbox1</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_TOGGLEBUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnClickRecord</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_RecButtonValue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">hs1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cbox1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizerAndFit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_RecButtonValue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rec</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">overwrite</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">getRecordStatus</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cbox1</span><span class="o">.</span><span class="n">SetValue</span><span class="p">(</span><span class="n">rec</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rec</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cbox1</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="s2">&quot;Pause&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cbox1</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="s2">&quot;Record&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RecordPanel.OnClose"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.RecordPanel.OnClose">[docs]</a>    <span class="k">def</span> <span class="nf">OnClose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Destroy</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="RecordPanel.OnClickRecord"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.RecordPanel.OnClickRecord">[docs]</a>    <span class="k">def</span> <span class="nf">OnClickRecord</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">svname</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saveName</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="n">recval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cbox1</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="n">overwrite</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cbox2</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="sd">&quot;&quot;&quot;if not self.addActiveWritingFile(svname) and recval:</span>
+<span class="sd">            wx.MessageBox(&#39;Another video is currently recording to file &#39;+svname + &quot;.  Not recording.&quot;, &#39;Cannot Record&#39;, wx.OK | wx.ICON_INFORMATION)</span>
+<span class="sd">        elif recval and self.fileExists(svname) and not overwrite:</span>
+<span class="sd">            True&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">recval</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">fileExists</span><span class="p">(</span><span class="n">svname</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>  <span class="c1"># check if we can overwrite</span>
+            <span class="n">wx</span><span class="o">.</span><span class="n">MessageBox</span><span class="p">(</span><span class="s1">&#39;File &#39;</span> <span class="o">+</span> <span class="n">svname</span> <span class="o">+</span> <span class="s2">&quot; already exists.  Enable overwrite.&quot;</span><span class="p">,</span> <span class="s1">&#39;Cannot Record&#39;</span><span class="p">,</span>
+                          <span class="n">wx</span><span class="o">.</span><span class="n">OK</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ICON_INFORMATION</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># No overwriting flags</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">addActiveWritingFile</span><span class="p">(</span><span class="n">svname</span><span class="p">)</span> <span class="ow">and</span> <span class="n">recval</span><span class="p">:</span>  <span class="c1"># currently writing to stream</span>
+                <span class="n">wx</span><span class="o">.</span><span class="n">MessageBox</span><span class="p">(</span><span class="s1">&#39;Another video is currently recording to file &#39;</span> <span class="o">+</span> <span class="n">svname</span> <span class="o">+</span> <span class="s2">&quot;.  Not recording.&quot;</span><span class="p">,</span>
+                              <span class="s1">&#39;Cannot Record&#39;</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">OK</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ICON_INFORMATION</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">setRecordStatus</span><span class="p">(</span><span class="n">recval</span><span class="p">,</span> <span class="n">svname</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">recval</span><span class="p">:</span>  <span class="c1"># Stopping recording</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">currentlyWritingFiles</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">svname</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_RecButtonValue</span><span class="p">()</span> <span class="c1">#Update button</span></div>
+
+<div class="viewcode-block" id="RecordPanel.addActiveWritingFile"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.RecordPanel.addActiveWritingFile">[docs]</a>    <span class="k">def</span> <span class="nf">addActiveWritingFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">fname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentlyWritingFiles</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentlyWritingFiles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="RecordPanel.fileExists"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.RecordPanel.fileExists">[docs]</a>    <span class="k">def</span> <span class="nf">fileExists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="MyCustomToolbar"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.MyCustomToolbar">[docs]</a><span class="k">class</span> <span class="nc">MyCustomToolbar</span><span class="p">(</span><span class="n">NavigationToolbar2Wx</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plotCanvas</span><span class="p">):</span>
+        <span class="c1"># create the default toolbar</span>
+        <span class="n">NavigationToolbar2Wx</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plotCanvas</span><span class="p">)</span>
+        <span class="c1"># remove the unwanted buttons</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DeleteToolByPos</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DeleteToolByPos</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DeleteToolByPos</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LeftPanel"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel">[docs]</a><span class="k">class</span> <span class="nc">LeftPanel</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Panel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">Panel</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">DefaultPosition</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">DefaultSize</span><span class="p">)</span>
+        <span class="n">vsizer1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">createGraph</span><span class="p">()</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">toolbar</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizerAndFit</span><span class="p">(</span><span class="n">vsizer1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slopeMousePointer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measuring</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">arbGraphParameters</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;axesType&quot;</span><span class="p">:</span> <span class="s2">&quot;Linear-Linear&quot;</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newCP</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># movie recording defaults</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recordVideo</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movieFileName</span> <span class="o">=</span> <span class="s2">&quot;Movie.avi&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overwrite</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dpi</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># movie dots per inch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">moviePipe</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newframe</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">persistentVars</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">DrawWaitingPlot</span><span class="p">()</span>
+
+        <span class="n">EVT_CLOSEOP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnCloseCP</span><span class="p">)</span>
+        <span class="n">EVT_REFRESHGRAPH</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnRefreshGraph</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_SIZE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnResize</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LeftPanel.OnResize"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.OnResize">[docs]</a>    <span class="k">def</span> <span class="nf">OnResize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OnRefreshGraph</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">Skip</span><span class="p">()</span> <span class="c1"># This is required to pass events up the chain.</span></div>
+
+<div class="viewcode-block" id="LeftPanel.setRecordStatus"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.setRecordStatus">[docs]</a>    <span class="k">def</span> <span class="nf">setRecordStatus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">movieFileName</span> <span class="o">=</span> <span class="n">fname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">overwrite</span> <span class="o">=</span> <span class="n">overwrite</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordVideo</span><span class="p">)</span> <span class="ow">and</span> <span class="n">record</span><span class="p">:</span>  <span class="c1"># If record was off and changed to on</span>
+            <span class="c1"># self.movieWriter.setup(self.figure, self.movieFileName, self.dpi)</span>
+            <span class="n">fps</span> <span class="o">=</span> <span class="mi">15</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">recordingSize</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="o">.</span><span class="n">GetSize</span><span class="p">()</span>
+            <span class="nb">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordingSize</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moviePipe</span> <span class="o">=</span> <span class="n">Popen</span><span class="p">(</span>
+                <span class="p">[</span><span class="s1">&#39;ffmpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;-f&#39;</span><span class="p">,</span> <span class="s1">&#39;rawvideo&#39;</span><span class="p">,</span><span class="s1">&#39;-pix_fmt&#39;</span><span class="p">,</span><span class="s1">&#39;argb&#39;</span><span class="p">,</span><span class="s1">&#39;-s:v&#39;</span><span class="p">,</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">recordingSize</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">+</span><span class="s1">&#39;x&#39;</span> <span class="o">+</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">recordingSize</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">,</span><span class="s1">&#39;-framerate&#39;</span><span class="p">,</span> <span class="s1">&#39;24&#39;</span><span class="p">,</span> <span class="s1">&#39;-i&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="s1">&#39;-c:v&#39;</span><span class="p">,</span> <span class="s1">&#39;libx264&#39;</span><span class="p">,</span> <span class="s1">&#39;-preset&#39;</span><span class="p">,</span> <span class="s1">&#39;veryslow&#39;</span><span class="p">,</span> <span class="s1">&#39;-crf&#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span><span class="s1">&#39;-r&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;24&#39;</span><span class="p">,</span> <span class="s1">&#39;-y&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">movieFileName</span><span class="p">],</span> <span class="n">stdin</span><span class="o">=</span><span class="n">PIPE</span><span class="p">)</span>
+            <span class="c1"># Prevent frame resizing while recording</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">lockFrame</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordVideo</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">record</span><span class="p">:</span>  <span class="c1"># Turned off record</span>
+            <span class="c1"># self.movieWriter.finish()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">unlockFrame</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moviePipe</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moviePipe</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">moviePipe</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">recordVideo</span> <span class="o">=</span> <span class="n">record</span>
+        <span class="k">if</span> <span class="n">record</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">recButton</span><span class="o">.</span><span class="n">SetBitmapLabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RecOnBmp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">recButton</span><span class="o">.</span><span class="n">SetBitmapLabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RecOffBmp</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LeftPanel.getRecordStatus"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.getRecordStatus">[docs]</a>    <span class="k">def</span> <span class="nf">getRecordStatus</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordVideo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">movieFileName</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">overwrite</span></div>
+
+<div class="viewcode-block" id="LeftPanel.resetGraph"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.resetGraph">[docs]</a>    <span class="k">def</span> <span class="nf">resetGraph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">delaxes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LeftPanel.createGraph"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.createGraph">[docs]</a>    <span class="k">def</span> <span class="nf">createGraph</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">figure</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">Figure</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">NP</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">y_max</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span> <span class="o">=</span> <span class="n">FigureCanvas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="o">.</span><span class="n">SetSize</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+        <span class="c1"># self.axes.plot(t,s)</span>
+        <span class="c1"># self.axes.imshow(mpimg.imread(&#39;gui/default.png&#39;), interpolation=&#39;nearest&#39;, aspect=&#39;auto&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="o">.</span><span class="n">mpl_connect</span><span class="p">(</span><span class="s1">&#39;button_press_event&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">onclick</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="o">.</span><span class="n">mpl_connect</span><span class="p">(</span><span class="s1">&#39;motion_notify_event&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">onmotion</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toolbar</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">navMenu</span> <span class="o">=</span> <span class="n">MyCustomToolbar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toolbar</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">navMenu</span><span class="p">)</span>
+        <span class="n">slopebitmap</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Bitmap</span><span class="p">(</span><span class="s2">&quot;./gui/slope.png&quot;</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">BITMAP_TYPE_ANY</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slopeButton</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BitmapButton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">ID_ANY</span><span class="p">,</span> <span class="n">bitmap</span><span class="o">=</span><span class="n">slopebitmap</span><span class="p">,</span>
+                                           <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="mi">42</span><span class="p">))</span>  <span class="c1"># create slope measurement button</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toolbar</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slopeButton</span><span class="p">)</span>
+
+        <span class="n">opts</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Bitmap</span><span class="p">(</span><span class="s2">&quot;./gui/options.png&quot;</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">BITMAP_TYPE_ANY</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphOptionsButton</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BitmapButton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ID_ANY</span><span class="p">,</span> <span class="n">bitmap</span><span class="o">=</span><span class="n">opts</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">42</span><span class="p">,</span> <span class="mi">42</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toolbar</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">graphOptionsButton</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">RecOnBmp</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Bitmap</span><span class="p">(</span><span class="s2">&quot;./gui/rec.png&quot;</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">BITMAP_TYPE_ANY</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RecOffBmp</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Bitmap</span><span class="p">(</span><span class="s2">&quot;./gui/recoff.png&quot;</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">BITMAP_TYPE_ANY</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recButton</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BitmapButton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ID_ANY</span><span class="p">,</span> <span class="n">bitmap</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">RecOffBmp</span><span class="p">,</span>
+                                         <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">RecOffBmp</span><span class="o">.</span><span class="n">GetWidth</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">RecOnBmp</span><span class="o">.</span><span class="n">GetHeight</span><span class="p">()</span> <span class="o">+</span> <span class="mi">10</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">toolbar</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">recButton</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recButton</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_BUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnRecord</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphOptionsButton</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_BUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnOptions</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slopeButton</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_BUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnMeasureButton</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LeftPanel.OnResult"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.OnResult">[docs]</a>    <span class="k">def</span> <span class="nf">OnResult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Show Result status.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Thread aborted (using our convention of None return)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="s1">&#39;Computation aborted&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># self.figure = matplotlib.figure.Figure()</span>
+            <span class="c1"># self.axes = self.figure.add_subplot(111)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span> <span class="o">=</span> <span class="n">event</span> <span class="c1"># Copy because event is a C++ object that gets deleted</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_PV</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">persistentVars</span>  <span class="c1"># Gives the plot a simple dictionary to save persistent vars</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">DrawPlot</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="kc">True</span> <span class="c1">#Probably trying to plot something negative in an image</span>
+            <span class="c1"># Save movie frame</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordVideo</span><span class="p">:</span>
+                <span class="c1">#print &quot;Writing &quot; + str(self.currentEvent.data.simTime)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">movieDim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="o">.</span><span class="n">get_width_height</span><span class="p">()</span>
+                <span class="n">imdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="o">.</span><span class="n">tostring_argb</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">moviePipe</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">imdata</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LeftPanel.OnChangeGraph"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.OnChangeGraph">[docs]</a>    <span class="k">def</span> <span class="nf">OnChangeGraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="o">.</span><span class="n">data</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="o">.</span><span class="n">_PV</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">persistentVars</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_PV</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">persistentVars</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="LeftPanel.DrawPlot"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.DrawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">DrawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    	<span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">):</span> <span class="c1"># Check if there is a data field set</span>
+    		<span class="k">return</span> <span class="c1"># If does not exist, return and wait for data</span>
+    	<span class="c1"># Check if persistent vars _PV exists in data</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;_PV&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">_PV</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">persistentVars</span> <span class="c1"># Create is if not</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resetGraph</span><span class="p">()</span>	<span class="c1"># Reset the graph</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">setParams</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">arbGraphParameters</span><span class="p">)</span>  <span class="c1"># pass paramters to plot</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="kc">True</span>
+        <span class="n">rax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rax</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># This allows the graph to reconfigure its own axes, instead of allowing the panel to handle it</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="n">rax</span>
+        <span class="c1">#self.axes.set_title(self.currentEvent.data.plottype, horizontalalignment=&#39;center&#39;, verticalalignment=&#39;top&#39;,</span>
+        <span class="c1">#                    transform=self.axes.transAxes, fontsize=&quot;smaller&quot;)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">measuring</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">slopeMousePointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PlotLine</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">slopeMousePointer</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LeftPanel.DrawWaitingPlot"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.DrawWaitingPlot">[docs]</a>    <span class="k">def</span> <span class="nf">DrawWaitingPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resetGraph</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;staticImage&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">staticImage</span> <span class="o">=</span> <span class="n">NP</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">))</span>
+        <span class="n">wg</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawSimpleImage</span><span class="p">(</span><span class="s2">&quot;Waiting for data...&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">staticImage</span><span class="p">,</span> <span class="s2">&quot;Waiting for data...&quot;</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">rax</span> <span class="o">=</span> <span class="n">wg</span><span class="o">.</span><span class="n">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">figure</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rax</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># This allows the graph to reconfigure its own axes, instead of allowing the panel to handle it</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axes</span> <span class="o">=</span> <span class="n">rax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span></div>
+
+
+
+    <span class="c1"># self.slopeStack = []</span>
+    <span class="c1"># self.measuring = False</span>
+
+<div class="viewcode-block" id="LeftPanel.PlotLine"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.PlotLine">[docs]</a>    <span class="k">def</span> <span class="nf">PlotLine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x2</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">x1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">x2</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mycanvas</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LeftPanel.OnMeasureButton"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.OnMeasureButton">[docs]</a>    <span class="k">def</span> <span class="nf">OnMeasureButton</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="o">.</span><span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">measuring</span> <span class="o">==</span> <span class="kc">True</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">measuring</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># self.slopeButton.SetValue(False)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">SetStatusText</span><span class="p">(</span><span class="s2">&quot;I await your command&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DrawPlot</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">measuring</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># self.slopeButton.SetValue(True)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">SetStatusText</span><span class="p">(</span><span class="s2">&quot;Click the two points that define your slope&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LeftPanel.OnRefreshGraph"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.OnRefreshGraph">[docs]</a>    <span class="k">def</span> <span class="nf">OnRefreshGraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DrawPlot</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="LeftPanel.OnOptions"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.OnOptions">[docs]</a>    <span class="k">def</span> <span class="nf">OnOptions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>  <span class="c1"># Open options menu</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">newCP</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># Only allow one options window at a time</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">newCP</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentEvent</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">makeControlPanel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">newCP</span><span class="o">.</span><span class="n">Move</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">EventObject</span><span class="o">.</span><span class="n">GetScreenPosition</span><span class="p">()</span> <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="LeftPanel.OnCloseCP"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.OnCloseCP">[docs]</a>    <span class="k">def</span> <span class="nf">OnCloseCP</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newCP</span><span class="o">.</span><span class="n">Hide</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newCP</span><span class="o">.</span><span class="n">Destroy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">newCP</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DrawPlot</span><span class="p">()</span>  <span class="c1"># refresh changes</span></div>
+
+<div class="viewcode-block" id="LeftPanel.onmotion"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.onmotion">[docs]</a>    <span class="k">def</span> <span class="nf">onmotion</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">x2</span> <span class="o">=</span> <span class="n">NP</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slopeMousePointer</span> <span class="o">=</span> <span class="n">x2</span>
+            <span class="c1"># self.PlotLine(x1, x2)</span>
+            <span class="c1"># self.slopeStack.append(x1)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">measuring</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">DrawPlot</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LeftPanel.onclick"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.onclick">[docs]</a>    <span class="k">def</span> <span class="nf">onclick</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">inaxes</span> <span class="o">==</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">measuring</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">NP</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">SetStatusText</span><span class="p">(</span>
+                <span class="s2">&quot;First Point selected is &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="n">event</span><span class="o">.</span><span class="n">xdata</span><span class="p">,</span> <span class="n">event</span><span class="o">.</span><span class="n">ydata</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;. Select next point to find slope&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">x1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">x2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">mv</span> <span class="o">=</span> <span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">mv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">mv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PlotLine</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mainframe</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">SetStatusText</span><span class="p">(</span><span class="s2">&quot;The slope is &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slopeStack</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">measuring</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">slopeMousePointer</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="c1"># self.slopeButton.SetValue(False)</span>
+
+<div class="viewcode-block" id="LeftPanel.OnRecord"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.OnRecord">[docs]</a>    <span class="k">def</span> <span class="nf">OnRecord</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">spawn</span><span class="o">.</span><span class="n">find_executable</span><span class="p">(</span><span class="s1">&#39;ffmpeg&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">wx</span><span class="o">.</span><span class="n">MessageBox</span><span class="p">(</span><span class="s1">&#39;Download and install ffmpeg to create movies.  It is free!  On Ubuntu based Linux, type: sudo apt-get install ffmpeg&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">ne</span> <span class="o">=</span> <span class="n">RecordPanel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+        <span class="c1"># Returns true if the graph is frozen (cannot switch to a new graph type)</span>
+        <span class="c1"># For example, when recording a Velocity Plot, cannot change to a Phase plot</span>
+
+<div class="viewcode-block" id="LeftPanel.isFrozen"><a class="viewcode-back" href="../source/LeftPanel.html#LeftPanel.LeftPanel.isFrozen">[docs]</a>    <span class="k">def</span> <span class="nf">isFrozen</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">recordVideo</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

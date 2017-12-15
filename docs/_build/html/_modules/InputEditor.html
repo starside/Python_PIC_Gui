@@ -1,0 +1,183 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>InputEditor &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for InputEditor</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">wx.stc</span> <span class="k">as</span> <span class="nn">stc</span>
+<span class="kn">from</span> <span class="nn">lib</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">from</span> <span class="nn">Signals</span> <span class="k">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="TC"><a class="viewcode-back" href="../source/InputEditor.html#InputEditor.TC">[docs]</a><span class="k">class</span> <span class="nc">TC</span><span class="p">:</span> <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="EditorPart"><a class="viewcode-back" href="../source/InputEditor.html#InputEditor.EditorPart">[docs]</a><span class="k">class</span> <span class="nc">EditorPart</span><span class="p">(</span><span class="n">stc</span><span class="o">.</span><span class="n">StyledTextCtrl</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">SIMPLE_BORDER</span><span class="p">,</span> <span class="n">realTimeVars</span> <span class="o">=</span> <span class="p">[]):</span>
+        <span class="n">stc</span><span class="o">.</span><span class="n">StyledTextCtrl</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetMinSize</span><span class="p">((</span><span class="mi">500</span><span class="p">,</span> <span class="mi">500</span><span class="p">))</span>
+        <span class="c1"># List of parameters highlighred red than can be updated during the simulation run</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">realTimeUpdate</span> <span class="o">=</span> <span class="n">realTimeVars</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">presentVars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;input1&quot;</span>
+
+<div class="viewcode-block" id="EditorPart.loadInput"><a class="viewcode-back" href="../source/InputEditor.html#InputEditor.EditorPart.loadInput">[docs]</a>    <span class="k">def</span> <span class="nf">loadInput</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ClearAll</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">rb</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">StyleSetForeground</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">NamedColour</span><span class="p">(</span><span class="s1">&#39;red&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">AddText</span><span class="p">(</span><span class="n">rb</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">realTimeUpdate</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">rb</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">s</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">l</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">StartStyling</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mi">31</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">SetStyling</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">presentVars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EditorPart.saveInput"><a class="viewcode-back" href="../source/InputEditor.html#InputEditor.EditorPart.saveInput">[docs]</a>    <span class="k">def</span> <span class="nf">saveInput</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GetText</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="EditorPart.updateChanges"><a class="viewcode-back" href="../source/InputEditor.html#InputEditor.EditorPart.updateChanges">[docs]</a>    <span class="k">def</span> <span class="nf">updateChanges</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">to</span> <span class="o">=</span> <span class="n">TC</span><span class="p">()</span>  <span class="c1"># create temp object</span>
+        <span class="n">nmo</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>  <span class="c1"># read original</span>
+            <span class="n">nmo</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;.temp_&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>  <span class="c1"># backup</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">nmo</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saveInput</span><span class="p">()</span>  <span class="c1"># save namelist</span>
+        <span class="c1"># loadNamelist(to, &quot;input1&quot;) #load changes in to software</span>
+        <span class="n">loadNamelistRaw</span><span class="p">(</span><span class="n">to</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>  <span class="c1"># resote original</span>
+            <span class="n">fp</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">nmo</span><span class="p">)</span>
+        <span class="n">ns</span> <span class="o">=</span> <span class="n">VarChangeSignal</span><span class="p">()</span>
+        <span class="n">pEvents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">simframe</span><span class="o">.</span><span class="n">pEvents</span>  <span class="c1"># Kind of a not flexible way to do this shit</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">presentVars</span><span class="p">:</span>
+            <span class="n">ns</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">to</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+            <span class="sd">&quot;&quot;&quot;atv = getattr(to,p.lower())</span>
+<span class="sd">            if atv.dtype.kind == &quot;i&quot;: #integer</span>
+<span class="sd">                diag.copyint(atv, getattr(in1,p.lower()) )</span>
+<span class="sd">            elif atv.dtype.kind == &quot;f&quot;:</span>
+<span class="sd">                diag.copyreal(atv, getattr(in1,p.lower()) )&quot;&quot;&quot;</span>
+        <span class="n">pEvents</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">ns</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="InputEditor"><a class="viewcode-back" href="../source/InputEditor.html#InputEditor.InputEditor">[docs]</a><span class="k">class</span> <span class="nc">InputEditor</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">realTimeVars</span> <span class="o">=</span> <span class="p">[],</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;input1&#39;</span><span class="p">):</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">FRAME_FLOAT_ON_PARENT</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">DEFAULT_FRAME_STYLE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">editor</span> <span class="o">=</span> <span class="n">EditorPart</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">realTimeVars</span><span class="o">=</span><span class="n">realTimeVars</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">editor</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">editor</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="c1"># define nav bar</span>
+        <span class="n">navb</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="n">saveb</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Save to &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">editor</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">saveb</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_BUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnSave</span><span class="p">)</span>
+        <span class="n">upb</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Update Changes&quot;</span><span class="p">)</span>
+        <span class="n">upb</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_BUTTON</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnUpdate</span><span class="p">)</span>
+        <span class="n">navb</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">saveb</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_LEFT</span><span class="p">)</span>
+        <span class="c1"># navb.AddStretchSpacer(1)</span>
+        <span class="n">stxt</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticText</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Red variables can be updated while running&quot;</span><span class="p">)</span>
+        <span class="n">stxt</span><span class="o">.</span><span class="n">SetForegroundColour</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Colour</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="n">navb</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">stxt</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_CENTER</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">navb</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">upb</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_RIGHT</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">navb</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">,</span> <span class="n">border</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">editor</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">ALL</span><span class="p">,</span> <span class="n">proportion</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">statusbar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CreateStatusBar</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizerAndFit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sizer</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">editor</span><span class="o">.</span><span class="n">loadInput</span><span class="p">()</span>
+
+<div class="viewcode-block" id="InputEditor.OnSave"><a class="viewcode-back" href="../source/InputEditor.html#InputEditor.InputEditor.OnSave">[docs]</a>    <span class="k">def</span> <span class="nf">OnSave</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">editor</span><span class="o">.</span><span class="n">saveInput</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statusbar</span><span class="o">.</span><span class="n">SetStatusText</span><span class="p">(</span><span class="s2">&quot;Save text to file &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">editor</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="InputEditor.OnUpdate"><a class="viewcode-back" href="../source/InputEditor.html#InputEditor.InputEditor.OnUpdate">[docs]</a>    <span class="k">def</span> <span class="nf">OnUpdate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">editor</span><span class="o">.</span><span class="n">updateChanges</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">statusbar</span><span class="o">.</span><span class="n">SetStatusText</span><span class="p">(</span><span class="s2">&quot;Updated Changes in red highlights but DID NOT SAVE CHANGES TO FILE!&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

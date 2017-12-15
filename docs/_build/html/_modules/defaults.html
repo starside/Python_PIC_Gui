@@ -1,0 +1,139 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>defaults &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for defaults</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This class is intended to be inherited.  It simply communicates data from a frame to a loader object</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This class is just reuable functions to handle common taks</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="DefaultsCommLink"><a class="viewcode-back" href="../source/defaults.html#defaults.DefaultsCommLink">[docs]</a><span class="k">class</span> <span class="nc">DefaultsCommLink</span><span class="p">:</span>
+<div class="viewcode-block" id="DefaultsCommLink.saveAsDefault"><a class="viewcode-back" href="../source/defaults.html#defaults.DefaultsCommLink.saveAsDefault">[docs]</a>    <span class="k">def</span> <span class="nf">saveAsDefault</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">windowname</span><span class="p">):</span>
+        <span class="n">wr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">GetRect</span><span class="p">()</span>
+        <span class="n">windowrect</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">wr</span><span class="p">]</span>
+        <span class="n">md</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;WindowRect&quot;</span><span class="p">:</span> <span class="n">windowrect</span><span class="p">}</span>
+        <span class="n">loader</span><span class="o">.</span><span class="n">updateLoader</span><span class="p">(</span><span class="n">windowname</span><span class="p">,</span> <span class="n">md</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DefaultsCommLink.readDefault"><a class="viewcode-back" href="../source/defaults.html#defaults.DefaultsCommLink.readDefault">[docs]</a>    <span class="k">def</span> <span class="nf">readDefault</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loader</span><span class="p">,</span> <span class="n">windowname</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">md</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">defaultDictionary</span><span class="p">[</span><span class="n">windowname</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;Could not load defaults &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">windowname</span><span class="p">)</span>
+            <span class="k">return</span>  <span class="c1"># could not load defaults</span>
+        <span class="n">wr</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Rect</span><span class="p">(</span><span class="n">md</span><span class="p">[</span><span class="s2">&quot;WindowRect&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">md</span><span class="p">[</span><span class="s2">&quot;WindowRect&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">md</span><span class="p">[</span><span class="s2">&quot;WindowRect&quot;</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span> <span class="n">md</span><span class="p">[</span><span class="s2">&quot;WindowRect&quot;</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetRect</span><span class="p">(</span><span class="n">wr</span><span class="p">)</span></div></div>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This class handles loading the defaults from file</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="DefaultLoader"><a class="viewcode-back" href="../source/defaults.html#defaults.DefaultLoader">[docs]</a><span class="k">class</span> <span class="nc">DefaultLoader</span><span class="p">:</span>
+    <span class="n">default_file</span> <span class="o">=</span> <span class="s2">&quot;new_beps1.defaults&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="n">filename</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defaultDictionary</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="DefaultLoader.updateLoader"><a class="viewcode-back" href="../source/defaults.html#defaults.DefaultLoader.updateLoader">[docs]</a>    <span class="k">def</span> <span class="nf">updateLoader</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">windowname</span><span class="p">,</span> <span class="n">theDict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defaultDictionary</span><span class="p">[</span><span class="n">windowname</span><span class="p">]</span> <span class="o">=</span> <span class="n">theDict</span>
+        <span class="nb">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultDictionary</span></div>
+
+<div class="viewcode-block" id="DefaultLoader.saveToFile"><a class="viewcode-back" href="../source/defaults.html#defaults.DefaultLoader.saveToFile">[docs]</a>    <span class="k">def</span> <span class="nf">saveToFile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">DefaultLoader</span><span class="o">.</span><span class="n">default_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">defaultDictionary</span><span class="p">,</span> <span class="n">fh</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DefaultLoader.loadFromFile"><a class="viewcode-back" href="../source/defaults.html#defaults.DefaultLoader.loadFromFile">[docs]</a>    <span class="k">def</span> <span class="nf">loadFromFile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">DefaultLoader</span><span class="o">.</span><span class="n">default_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">defaultDictionary</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;Could not open the defaults file.  I suggest you make one, by using the Layout/Save Defaults Menu&quot;</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

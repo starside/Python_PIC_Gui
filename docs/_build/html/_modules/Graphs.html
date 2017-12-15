@@ -1,0 +1,1017 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Graphs &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Graphs</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">wx.stc</span> <span class="k">as</span> <span class="nn">stc</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.cm</span> <span class="k">as</span> <span class="nn">cm</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="k">import</span> <span class="n">Axes3D</span>
+<span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="k">import</span> <span class="n">LogNorm</span>
+<span class="kn">from</span> <span class="nn">matplotlib.figure</span> <span class="k">import</span> <span class="n">Figure</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_wxagg</span> <span class="k">import</span> <span class="n">FigureCanvasWxAgg</span> <span class="k">as</span> <span class="n">FigureCanvas</span>
+<span class="kn">from</span> <span class="nn">matplotlib.backends.backend_wx</span> <span class="k">import</span> <span class="n">NavigationToolbar2Wx</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid.anchored_artists</span> <span class="k">import</span> <span class="n">AnchoredText</span>
+
+<span class="kn">from</span> <span class="nn">Events</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">lib</span> <span class="k">import</span> <span class="o">*</span>
+
+<div class="viewcode-block" id="KeyList"><a class="viewcode-back" href="../source/Graphs.html#Graphs.KeyList">[docs]</a><span class="k">class</span> <span class="nc">KeyList</span><span class="p">:</span>
+    <span class="c1"># set the location of the dictionary</span>
+<div class="viewcode-block" id="KeyList.setDict"><a class="viewcode-back" href="../source/Graphs.html#Graphs.KeyList.setDict">[docs]</a>    <span class="k">def</span> <span class="nf">setDict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">curdict</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dc</span> <span class="o">=</span> <span class="n">curdict</span></div>
+
+<div class="viewcode-block" id="KeyList.setupKeylist"><a class="viewcode-back" href="../source/Graphs.html#Graphs.KeyList.setupKeylist">[docs]</a>    <span class="k">def</span> <span class="nf">setupKeylist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keylist</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyList</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">keylist</span><span class="p">)</span></div>
+
+        <span class="c1"># recieve external parameters from panel</span>
+
+<div class="viewcode-block" id="KeyList.setParams"><a class="viewcode-back" href="../source/Graphs.html#Graphs.KeyList.setParams">[docs]</a>    <span class="k">def</span> <span class="nf">setParams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setDict</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
+
+        <span class="c1"># delete old keys, then load parameters from dictionary</span>
+
+<div class="viewcode-block" id="KeyList.updateKeylist"><a class="viewcode-back" href="../source/Graphs.html#Graphs.KeyList.updateKeylist">[docs]</a>    <span class="k">def</span> <span class="nf">updateKeylist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keylist</span><span class="p">):</span>
+        <span class="c1"># first remove old keys from local context.  Cleanliness reasons</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyList</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">delattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyList</span> <span class="o">=</span> <span class="n">keylist</span>  <span class="c1"># set to new keylist</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">getParameterValues</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setParameters</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="KeyList.getParameterValues"><a class="viewcode-back" href="../source/Graphs.html#Graphs.KeyList.getParameterValues">[docs]</a>    <span class="k">def</span> <span class="nf">getParameterValues</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dc</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyList</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dc</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>  <span class="c1"># set to value in dictionary</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dc</span><span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># set default value</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+                <span class="c1"># Load parameters in to object attributes</span>
+
+<div class="viewcode-block" id="KeyList.setParameters"><a class="viewcode-back" href="../source/Graphs.html#Graphs.KeyList.setParameters">[docs]</a>    <span class="k">def</span> <span class="nf">setParameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dc</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyList</span><span class="p">:</span>
+            <span class="n">dc</span><span class="p">[</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;P&quot;</span> <span class="o">+</span> <span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+            <span class="c1"># ensures local variables and parameters match</span>
+
+<div class="viewcode-block" id="KeyList.syncParameters"><a class="viewcode-back" href="../source/Graphs.html#Graphs.KeyList.syncParameters">[docs]</a>    <span class="k">def</span> <span class="nf">syncParameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">getParameterValues</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setParameters</span><span class="p">()</span></div></div>
+
+
+<span class="c1"># Subclass to make new control panels</span>
+<div class="viewcode-block" id="BaseControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.BaseControlPanel">[docs]</a><span class="k">class</span> <span class="nc">BaseControlPanel</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">,</span> <span class="n">KeyList</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">keylist</span><span class="o">=</span><span class="p">[[</span><span class="s2">&quot;axesType&quot;</span><span class="p">,</span> <span class="s2">&quot;Linear-Linear&quot;</span><span class="p">]]):</span>  <span class="c1"># remember to delete self at some point</span>
+        <span class="sd">&quot;&quot;&quot;Create the MainFrame.&quot;&quot;&quot;</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">FRAME_TOOL_WINDOW</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">STAY_ON_TOP</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">SYSTEM_MENU</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">CLOSE_BOX</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyList</span> <span class="o">=</span> <span class="n">keylist</span>  <span class="c1"># parameter name in dictionary + default value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stf</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="o">.</span><span class="n">arbGraphParameters</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetPosition</span><span class="p">((</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panel</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Panel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">DefaultPosition</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">DefaultSize</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateKeylist</span><span class="p">(</span><span class="n">keylist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syncParameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CLOSE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnQuit</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseControlPanel.OnQuit"><a class="viewcode-back" href="../source/Graphs.html#Graphs.BaseControlPanel.OnQuit">[docs]</a>    <span class="k">def</span> <span class="nf">OnQuit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setParameters</span><span class="p">()</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="p">,</span> <span class="n">CloseOptionsEvent</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="BaseControlPanel.broadcastRedraw"><a class="viewcode-back" href="../source/Graphs.html#Graphs.BaseControlPanel.broadcastRedraw">[docs]</a>    <span class="k">def</span> <span class="nf">broadcastRedraw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="p">,</span> <span class="n">RefreshGraphEvent</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="DefaultControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DefaultControlPanel">[docs]</a><span class="k">class</span> <span class="nc">DefaultControlPanel</span><span class="p">(</span><span class="n">BaseControlPanel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="n">BaseControlPanel</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+        <span class="n">vsizer1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SetupControls</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizer</span><span class="p">(</span><span class="n">vsizer1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetAutoLayout</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Fit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
+
+        <span class="c1"># The following methods should be overriden if inherited</span>
+
+<div class="viewcode-block" id="DefaultControlPanel.SetupControls"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DefaultControlPanel.SetupControls">[docs]</a>    <span class="k">def</span> <span class="nf">SetupControls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">vsizer1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+        <span class="n">hs1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">axesTypeList</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Choice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Linear-Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;Log-Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;Linear-Log&quot;</span><span class="p">,</span> <span class="s2">&quot;Log-Log&quot;</span><span class="p">],</span>
+                                        <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">CB_READONLY</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axesTypeList</span><span class="o">.</span><span class="n">SetStringSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PaxesType</span><span class="p">)</span>
+        <span class="n">hs1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axesTypeList</span><span class="p">)</span>
+
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">hs1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">axesTypeList</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CHOICE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnSelect</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">vsizer1</span></div>
+
+<div class="viewcode-block" id="DefaultControlPanel.OnSelect"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DefaultControlPanel.OnSelect">[docs]</a>    <span class="k">def</span> <span class="nf">OnSelect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="o">.</span><span class="n">arbGraphParameters</span><span class="p">[</span><span class="s2">&quot;axesType&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetString</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syncParameters</span><span class="p">()</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="p">,</span> <span class="n">RefreshGraphEvent</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="DrawOptions"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawOptions">[docs]</a><span class="k">class</span> <span class="nc">DrawOptions</span><span class="p">():</span>
+    <span class="n">defaultKeylist</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;axesType&quot;</span><span class="p">,</span> <span class="s2">&quot;Linear-Linear&quot;</span><span class="p">]]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axesType</span> <span class="o">=</span> <span class="s2">&quot;Linear-Linear&quot;</span>
+
+<div class="viewcode-block" id="DrawOptions.setAxesType"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawOptions.setAxesType">[docs]</a>    <span class="k">def</span> <span class="nf">setAxesType</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tl</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axesType</span> <span class="o">=</span> <span class="n">tl</span></div>
+
+<div class="viewcode-block" id="DrawOptions.updateAxes"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawOptions.updateAxes">[docs]</a>    <span class="k">def</span> <span class="nf">updateAxes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axesType</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">y</span> <span class="o">==</span> <span class="s2">&quot;Log&quot;</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">y</span> <span class="o">==</span> <span class="s2">&quot;Linear&quot;</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s2">&quot;Log&quot;</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="s2">&quot;Linear&quot;</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DrawOptions.updateAxes3"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawOptions.updateAxes3">[docs]</a>    <span class="k">def</span> <span class="nf">updateAxes3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">axesType</span><span class="p">):</span>
+        <span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">axesType</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">y</span> <span class="o">==</span> <span class="s2">&quot;Log&quot;</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">y</span> <span class="o">==</span> <span class="s2">&quot;Linear&quot;</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s2">&quot;Log&quot;</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="s2">&quot;Linear&quot;</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_xscale</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DrawOptions.makeControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawOptions.makeControlPanel">[docs]</a>    <span class="k">def</span> <span class="nf">makeControlPanel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parentWindow</span><span class="p">):</span>  <span class="c1"># Default options</span>
+        <span class="k">return</span> <span class="n">DefaultControlPanel</span><span class="p">(</span><span class="n">parentWindow</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DrawOptions.drawTime"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawOptions.drawTime">[docs]</a>    <span class="k">def</span> <span class="nf">drawTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;fp = dict(size=10, alpha=0.5)</span>
+<span class="sd">        _at = AnchoredText(&quot;Time: &quot;+str(self.simTime), loc=7, prop=fp)</span>
+<span class="sd">        _at.patch.set_boxstyle(&quot;round,pad=0.,rounding_size=0.2&quot;)</span>
+<span class="sd">        axes.add_artist(_at)&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simTime</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="s2">&quot;Time: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">simTime</span><span class="p">)</span> <span class="o">+</span> <span class="n">extra</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">),</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DrawOptions.scaleYAxis"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawOptions.scaleYAxis">[docs]</a>    <span class="k">def</span> <span class="nf">scaleYAxis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s2">&quot;ymin&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s2">&quot;ymax&quot;</span><span class="p">):</span>
+            <span class="n">ymin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;ymin&quot;</span><span class="p">]</span>
+            <span class="n">ymax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;ymax&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+        <span class="n">dmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span>
+        <span class="n">dmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dmin</span> <span class="o">&lt;</span> <span class="n">ymin</span><span class="p">:</span>
+            <span class="n">ymin</span> <span class="o">=</span> <span class="n">ymin</span> <span class="o">-</span> <span class="n">factor</span> <span class="o">*</span> <span class="p">(</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">ymin</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="k">if</span> <span class="n">dmax</span> <span class="o">&gt;</span> <span class="n">ymax</span><span class="p">:</span>
+            <span class="n">ymax</span> <span class="o">=</span> <span class="n">ymax</span> <span class="o">+</span> <span class="n">factor</span> <span class="o">*</span> <span class="p">(</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">ymin</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;ymin&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ymin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;ymax&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ymax</span></div></div>
+
+
+<div class="viewcode-block" id="DrawTrajectory"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawTrajectory">[docs]</a><span class="k">class</span> <span class="nc">DrawTrajectory</span><span class="p">(</span><span class="n">DrawOptions</span><span class="p">,</span> <span class="n">KeyList</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ydata</span><span class="p">):</span>
+        <span class="n">DrawOptions</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupKeylist</span><span class="p">(</span><span class="n">DrawOptions</span><span class="o">.</span><span class="n">defaultKeylist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="n">ydata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="s2">&quot;DRAWTRAJ&quot;</span>
+
+<div class="viewcode-block" id="DrawTrajectory.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawTrajectory.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syncParameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setAxesType</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PaxesType</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateAxes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+        <span class="c1"># axes.set_xlim(0,len(self.ydata)-1)</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">xlim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">xax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">xlim</span><span class="p">,</span> <span class="n">xlim</span><span class="p">,</span> <span class="n">num</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xax</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drawTime</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="DrawMultipleTrajectories"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawMultipleTrajectories">[docs]</a><span class="k">class</span> <span class="nc">DrawMultipleTrajectories</span><span class="p">(</span><span class="n">DrawOptions</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">itt</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">defaultplot</span><span class="p">,</span> <span class="n">graphoptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">DrawOptions</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">itt</span> <span class="o">=</span> <span class="n">itt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">t0</span> <span class="o">=</span> <span class="n">t0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="n">d1</span><span class="p">,</span><span class="n">d2</span><span class="p">,</span><span class="n">d3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="c1"># Check if default plot is not out of bounds, d2</span>
+        <span class="k">assert</span><span class="p">(</span> <span class="n">defaultplot</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">defaultplot</span> <span class="o">&lt;</span> <span class="n">d2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">whichplot</span> <span class="o">=</span> <span class="n">defaultplot</span>
+
+<div class="viewcode-block" id="DrawMultipleTrajectories.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawMultipleTrajectories.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="n">numpoints</span><span class="p">,</span> <span class="n">ts</span><span class="p">,</span> <span class="n">plotnum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">itt</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span> <span class="c1">#Must include at least 1 data point to draw</span>
+            <span class="k">return</span>
+        <span class="n">xax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t0</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">itt</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">itt</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">plotnum</span><span class="p">):</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xax</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">itt</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">whichplot</span><span class="p">,</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;smaller&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plottype</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;smaller&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Position&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drawTime</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span></div></div>
+
+
+
+<div class="viewcode-block" id="DrawElectronDensity"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawElectronDensity">[docs]</a><span class="k">class</span> <span class="nc">DrawElectronDensity</span><span class="p">(</span><span class="n">DrawOptions</span><span class="p">,</span> <span class="n">KeyList</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">nx</span><span class="p">):</span>
+        <span class="n">DrawOptions</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupKeylist</span><span class="p">(</span><span class="n">DrawOptions</span><span class="o">.</span><span class="n">defaultKeylist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="n">ydata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="s2">&quot;DRAWDENSE&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nx</span> <span class="o">=</span> <span class="n">nx</span>
+
+<div class="viewcode-block" id="DrawElectronDensity.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawElectronDensity.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syncParameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setAxesType</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PaxesType</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateAxes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+        <span class="n">xax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">)</span>
+        <span class="nb">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xax</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># self.scaleYAxis(fig, axes, self.ydata[0:self.nx-1], 2.0)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drawTime</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span></div></div>
+
+        <span class="c1"># well defined axis here</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This plot draws a simple line plot</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="DrawSimple"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawSimple">[docs]</a><span class="k">class</span> <span class="nc">DrawSimple</span><span class="p">(</span><span class="n">DrawOptions</span><span class="p">,</span> <span class="n">KeyList</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">graphoptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">DrawOptions</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupKeylist</span><span class="p">(</span><span class="n">DrawOptions</span><span class="o">.</span><span class="n">defaultKeylist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphoptions</span> <span class="o">=</span> <span class="n">graphoptions</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">([]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nl</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nl</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nl</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">xdata</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="s2">&quot;You the 0th entry in name must be the overlay name.  On other words name is 1 element larger than xdata!&quot;</span><span class="p">)</span>
+                <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">([]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="p">[</span><span class="n">ydata</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="n">ydata</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">xdata</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">([]):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xdata</span> <span class="o">=</span> <span class="p">[</span><span class="n">xdata</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xdata</span> <span class="o">=</span> <span class="n">xdata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+
+<div class="viewcode-block" id="DrawSimple.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawSimple.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;ylimits&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">:</span>    <span class="c1">#Set default limits on y axis</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s1">&#39;ylimits&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syncParameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setAxesType</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PaxesType</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ydata</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">):</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xdata</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ydata</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nl</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xdata</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">xdata</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="c1">#Set limits on Y data to only move on powers of 2</span>
+            <span class="p">(</span><span class="n">oldbottom</span><span class="p">,</span> <span class="n">oldtop</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s1">&#39;ylimits&#39;</span><span class="p">]</span>
+            <span class="p">(</span><span class="n">bottom</span><span class="p">,</span> <span class="n">top</span><span class="p">)</span> <span class="o">=</span> <span class="n">axisPowerOfTwo</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span>
+            <span class="n">ylim</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">bottom</span><span class="p">,</span> <span class="n">oldbottom</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">top</span><span class="p">,</span> <span class="n">oldtop</span><span class="p">))</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ylim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s1">&#39;ylimits&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ylim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateAxes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+        <span class="n">leg</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">leg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">leg</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">),</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;smaller&quot;</span><span class="p">)</span></div></div>
+        <span class="c1"># self.drawTime(fig, axes, self.text )</span>
+        <span class="c1"># well defined axis here</span>
+
+
+<div class="viewcode-block" id="DrawScaler"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawScaler">[docs]</a><span class="k">class</span> <span class="nc">DrawScaler</span><span class="p">(</span><span class="n">DrawOptions</span><span class="p">,</span> <span class="n">KeyList</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="n">DrawOptions</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupKeylist</span><span class="p">(</span><span class="n">DrawOptions</span><span class="o">.</span><span class="n">defaultKeylist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="n">ydata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nx</span> <span class="o">=</span> <span class="n">nx</span>
+
+<div class="viewcode-block" id="DrawScaler.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawScaler.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syncParameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setAxesType</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PaxesType</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateAxes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+        <span class="n">xax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xax</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">nx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drawTime</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span></div></div>
+
+        <span class="c1"># well defined axis here</span>
+
+
+<div class="viewcode-block" id="DrawVelocity"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawVelocity">[docs]</a><span class="k">class</span> <span class="nc">DrawVelocity</span><span class="p">(</span><span class="n">DrawOptions</span><span class="p">,</span> <span class="n">KeyList</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">simtime</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fvm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">DrawOptions</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupKeylist</span><span class="p">(</span><span class="n">DrawOptions</span><span class="o">.</span><span class="n">defaultKeylist</span><span class="p">)</span>
+        <span class="c1"># self.ydata = [ydata]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">h</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ydata</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">):</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Labels must be the same length as the columns in ydata!</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="s2">&quot;DRAWVELOCITY&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simTime</span> <span class="o">=</span> <span class="n">simtime</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="o">-</span><span class="n">vmax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xax</span> <span class="o">=</span> <span class="n">NP</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">vmin</span><span class="p">,</span> <span class="n">vmax</span><span class="p">,</span> <span class="n">NP</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">:]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fvm</span> <span class="o">=</span> <span class="n">fvm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+
+<div class="viewcode-block" id="DrawVelocity.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawVelocity.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">syncParameters</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setAxesType</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PaxesType</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">PaxesType</span> <span class="o">=</span> <span class="s2">&quot;Linear-Linear&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateAxes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+        <span class="n">pidx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ydata</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">):</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xax</span><span class="p">,</span> <span class="n">ydata</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="s1">&#39;-x&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="c1">#Display x axis label with moment info</span>
+        <span class="n">extText</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">dimlabels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span><span class="s2">&quot;y&quot;</span><span class="p">,</span><span class="s2">&quot;z&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fvm</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fvm</span><span class="p">):</span> <span class="c1"># Iterate through dimensions</span>
+                <span class="n">extText</span> <span class="o">+=</span> <span class="n">dimlabels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;: VD=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">extText</span> <span class="o">+=</span> <span class="s2">&quot;   VTH=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Velocity&quot;</span>
+           <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">extText</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drawTime</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+        <span class="n">leg</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">leg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">leg</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;smaller&quot;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">rect</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.95</span><span class="p">])</span></div></div>
+
+<div class="viewcode-block" id="DrawPotential"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawPotential">[docs]</a><span class="k">class</span> <span class="nc">DrawPotential</span><span class="p">(</span><span class="n">DrawOptions</span><span class="p">,</span> <span class="n">KeyList</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ydata</span><span class="p">):</span>
+        <span class="n">DrawOptions</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupKeylist</span><span class="p">(</span><span class="n">DrawOptions</span><span class="o">.</span><span class="n">defaultKeylist</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ydata</span> <span class="o">=</span> <span class="n">ydata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="s2">&quot;DRAWPOT&quot;</span>
+
+<div class="viewcode-block" id="DrawPotential.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawPotential.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syncParameters</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setAxesType</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PaxesType</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateAxes</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ydata</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drawTime</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Potential vs X&quot;</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;smaller&quot;</span><span class="p">)</span></div></div>
+
+        <span class="c1"># well defined axis here</span>
+
+
+<div class="viewcode-block" id="DrawEnergyControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawEnergyControlPanel">[docs]</a><span class="k">class</span> <span class="nc">DrawEnergyControlPanel</span><span class="p">(</span><span class="n">BaseControlPanel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">pv</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="n">BaseControlPanel</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span> <span class="o">=</span> <span class="n">pv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+        <span class="n">vsizer1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SetupControls</span><span class="p">()</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">SetSizeHints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizer</span><span class="p">(</span><span class="n">vsizer1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetAutoLayout</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
+
+        <span class="c1"># The following methods should be overriden if inherited</span>
+
+    <span class="k">def</span> <span class="nf">_buildOptionsList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;EnergyTypes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iteritems</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">items</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;on&quot;</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="DrawEnergyControlPanel.SetupControls"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawEnergyControlPanel.SetupControls">[docs]</a>    <span class="k">def</span> <span class="nf">SetupControls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">vsizer1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+        <span class="n">hs1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+
+        <span class="c1"># To offset energy or not</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">offset_choices</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Offset Energies&quot;</span><span class="p">,</span> <span class="s2">&quot;Magnitude&quot;</span><span class="p">]</span>
+        <span class="n">cb</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Choice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">offset_choices</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">CB_READONLY</span><span class="p">)</span>
+        <span class="n">cb</span><span class="o">.</span><span class="n">SetStringSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">offset_choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;EnergyOffset&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset_choices</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">hs1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">cb</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">)</span>
+        <span class="n">cb</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CHOICE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnSelectOffset</span><span class="p">)</span>
+
+
+        <span class="c1">#Select axis type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axesTypeList</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Choice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Linear-Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;Log-Linear&quot;</span><span class="p">,</span> <span class="s2">&quot;Linear-Log&quot;</span><span class="p">,</span> <span class="s2">&quot;Log-Log&quot;</span><span class="p">],</span>
+                                        <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">CB_READONLY</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axesTypeList</span><span class="o">.</span><span class="n">SetStringSelection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;Axis-Type&quot;</span><span class="p">])</span>
+        <span class="n">hs1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">axesTypeList</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">)</span>
+
+        <span class="c1"># List to store the dynamically generate combo boxes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energyTypeList</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Generate combo boxes</span>
+        <span class="n">augmentedLabels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Off&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="c1">#Create list of possible options</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">:</span>
+            <span class="n">item_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;EnergyTypes&quot;</span><span class="p">][</span><span class="n">item</span><span class="p">]</span>
+            <span class="n">is_on</span> <span class="o">=</span> <span class="n">item_data</span><span class="p">[</span><span class="s2">&quot;on&quot;</span><span class="p">]</span>
+            <span class="n">etl</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Choice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">augmentedLabels</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">CB_READONLY</span><span class="p">)</span>
+            <span class="n">selection_value</span> <span class="o">=</span> <span class="n">item</span> <span class="k">if</span> <span class="n">is_on</span> <span class="k">else</span> <span class="s2">&quot;Off&quot;</span>
+            <span class="n">etl</span><span class="o">.</span><span class="n">SetStringSelection</span><span class="p">(</span><span class="n">selection_value</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">energyTypeList</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">etl</span><span class="p">,</span> <span class="n">selection_value</span><span class="p">])</span>  <span class="c1"># Append tuple with the selected value of the box</span>
+            <span class="n">etl</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CHOICE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnSelectWK</span><span class="p">)</span>
+            <span class="n">hs1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">etl</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALL</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">hs1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axesTypeList</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CHOICE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnSelect</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vsizer1</span></div>
+
+<div class="viewcode-block" id="DrawEnergyControlPanel.OnSelect"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawEnergyControlPanel.OnSelect">[docs]</a>    <span class="k">def</span> <span class="nf">OnSelect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;Axis-Type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetString</span><span class="p">()</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="p">,</span> <span class="n">RefreshGraphEvent</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="DrawEnergyControlPanel.OnSelectWK"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawEnergyControlPanel.OnSelectWK">[docs]</a>    <span class="k">def</span> <span class="nf">OnSelectWK</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">caller</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetEventObject</span><span class="p">()</span>
+        <span class="n">callerid</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">item_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;EnergyTypes&quot;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">etuple</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">energyTypeList</span><span class="p">):</span>
+            <span class="n">e</span><span class="p">,</span><span class="n">last_value</span> <span class="o">=</span> <span class="n">etuple</span>
+            <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">GetId</span><span class="p">()</span> <span class="o">==</span> <span class="n">caller</span><span class="o">.</span><span class="n">GetId</span><span class="p">():</span>
+                <span class="n">callerid</span> <span class="o">=</span> <span class="n">i</span>  <span class="c1"># Off has position 0</span>
+                <span class="n">graph_name</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetString</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">graph_name</span> <span class="o">==</span> <span class="s2">&quot;Off&quot;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">last_value</span> <span class="o">!=</span> <span class="s2">&quot;Off&quot;</span><span class="p">:</span> <span class="c1">#Not already Off</span>
+                        <span class="n">item_data</span><span class="p">[</span><span class="n">last_value</span><span class="p">][</span><span class="s2">&quot;on&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># Set shared state to Off</span>
+                        <span class="n">etuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Off&quot;</span>    <span class="c1"># Update menu state</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">item_data</span><span class="p">[</span><span class="n">graph_name</span><span class="p">][</span><span class="s2">&quot;on&quot;</span><span class="p">]:</span> <span class="c1"># Already On</span>
+                        <span class="n">e</span><span class="o">.</span><span class="n">SetStringSelection</span><span class="p">(</span><span class="n">last_value</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span> <span class="c1"># New selection is not on</span>
+                        <span class="k">if</span> <span class="n">last_value</span> <span class="o">!=</span> <span class="s2">&quot;Off&quot;</span><span class="p">:</span> <span class="c1"># Turn Off previous plot</span>
+                            <span class="n">item_data</span><span class="p">[</span><span class="n">last_value</span><span class="p">][</span><span class="s2">&quot;on&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">item_data</span><span class="p">[</span><span class="n">graph_name</span><span class="p">][</span><span class="s2">&quot;on&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">etuple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">graph_name</span>
+                <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="p">,</span> <span class="n">RefreshGraphEvent</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="DrawEnergyControlPanel.OnSelectOffset"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawEnergyControlPanel.OnSelectOffset">[docs]</a>    <span class="k">def</span> <span class="nf">OnSelectOffset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">selection</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetString</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">selection</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset_choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;EnergyOffset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;EnergyOffset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="p">,</span> <span class="n">RefreshGraphEvent</span><span class="p">())</span></div></div>
+
+<span class="c1">#Finds the nearest power of 2, greater than or equal to x</span>
+<span class="k">def</span> <span class="nf">_upperpowerof2</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ox</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">lessThanOne</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">x</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">lessThanOne</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">lessThanOne</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">**</span><span class="n">c</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">**</span><span class="n">c</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">result</span> <span class="o">&gt;=</span> <span class="n">ox</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+<span class="c1"># Finds the nearest power of 2, less than or equal to x</span>
+<span class="k">def</span> <span class="nf">_lowerpowerof2</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="n">ox</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">lessThanOne</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">x</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">lessThanOne</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">c</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">lessThanOne</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">**</span><span class="n">c</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">**</span><span class="n">c</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">result</span> <span class="o">&lt;=</span> <span class="n">ox</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+<div class="viewcode-block" id="upperpowerof2"><a class="viewcode-back" href="../source/Graphs.html#Graphs.upperpowerof2">[docs]</a><span class="k">def</span> <span class="nf">upperpowerof2</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">_lowerpowerof2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_upperpowerof2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="lowerpowerof2"><a class="viewcode-back" href="../source/Graphs.html#Graphs.lowerpowerof2">[docs]</a><span class="k">def</span> <span class="nf">lowerpowerof2</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="o">*</span><span class="n">_upperpowerof2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_lowerpowerof2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="axisPowerOfTwo"><a class="viewcode-back" href="../source/Graphs.html#Graphs.axisPowerOfTwo">[docs]</a><span class="k">def</span> <span class="nf">axisPowerOfTwo</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">minv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">maxv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="p">(</span><span class="n">lowerpowerof2</span><span class="p">(</span><span class="n">minv</span><span class="p">),</span> <span class="n">upperpowerof2</span><span class="p">(</span><span class="n">maxv</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">OverflowError</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="p">(</span><span class="n">minv</span><span class="p">,</span> <span class="n">maxv</span><span class="p">)</span>
+        <span class="n">rv</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rv</span></div>
+
+
+<div class="viewcode-block" id="DrawEnergy"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawEnergy">[docs]</a><span class="k">class</span> <span class="nc">DrawEnergy</span><span class="p">(</span><span class="n">DrawOptions</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">itw</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">timeindex</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edata</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">itw</span> <span class="o">=</span> <span class="n">itw</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="s2">&quot;ENERGY&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeindex</span> <span class="o">=</span> <span class="n">timeindex</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="nb">print</span> <span class="s2">&quot;Length of lables(&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">),</span> <span class="s2">&quot;) is not equal to length of energy data(&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="s2">&quot;)&quot;</span>
+            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+
+<div class="viewcode-block" id="DrawEnergy.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawEnergy.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="c1"># Create the data model for communication with options,</span>
+        <span class="c1"># if it does not exist in _PV</span>
+        <span class="k">if</span> <span class="s2">&quot;EnergyTypes&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;EnergyTypes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:{</span><span class="s2">&quot;on&quot;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">:</span><span class="n">i</span><span class="p">}</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;EnergyTypes&quot;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="s2">&quot;on&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="s2">&quot;EnergyOffset&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;EnergyOffset&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># Check to see if Axis-Type selector exists.  Default to Linear scale</span>
+        <span class="k">if</span> <span class="s2">&quot;Axis-Type&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;Axis-Type&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Linear-Linear&quot;</span>
+        <span class="c1"># Use set axis types</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">updateAxes3</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;Axis-Type&quot;</span><span class="p">])</span>
+        <span class="c1"># Draw the plots that are on</span>
+        <span class="n">ax_top</span> <span class="o">=</span> <span class="kc">None</span><span class="p">;</span>
+        <span class="n">ax_bot</span> <span class="o">=</span> <span class="kc">None</span><span class="p">;</span>
+        <span class="c1">#Plot all enabled plots</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;EnergyTypes&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;on&quot;</span><span class="p">]:</span> <span class="c1">#Plot if state is on</span>
+                <span class="n">data_index</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">&quot;index&quot;</span><span class="p">]</span>
+                <span class="n">xdata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">itw</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">timeindex</span><span class="p">]</span>
+                <span class="n">ydata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edata</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">timeindex</span><span class="p">,</span> <span class="n">data_index</span><span class="p">]</span>
+                <span class="c1"># Offset energy from original value?</span>
+                <span class="n">yoffset</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ydata</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;EnergyOffset&quot;</span><span class="p">]:</span>
+                	<span class="n">yoffset</span> <span class="o">=</span> <span class="n">ydata</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xdata</span><span class="p">,</span> <span class="n">ydata</span> <span class="o">-</span> <span class="n">yoffset</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">[</span><span class="n">data_index</span><span class="p">])</span>
+                <span class="c1"># Calculate y-axis limits</span>
+                <span class="p">[</span><span class="n">bottom</span><span class="p">,</span> <span class="n">top</span><span class="p">]</span> <span class="o">=</span> <span class="n">axisPowerOfTwo</span><span class="p">(</span><span class="n">ydata</span> <span class="o">-</span> <span class="n">yoffset</span><span class="p">)</span>
+                <span class="n">ax_top</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">ax_top</span><span class="p">,</span> <span class="n">top</span><span class="p">)</span>
+                <span class="n">ax_bot</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ax_bot</span><span class="p">,</span> <span class="n">bottom</span><span class="p">)</span> <span class="k">if</span> <span class="n">ax_bot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">bottom</span>
+        <span class="c1"># Set the limits if valid values are specified</span>
+        <span class="k">if</span> <span class="n">ax_top</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ax_bot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="n">ax_bot</span><span class="p">,</span> <span class="n">ax_top</span><span class="p">])</span>
+        <span class="c1"># Draw titles and time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drawTime</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+        <span class="n">leg</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">leg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">leg</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Time&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Energy&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeindex</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">itw</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">timeindex</span><span class="p">])])</span>
+        <span class="c1">#Set title</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;smaller&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DrawEnergy.makeControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawEnergy.makeControlPanel">[docs]</a>    <span class="k">def</span> <span class="nf">makeControlPanel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parentWindow</span><span class="p">):</span>  <span class="c1"># Default options</span>
+        <span class="k">return</span> <span class="n">DrawEnergyControlPanel</span><span class="p">(</span><span class="n">parentWindow</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DrawPhase"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawPhase">[docs]</a><span class="k">class</span> <span class="nc">DrawPhase</span><span class="p">(</span><span class="n">DrawOptions</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">twophase</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plotlabels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Position&quot;</span><span class="p">,</span> <span class="s2">&quot;Velocity&quot;</span><span class="p">]):</span>
+        <span class="c1"># DrawOptions.__init__(self)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vel</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">twophase</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">twophase</span><span class="p">]</span> <span class="c1">#particle labels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tp</span> <span class="o">=</span> <span class="n">twophase</span> <span class="c1">#Draw particles past twophasedivide a different color</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="s2">&quot;DRAWPHASE&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plabels</span> <span class="o">=</span> <span class="n">plotlabels</span>
+
+<div class="viewcode-block" id="DrawPhase.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawPhase.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="n">la</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+        <span class="c1"># self.updateAxes(fig,axes)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">NP</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">),</span> <span class="n">NP</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tp</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">tp</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">tp</span> <span class="o">&gt;</span> <span class="n">la</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vel</span><span class="p">,</span> <span class="s1">&#39;,b&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1">#Color beam particles red</span>
+            <span class="c1">#This is not efficient.</span>
+            <span class="n">npxb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lbl</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="c1"># Data for blue points</span>
+            <span class="n">bluesp</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># blue stack pointer</span>
+            <span class="n">bluevel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">la</span> <span class="o">-</span> <span class="n">npxb</span><span class="p">)</span>
+            <span class="n">bluepos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">la</span> <span class="o">-</span> <span class="n">npxb</span><span class="p">)</span>
+            <span class="c1"># Data for red points</span>
+            <span class="n">redsp</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># red stack pointer</span>
+            <span class="n">redvel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">npxb</span><span class="p">)</span>
+            <span class="n">redpos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">npxb</span><span class="p">)</span>
+            <span class="c1"># Categorize data in to red or blue</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">la</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lbl</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># Marked particles are red</span>
+                    <span class="n">redvel</span><span class="p">[</span><span class="n">redsp</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">redpos</span><span class="p">[</span><span class="n">redsp</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">redsp</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span> <span class="c1"># Otherwise they are blue</span>
+                    <span class="n">bluevel</span><span class="p">[</span><span class="n">bluesp</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">bluepos</span><span class="p">[</span><span class="n">bluesp</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="n">bluesp</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="c1"># Plot the two different sets of particles</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">redpos</span><span class="p">,</span> <span class="n">redvel</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">)</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bluepos</span><span class="p">,</span> <span class="n">bluevel</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">0.5</span><span class="p">),</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plabels</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plabels</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">drawTime</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+        <span class="c1">#Set title</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;smaller&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DrawFastPhase"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawFastPhase">[docs]</a><span class="k">class</span> <span class="nc">DrawFastPhase</span><span class="p">(</span><span class="n">DrawOptions</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">h</span><span class="p">):</span>
+        <span class="c1"># DrawOptions.__init__(self)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vel</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pos</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">h</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="s2">&quot;DRAWFASTPHASE&quot;</span>
+
+<div class="viewcode-block" id="DrawFastPhase.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawFastPhase.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pos</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vel</span>
+        <span class="c1"># axes.pcolormesh(self.pos, self.vel, self.height)</span>
+
+        <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rot90</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+        <span class="n">H</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">H</span><span class="p">)</span>
+
+        <span class="c1"># reset figure</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">delaxes</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+        <span class="n">mim</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">pcolor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cm</span><span class="o">.</span><span class="n">hot</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">mim</span><span class="p">)</span>
+        <span class="c1"># set the limits of the plot to the limits of the data</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">axis</span><span class="p">([</span><span class="n">x</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()])</span>
+
+        <span class="c1"># axes.imshow(self.height, interpolation=&#39;nearest&#39;, origin=&#39;low&#39;,extent=[self.pos[0], self.pos[-1], self.vel[0], self.vel[-1]])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">drawTime</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">axes</span>  <span class="c1"># must return axes if you made new axes</span></div></div>
+
+
+<div class="viewcode-block" id="PhiControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.PhiControlPanel">[docs]</a><span class="k">class</span> <span class="nc">PhiControlPanel</span><span class="p">(</span><span class="n">BaseControlPanel</span><span class="p">):</span>
+    <span class="n">defaultKeylist</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;OmegaMax&quot;</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;FrameMax&quot;</span><span class="p">,</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">8</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;FrameBound&quot;</span><span class="p">,</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">8</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="s2">&quot;LowerBound&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">PV</span><span class="p">):</span>  <span class="c1"># remember to delete self at some point</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span> <span class="o">=</span> <span class="n">PV</span>
+        <span class="n">BaseControlPanel</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">PhiControlPanel</span><span class="o">.</span><span class="n">defaultKeylist</span><span class="p">)</span>
+        <span class="n">vsizer1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SetupControls</span><span class="p">()</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">SetSizeHints</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetSizer</span><span class="p">(</span><span class="n">vsizer1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Show</span><span class="p">()</span>
+
+<div class="viewcode-block" id="PhiControlPanel.SetupControls"><a class="viewcode-back" href="../source/Graphs.html#Graphs.PhiControlPanel.SetupControls">[docs]</a>    <span class="k">def</span> <span class="nf">SetupControls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">vsizer1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+        <span class="n">hs1</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="n">hs2</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="n">hs3</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+        <span class="c1"># hs4 = wx.BoxSizer(orient=wx.HORIZONTAL)</span>
+
+        <span class="c1"># Maximum Omega Slider</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">omegaMinVal</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panel</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">90</span><span class="p">))</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panel</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Maximum Omega&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">90</span><span class="p">))</span>
+        <span class="n">sld</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Slider</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panel</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">POmegaMax</span><span class="p">,</span> <span class="n">minValue</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">maxValue</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">250</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                        <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">SL_HORIZONTAL</span><span class="p">)</span>
+        <span class="n">hs1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+        <span class="n">hs1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">sld</span><span class="p">)</span>
+        <span class="n">hs1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">omegaMinVal</span><span class="p">)</span>
+        <span class="n">sld</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_SCROLL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnMaxOmegaScroll</span><span class="p">)</span>
+        <span class="n">sld</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_SCROLL_CHANGED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnSliderRelease</span><span class="p">)</span>
+
+        <span class="c1"># Frame Size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxFrameVal</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panel</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">90</span><span class="p">))</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">StaticText</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panel</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Frame Size&#39;</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">90</span><span class="p">))</span>
+        <span class="n">sld</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Slider</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panel</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">PFrameMax</span><span class="p">,</span> <span class="n">minValue</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">maxValue</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">PFrameBound</span><span class="p">,</span> <span class="n">pos</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span>
+                        <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">250</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">SL_HORIZONTAL</span><span class="p">)</span>
+        <span class="n">hs2</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+        <span class="n">hs2</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">sld</span><span class="p">)</span>
+        <span class="n">hs2</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxFrameVal</span><span class="p">)</span>
+        <span class="n">sld</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_SCROLL</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnMaxFrameScroll</span><span class="p">)</span>
+        <span class="n">sld</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_SCROLL_CHANGED</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnSliderRelease</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeDir</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">panel</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Positive Omega&quot;</span><span class="p">,</span> <span class="s2">&quot;Negative Omega&quot;</span><span class="p">],</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">CB_READONLY</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;DISP_OMD&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timeDir</span><span class="o">.</span><span class="n">SetStringSelection</span><span class="p">(</span><span class="s2">&quot;Positive Omega&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">timeDir</span><span class="o">.</span><span class="n">SetStringSelection</span><span class="p">(</span><span class="s2">&quot;Negative Omega&quot;</span><span class="p">)</span>
+        <span class="n">hs3</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timeDir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeDir</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CHOICE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnOmegaSelect</span><span class="p">)</span>
+
+        <span class="c1"># Lower Bound</span>
+        <span class="sd">&quot;&quot;&quot;self.lbVal = wx.StaticText(self.panel, label=&quot;&quot;, pos=(20, 90))</span>
+<span class="sd">        txt = wx.StaticText(self.panel, label=&#39;Frame Start&#39;, pos=(20, 90))</span>
+<span class="sd">        sld = wx.Slider(self.panel, value=self.PLowerBound, minValue=-1, maxValue=1000, pos=(20, 20), size=(250, -1), style=wx.SL_HORIZONTAL)</span>
+<span class="sd">        hs3.Add(txt)</span>
+<span class="sd">        hs3.Add(sld)</span>
+<span class="sd">        hs3.Add(self.lbVal)</span>
+<span class="sd">        sld.Bind(wx.EVT_SCROLL, self.OnLBScroll)</span>
+<span class="sd">        sld.Bind(wx.EVT_SCROLL_CHANGED, self.OnSliderRelease)&quot;&quot;&quot;</span>
+
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">hs1</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">hs2</span><span class="p">)</span>
+        <span class="n">vsizer1</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">hs3</span><span class="p">)</span>
+        <span class="c1"># vsizer1.Add(hs4)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setOmegaLabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">POmegaMax</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setFrameLabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">PFrameMax</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">vsizer1</span></div>
+
+<div class="viewcode-block" id="PhiControlPanel.setOmegaLabel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.PhiControlPanel.setOmegaLabel">[docs]</a>    <span class="k">def</span> <span class="nf">setOmegaLabel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">POmegaMax</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">omegaMinVal</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PhiControlPanel.OnMaxOmegaScroll"><a class="viewcode-back" href="../source/Graphs.html#Graphs.PhiControlPanel.OnMaxOmegaScroll">[docs]</a>    <span class="k">def</span> <span class="nf">OnMaxOmegaScroll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetEventObject</span><span class="p">()</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setOmegaLabel</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setParameters</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PhiControlPanel.setFrameLabel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.PhiControlPanel.setFrameLabel">[docs]</a>    <span class="k">def</span> <span class="nf">setFrameLabel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">PFrameBound</span><span class="p">:</span>
+            <span class="n">dlabel</span> <span class="o">=</span> <span class="s2">&quot;All&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dlabel</span> <span class="o">=</span> <span class="n">val</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxFrameVal</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">dlabel</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PFrameMax</span> <span class="o">=</span> <span class="n">val</span></div>
+
+<div class="viewcode-block" id="PhiControlPanel.OnMaxFrameScroll"><a class="viewcode-back" href="../source/Graphs.html#Graphs.PhiControlPanel.OnMaxFrameScroll">[docs]</a>    <span class="k">def</span> <span class="nf">OnMaxFrameScroll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetEventObject</span><span class="p">()</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setFrameLabel</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setParameters</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PhiControlPanel.OnLBScroll"><a class="viewcode-back" href="../source/Graphs.html#Graphs.PhiControlPanel.OnLBScroll">[docs]</a>    <span class="k">def</span> <span class="nf">OnLBScroll</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">GetEventObject</span><span class="p">()</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">GetValue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">PLowerBound</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">if</span> <span class="n">val</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbVal</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="s2">&quot;End&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbVal</span><span class="o">.</span><span class="n">SetLabel</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setParameters</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PhiControlPanel.OnSliderRelease"><a class="viewcode-back" href="../source/Graphs.html#Graphs.PhiControlPanel.OnSliderRelease">[docs]</a>    <span class="k">def</span> <span class="nf">OnSliderRelease</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">broadcastRedraw</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PhiControlPanel.OnOmegaSelect"><a class="viewcode-back" href="../source/Graphs.html#Graphs.PhiControlPanel.OnOmegaSelect">[docs]</a>    <span class="k">def</span> <span class="nf">OnOmegaSelect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">GetString</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Positive Omega&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;DISP_OMD&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;DISP_OMD&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+        <span class="nb">print</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;DISP_OMD&quot;</span><span class="p">]</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="p">,</span> <span class="n">RefreshGraphEvent</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="DrawPhi"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawPhi">[docs]</a><span class="k">class</span> <span class="nc">DrawPhi</span><span class="p">(</span><span class="n">KeyList</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">omn</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phikw_time</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phikw</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phikw_dta</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="s2">&quot;DRAWPHI&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupKeylist</span><span class="p">(</span><span class="n">PhiControlPanel</span><span class="o">.</span><span class="n">defaultKeylist</span><span class="p">)</span>  <span class="c1"># This specifies the defaults</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">omegaN</span> <span class="o">=</span> <span class="n">omn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+
+<div class="viewcode-block" id="DrawPhi.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawPhi.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">syncParameters</span><span class="p">()</span>  <span class="c1"># This syncronized the parameters for the plot</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phikw</span><span class="p">)</span>
+        <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">fres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">omegaN</span><span class="p">,</span> <span class="n">k</span><span class="p">))</span>
+        <span class="c1"># Find frame bounds</span>
+        <span class="n">lb</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ub</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phikw_time</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">PFrameMax</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PFrameBound</span><span class="p">:</span>  <span class="c1"># A frame is specified</span>
+            <span class="n">lb</span> <span class="o">=</span> <span class="n">ub</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">PFrameMax</span>
+            <span class="k">if</span> <span class="n">lb</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s2">&quot;DISP_OMD&quot;</span><span class="p">):</span>  <span class="c1"># Check if I should do positive or negative omega</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;DISP_OMD&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phikw_time</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">phikw_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phikw_time</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">res</span><span class="p">,</span> <span class="n">wax</span> <span class="o">=</span> <span class="n">myFft</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phikw_time</span><span class="p">[</span><span class="n">lb</span><span class="p">:</span><span class="n">ub</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s2">&quot;DISP_OMD&quot;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">lb</span><span class="p">:</span><span class="n">ub</span><span class="p">,</span> <span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">POmegaMax</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">omegaN</span><span class="p">)</span>
+            <span class="n">fres</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span>
+
+            <span class="c1"># reset figure</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">delaxes</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+
+        <span class="c1"># pkw, wax = ftPhikw(self.phikw_time, self.phikw, 0.2, 2.0, 10)</span>
+        <span class="n">mim</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">fres</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cm</span><span class="o">.</span><span class="n">rainbow_r</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                          <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">POmegaMax</span><span class="p">),</span> <span class="n">norm</span><span class="o">=</span><span class="n">LogNorm</span><span class="p">(),</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">mim</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$k$&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\omega$&quot;</span><span class="p">)</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+            <span class="s2">&quot;Time Slice: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phikw_time</span><span class="p">[</span><span class="n">lb</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; to &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">phikw_time</span><span class="p">[</span><span class="n">ub</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">),</span>
+            <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">),</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">)</span>
+
+        <span class="c1">#Set title</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;smaller&quot;</span><span class="p">)</span>
+        <span class="c1"># If you crearted new axes, return</span>
+        <span class="k">return</span> <span class="n">axes</span></div>
+
+<div class="viewcode-block" id="DrawPhi.makeControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawPhi.makeControlPanel">[docs]</a>    <span class="k">def</span> <span class="nf">makeControlPanel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parentWindow</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">PhiControlPanel</span><span class="p">(</span><span class="n">parentWindow</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DrawSimpleImage"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawSimpleImage">[docs]</a><span class="k">class</span> <span class="nc">DrawSimpleImage</span><span class="p">(</span><span class="n">KeyList</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">labl</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">],</span> <span class="n">extent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ticks_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="s1">&#39;Log&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">img</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">labl</span> <span class="o">=</span> <span class="n">labl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extent</span> <span class="o">=</span> <span class="n">extent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ticks_scale</span> <span class="o">=</span> <span class="n">ticks_scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span>
+
+<div class="viewcode-block" id="DrawSimpleImage.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawSimpleImage.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">)</span>
+
+        <span class="c1"># reset figure</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">delaxes</span><span class="p">(</span><span class="n">axes</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+        <span class="n">axes</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="o">==</span><span class="s1">&#39;Log&#39;</span><span class="p">:</span>
+            <span class="n">normalization</span> <span class="o">=</span> <span class="n">LogNorm</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">normalization</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">mim</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cm</span><span class="o">.</span><span class="n">rainbow</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                                  <span class="n">norm</span><span class="o">=</span><span class="n">normalization</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">)</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">mim</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">mim</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cm</span><span class="o">.</span><span class="n">rainbow</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+                              <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">)</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">mim</span><span class="p">)</span>
+
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labl</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">labl</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ticks_scale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">axes</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ticks_scale</span><span class="o">*</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">axes</span><span class="o">.</span><span class="n">get_xticks</span><span class="p">()])</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">),</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;smaller&quot;</span><span class="p">)</span>
+
+        <span class="c1"># If you crearted new axes, return</span>
+        <span class="k">return</span> <span class="n">axes</span></div>
+
+<div class="viewcode-block" id="DrawSimpleImage.makeControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawSimpleImage.makeControlPanel">[docs]</a>    <span class="k">def</span> <span class="nf">makeControlPanel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parentWindow</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

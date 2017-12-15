@@ -1,0 +1,167 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>GraphicsInterface &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for GraphicsInterface</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+
+
+<div class="viewcode-block" id="GraphicsInterface"><a class="viewcode-back" href="../source/GraphicsInterface.html#GraphicsInterface.GraphicsInterface">[docs]</a><span class="k">class</span> <span class="nc">GraphicsInterface</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pc</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pc</span> <span class="o">=</span> <span class="n">pc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="mi">1</span>
+
+<div class="viewcode-block" id="GraphicsInterface.dscaler1"><a class="viewcode-back" href="../source/GraphicsInterface.html#GraphicsInterface.GraphicsInterface.dscaler1">[docs]</a>    <span class="k">def</span> <span class="nf">dscaler1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">itime</span><span class="p">,</span> <span class="n">isc</span><span class="p">,</span> <span class="n">ist</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">irc</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">early</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        ! displays 1d scalar field in real space</span>
+<span class="sd">        ! f = 1d scalar field in real space</span>
+<span class="sd">        ! label = field label</span>
+<span class="sd">        ! itime = current time step</span>
+<span class="sd">        ! isc = power of 2 scale of range of values of f</span>
+<span class="sd">        ! if abs(isc) &lt; 116, then the isc value passed is used for scale.</span>
+<span class="sd">        ! if abs(isc) &gt; 116, then the program finds the minimum value of isc</span>
+<span class="sd">        ! ist = flag for choosing positive and/or negative values</span>
+<span class="sd">        ! the plot has a scale in y given by ymax and ymin.</span>
+<span class="sd">        ! if ist = 0, then ymax = 2**isc and ymin = -2**isc.</span>
+<span class="sd">        ! if ist = 1, then ymax = 2**isc and ymin = 0.</span>
+<span class="sd">        ! if ist = -1, then ymax = 0 and ymin = -2**isc.</span>
+<span class="sd">        ! if ist = 2, then ymin = fmin, ymax = fmin + 2**ir,</span>
+<span class="sd">        ! where fmin/fmax are the function minimum/maximum, </span>
+<span class="sd">        ! and ir = power of 2 scale for (fmax - fmin)</span>
+<span class="sd">        ! nx = system length in x direction</span>
+<span class="sd">        ! irc = return code (0 = normal return)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pc</span>
+        <span class="n">edenx</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nx</span><span class="p">))</span>
+        <span class="n">edeny</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">nx</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">early</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">graphBeforeEndOfFF</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">early</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">showSimple</span><span class="p">([</span><span class="n">label</span><span class="p">,</span> <span class="n">label</span><span class="p">],</span> <span class="p">[</span><span class="n">edenx</span><span class="p">],</span> <span class="p">[</span><span class="n">edeny</span><span class="p">],</span> <span class="s2">&quot;Time=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">itime</span><span class="p">),</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GraphicsInterface.displayfv1"><a class="viewcode-back" href="../source/GraphicsInterface.html#GraphicsInterface.GraphicsInterface.displayfv1">[docs]</a>    <span class="k">def</span> <span class="nf">displayfv1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fv</span><span class="p">,</span> <span class="n">fvm</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">itime</span><span class="p">,</span> <span class="n">nmv</span><span class="p">,</span> <span class="n">idt</span><span class="p">,</span> <span class="n">irc</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">early</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        ! displays velocity distribution functions</span>
+<span class="sd">        ! fv = velocity distribution</span>
+<span class="sd">        ! fvm = velocity moments</span>
+<span class="sd">        ! label = long character string label for plot</span>
+<span class="sd">        ! itime = current time step</span>
+<span class="sd">        ! nmv = number of velocity intervals</span>
+<span class="sd">        ! idt = (1,2,3) = display (individual,composite,both) functions</span>
+<span class="sd">        ! irc = return code (0 = normal return)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">fv</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">early</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">graphBeforeEndOfFF</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">early</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">showVelocity</span><span class="p">(</span><span class="n">fv</span><span class="p">,</span> <span class="n">s</span><span class="p">[:</span><span class="n">h</span><span class="p">],</span> <span class="n">fvm</span><span class="o">=</span><span class="n">fvm</span><span class="p">,</span> <span class="n">plottype</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GraphicsInterface.dpmgrasp1"><a class="viewcode-back" href="../source/GraphicsInterface.html#GraphicsInterface.GraphicsInterface.dpmgrasp1">[docs]</a>    <span class="k">def</span> <span class="nf">dpmgrasp1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ppart</span><span class="p">,</span> <span class="n">kpic</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">itime</span><span class="p">,</span> <span class="n">isc</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">iyp</span><span class="p">,</span> <span class="n">ixp</span><span class="p">,</span> <span class="n">ntsc</span><span class="p">,</span> <span class="n">irc</span><span class="p">,</span> <span class="n">early</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">twophase</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">ppart</span><span class="p">)</span>
+        <span class="n">idimp</span> <span class="o">=</span> <span class="n">a</span> <span class="o">-</span> <span class="mi">1</span> <span class="c1"># Particle tags are last</span>
+        <span class="n">phasearr</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">ppart</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">phasearr</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">ppart</span><span class="p">[</span><span class="n">iyp</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+        <span class="n">phasearr</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">ppart</span><span class="p">[</span><span class="n">ixp</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+        <span class="n">phasearr</span><span class="p">[</span><span class="n">idimp</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">ppart</span><span class="p">[</span><span class="n">idimp</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+
+        <span class="n">labelindex</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">twophase</span><span class="p">:</span>
+            <span class="n">labelindex</span> <span class="o">=</span> <span class="n">idimp</span>
+
+        <span class="k">if</span> <span class="n">early</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">graphBeforeEndOfFF</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">early</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">showPhase</span><span class="p">(</span><span class="n">phasearr</span><span class="p">,</span> <span class="n">kpic</span><span class="p">,</span> <span class="n">plottype</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">twophase</span><span class="o">=</span><span class="n">labelindex</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GraphicsInterface.dvector1"><a class="viewcode-back" href="../source/GraphicsInterface.html#GraphicsInterface.GraphicsInterface.dvector1">[docs]</a>    <span class="k">def</span> <span class="nf">dvector1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">itime</span><span class="p">,</span> <span class="n">isc</span><span class="p">,</span> <span class="n">ist</span><span class="p">,</span> <span class="n">idm</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">irc</span><span class="p">,</span> <span class="n">axislabels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">],</span> <span class="n">early</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">edenx</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">nx</span><span class="p">)</span>
+        <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">w</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">axislabels</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">early</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">graphBeforeEndOfFF</span><span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">early</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pc</span><span class="o">.</span><span class="n">showSimple</span><span class="p">([</span><span class="n">label</span><span class="p">]</span> <span class="o">+</span> <span class="n">axislabels</span><span class="p">,</span> <span class="p">[</span><span class="n">edenx</span><span class="p">,</span> <span class="n">edenx</span><span class="p">],</span> <span class="p">[</span><span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="n">nx</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:</span><span class="n">nx</span><span class="p">]],</span> <span class="s2">&quot;Time=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">itime</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">))</span></div></div>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">pc.showSimple([&quot;VECPOTENTIAL&quot;,&quot;y&quot;,&quot;z&quot;],[edenx,edenx],[sb1.vfield[0,:nx],sb1.vfield[1,:nx]],&quot;Time=&quot;+str(ntime*in1.dt))</span>
+<span class="sd">            graf1.dvector1(sb1.vfield,&#39; VECTOR POTENTIAL&#39;,ntime,999,0,2, nx,irc)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

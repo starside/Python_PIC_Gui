@@ -1,0 +1,415 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ProceduralInterface module &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-ProceduralInterface">
+<span id="proceduralinterface-module"></span><h1>ProceduralInterface module<a class="headerlink" href="#module-ProceduralInterface" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="ProceduralInterface.DispItem">
+<em class="property">class </em><code class="descclassname">ProceduralInterface.</code><code class="descname">DispItem</code><span class="sig-paren">(</span><em>value</em>, <em>priority</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#DispItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.DispItem" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="ProceduralInterface.PlasmaContext">
+<em class="property">class </em><code class="descclassname">ProceduralInterface.</code><code class="descname">PlasmaContext</code><span class="sig-paren">(</span><em>obj</em>, <em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor for an interface object.  Only one should be needed per
+application.  The returned object has all the required methods for
+communicating with the GUI.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>obj</strong> – Container object, this can be anything.  It minimally must
+have two attributes dt and tend, both floats.  dt is a time step
+and tend is end time of the simulation.  For example, dt could be
+0.1 and tend might be 100.0</li>
+<li><strong>args*</strong> – Parameters passed to main(args*).  See Tutorials 1 for
+an example of useage.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.RunNow">
+<code class="descname">RunNow</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.RunNow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.RunNow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.addGraph">
+<code class="descname">addGraph</code><span class="sig-paren">(</span><em>codename</em>, <em>desc</em>, <em>autoadd=True</em>, <em>priority=100</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.addGraph"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.addGraph" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a graph to the menu system.  This is required to
+display a plot</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>codename</strong> – This is the computer’s name for a plot.
+It does not have to be human readable, but it never
+hurts to use a name that makes sense.</li>
+<li><strong>desc</strong> – The human readable name for the plot.  This
+is what will appear in the right-click menu.</li>
+<li><strong>autoadd</strong> – Controls whether the plot is automatically
+displayed on startup.  If set, a new plotting area will
+be automatically created.</li>
+<li><strong>priority</strong> – Automatically change order plots are 
+displayed</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.clearGraphList">
+<code class="descname">clearGraphList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.clearGraphList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.clearGraphList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears the default items in the right-click menu.  This
+is eventually going to be depracated</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.exit">
+<code class="descname">exit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.exit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.exit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.fastForward">
+<code class="descname">fastForward</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.fastForward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.fastForward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows the simulation to fast forward.  Call immediatly after getEvents()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.getEvents">
+<code class="descname">getEvents</code><span class="sig-paren">(</span><em>pause=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.getEvents"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.getEvents" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is an important function, and must be called once per loop of the simulation.
+This function responds to input from the GUI.  If this function is not called, the
+GUI will be unresponsive.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.graphBeforeEndOfFF">
+<code class="descname">graphBeforeEndOfFF</code><span class="sig-paren">(</span><em>plottype</em>, <em>interval</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.graphBeforeEndOfFF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.graphBeforeEndOfFF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tells te system to graph any plot objects of type plottype at time interval # of steps
+before the fastforward ends.  This ensures that even if you fastforward past all of a plots
+graphing times, it will still draw the last one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>plottype</strong> – the string name of the plot</li>
+<li><strong>interval</strong> – how frequently the plot is generated.  In time steps</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.isGraphing">
+<code class="descname">isGraphing</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.isGraphing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.isGraphing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.newDynamicVariable">
+<code class="descname">newDynamicVariable</code><span class="sig-paren">(</span><em>varname</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.newDynamicVariable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.newDynamicVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a dynamic variable, that can be changed in the simulation loop.  This
+variable will appear as red in the built-in input editor.  When these variables
+are updated they will appear automatically as attributes in the container object
+specified in the constructor of PlasmaContext.  The automatically created field
+will be all lowercase.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>varname</strong> – A string specifying the name of the dynamic variable as it 
+appears in the editor.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.newFrame">
+<code class="descname">newFrame</code><span class="sig-paren">(</span><em>layout</em>, <em>defaults</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.newFrame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.newFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new frame with a specified layout.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>layout</strong> – The type of layout specified by a string, currently 
+there are four options: “Layout1”, “Layout2v”,”Layout2h”,
+“Layout3”, and “Layout4”.  These correspond to one plot,
+two plots arranged vertically, two plots arranged horizontally,
+three plots and four plots.</li>
+<li><strong>defaults</strong> – a list of plot names to display.  If layout=”Layout3”
+then defaults must have length 3.  The plot names correspond to the
+codename field in addGraph(codename, desc).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.pause">
+<code class="descname">pause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.pause"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pauses the simulation</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="ProceduralInterface.PlasmaContext.runMain">
+<em class="property">static </em><code class="descname">runMain</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.runMain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.runMain" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function launches the main simulation function in a child process.
+This is necessary, becase on OS X for whatever reason the GUI fails to
+respond if launched in the child process.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>func</strong> – The name of a function, which should take a single parameter.
+From the host process you would call PlasmaContext.runMain(main). 
+main would be defined with prototype main(args*). main(args*) will
+call something like: pc = PlasmaContext(in1,*args) to create an
+interface object.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.runOnce">
+<code class="descname">runOnce</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.runOnce"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.runOnce" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.setTime">
+<code class="descname">setTime</code><span class="sig-paren">(</span><em>time</em>, <em>dt</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.setTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.setTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the time in the control panel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>time</strong> – Simulation time</li>
+<li><strong>dt</strong> – Time step size</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showDensity">
+<code class="descname">showDensity</code><span class="sig-paren">(</span><em>data</em>, <em>nx</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showDensity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showDensity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showEnergy">
+<code class="descname">showEnergy</code><span class="sig-paren">(</span><em>time</em>, <em>data</em>, <em>maxtimeindex</em>, <em>labels</em>, <em>title=None</em>, <em>early=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showEnergy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showEnergy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showFastPhase">
+<code class="descname">showFastPhase</code><span class="sig-paren">(</span><em>ppart</em>, <em>kpic</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showFastPhase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showFastPhase" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showGraphs">
+<code class="descname">showGraphs</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showGraphs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showGraphs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable or disable graphics for performance reasons</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>val</strong> – True or False</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showMultiTrajectories">
+<code class="descname">showMultiTrajectories</code><span class="sig-paren">(</span><em>name</em>, <em>data</em>, <em>itt</em>, <em>t0</em>, <em>dt</em>, <em>defaultplot</em>, <em>graphoptions=None</em>, <em>title=None</em>, <em>early=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showMultiTrajectories"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showMultiTrajectories" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showMultiTrajectory">
+<code class="descname">showMultiTrajectory</code><span class="sig-paren">(</span><em>partd</em>, <em>itt</em>, <em>comp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showMultiTrajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showMultiTrajectory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showPhase">
+<code class="descname">showPhase</code><span class="sig-paren">(</span><em>ppart, kpic, plottype=None, title=None, early=None, twophase=None, plotlabels=['Position', 'Velocity']</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showPhase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showPhase" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showPhi">
+<code class="descname">showPhi</code><span class="sig-paren">(</span><em>time</em>, <em>phi</em>, <em>dta</em>, <em>dt</em>, <em>plottype=None</em>, <em>omn=100</em>, <em>title=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showPhi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showPhi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showPotential">
+<code class="descname">showPotential</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showPotential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showPotential" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showScaler">
+<code class="descname">showScaler</code><span class="sig-paren">(</span><em>data</em>, <em>name</em>, <em>nx</em>, <em>time</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showScaler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showScaler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showSimple">
+<code class="descname">showSimple</code><span class="sig-paren">(</span><em>name</em>, <em>xdata</em>, <em>ydata</em>, <em>text</em>, <em>graphoptions=None</em>, <em>title=None</em>, <em>early=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showSimple"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showSimple" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showSimpleImage">
+<code class="descname">showSimpleImage</code><span class="sig-paren">(</span><em>name</em>, <em>data</em>, <em>text</em>, <em>extent=()</em>, <em>labl=(''</em>, <em>'')</em>, <em>title=None</em>, <em>early=None</em>, <em>ticks_scale=None</em>, <em>norm='Log'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showSimpleImage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showSimpleImage" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showTrajectory">
+<code class="descname">showTrajectory</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showTrajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showTrajectory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showUserDefined">
+<code class="descname">showUserDefined</code><span class="sig-paren">(</span><em>name</em>, <em>definedplot</em>, <em>early=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showUserDefined"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showUserDefined" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.showVelocity">
+<code class="descname">showVelocity</code><span class="sig-paren">(</span><em>data</em>, <em>labels</em>, <em>fvm=None</em>, <em>plottype=None</em>, <em>title=None</em>, <em>early=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.showVelocity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.showVelocity" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.updateSimInfo">
+<code class="descname">updateSimInfo</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.updateSimInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.updateSimInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updated simulation metadata.  Currently the only field is ‘tend’, the end time
+of the simulation.  This is done by passing a dictionary with key ‘tend’ as a 
+string, followed by a float.  For example, {‘tend’, 100.0}</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ProceduralInterface.PlasmaContext.wait">
+<code class="descname">wait</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#PlasmaContext.wait"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.PlasmaContext.wait" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call after simulation loop has run.  This command blocks and keeps the GUI responsive</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ProceduralInterface.changeVarsCallback">
+<code class="descclassname">ProceduralInterface.</code><code class="descname">changeVarsCallback</code><span class="sig-paren">(</span><em>obj</em>, <em>to</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#changeVarsCallback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.changeVarsCallback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ProceduralInterface.exitCallback">
+<code class="descclassname">ProceduralInterface.</code><code class="descname">exitCallback</code><span class="sig-paren">(</span><em>obj</em>, <em>to</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#exitCallback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.exitCallback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ProceduralInterface.initGui">
+<code class="descclassname">ProceduralInterface.</code><code class="descname">initGui</code><span class="sig-paren">(</span><em>q</em>, <em>que</em>, <em>td</em>, <em>events</em>, <em>outqueue</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#initGui"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.initGui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ProceduralInterface.resetCallback">
+<code class="descclassname">ProceduralInterface.</code><code class="descname">resetCallback</code><span class="sig-paren">(</span><em>obj</em>, <em>to</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#resetCallback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.resetCallback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ProceduralInterface.rightType">
+<code class="descclassname">ProceduralInterface.</code><code class="descname">rightType</code><span class="sig-paren">(</span><em>val</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ProceduralInterface.html#rightType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ProceduralInterface.rightType" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/source/ProceduralInterface.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

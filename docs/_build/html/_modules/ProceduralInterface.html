@@ -1,0 +1,674 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>ProceduralInterface &#8212; Python_PIC_GUI 1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ProceduralInterface</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">types</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">wx</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="k">import</span> <span class="n">Thread</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="k">import</span> <span class="n">Process</span><span class="p">,</span> <span class="n">Pipe</span><span class="p">,</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Lock</span><span class="p">,</span> <span class="n">Value</span><span class="p">,</span> <span class="n">Manager</span>
+<span class="kn">import</span> <span class="nn">cPickle</span>
+
+<span class="kn">import</span> <span class="nn">Graphs</span>
+<span class="kn">import</span> <span class="nn">GraphStack</span>
+<span class="kn">import</span> <span class="nn">NewFrame</span>
+<span class="kn">from</span> <span class="nn">Events</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">defaults</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">Signals</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">new_beps1gl</span>
+
+<span class="n">int_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span>
+<span class="n">double_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span>
+<span class="n">float_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+<span class="n">complex_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">complex64</span>
+
+<span class="c1">#These are callback functions, that the user is free to redefine,</span>
+<span class="c1">#Which is done directly by setting the appropriate key in</span>
+<span class="c1">#self.callbacks.  For example:</span>
+<span class="c1">#self.callbacks[&quot;EXIT&quot;] = exitCallback</span>
+<div class="viewcode-block" id="changeVarsCallback"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.changeVarsCallback">[docs]</a><span class="k">def</span> <span class="nf">changeVarsCallback</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">to</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">to</span><span class="o">.</span><span class="n">var</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;fastforward&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">rightType</span><span class="p">(</span><span class="n">to</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">obj</span><span class="o">.</span><span class="n">tend</span><span class="p">:</span>
+                    <span class="k">continue</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">rightType</span><span class="p">(</span><span class="n">to</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="n">key</span><span class="p">]))</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="s2">&quot;Could not change variables&quot;</span></div>
+
+
+<span class="c1"># The function to be called when reset is pushed</span>
+<div class="viewcode-block" id="resetCallback"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.resetCallback">[docs]</a><span class="k">def</span> <span class="nf">resetCallback</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">to</span><span class="p">):</span>
+    <span class="nb">print</span> <span class="s2">&quot;The reset button was pushed!&quot;</span>
+    <span class="c1"># Do something</span>
+    <span class="nb">print</span> <span class="n">obj</span><span class="o">.</span><span class="n">tend</span></div>
+
+<span class="c1">#Called in the sim thread on exit.</span>
+<div class="viewcode-block" id="exitCallback"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.exitCallback">[docs]</a><span class="k">def</span> <span class="nf">exitCallback</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">to</span><span class="p">):</span>
+    <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<span class="c1">#This is a simple function that takes a number and gives a fortran</span>
+<span class="c1">#consisten type</span>
+<div class="viewcode-block" id="rightType"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.rightType">[docs]</a><span class="k">def</span> <span class="nf">rightType</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+    <span class="n">ints</span><span class="p">,</span> <span class="n">reals</span><span class="p">,</span> <span class="n">complexs</span> <span class="o">=</span> <span class="n">int_type</span><span class="p">,</span> <span class="n">float_type</span><span class="p">,</span> <span class="n">complex_type</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">is</span> <span class="n">IntType</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">val</span><span class="p">],</span> <span class="n">ints</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">is</span> <span class="n">FloatType</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">val</span><span class="p">],</span> <span class="n">reals</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="ow">is</span> <span class="n">ComplexType</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">val</span><span class="p">],</span> <span class="n">complexs</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="DispItem"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.DispItem">[docs]</a><span class="k">class</span> <span class="nc">DispItem</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">priority</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">priority</span> <span class="o">=</span> <span class="n">priority</span>
+
+    <span class="k">def</span> <span class="nf">__cmp__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">priority</span><span class="o">.</span><span class="n">__cmp__</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">priority</span><span class="p">)</span></div>
+
+
+<span class="c1"># Try the high level interface</span>
+<div class="viewcode-block" id="initGui"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.initGui">[docs]</a><span class="k">def</span> <span class="nf">initGui</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">td</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">outqueue</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">wx</span><span class="o">.</span><span class="n">GetApp</span><span class="p">()</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">app</span> <span class="o">=</span> <span class="n">new_beps1gl</span><span class="o">.</span><span class="n">MainApp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">td</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">,</span> <span class="n">outq</span><span class="o">=</span><span class="n">outqueue</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">MainLoop</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">app</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span> <span class="s2">&quot;Cannot create multiple wxApp contexts&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<span class="c1">##PlasmaContext is the interface the sim process uses to talk to the GUI.</span>
+<div class="viewcode-block" id="PlasmaContext"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext">[docs]</a><span class="k">class</span> <span class="nc">PlasmaContext</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor for an interface object.  Only one should be needed per</span>
+<span class="sd">        application.  The returned object has all the required methods for</span>
+<span class="sd">        communicating with the GUI.</span>
+
+<span class="sd">        :param obj: Container object, this can be anything.  It minimally must</span>
+<span class="sd">            have two attributes dt and tend, both floats.  dt is a time step</span>
+<span class="sd">            and tend is end time of the simulation.  For example, dt could be</span>
+<span class="sd">            0.1 and tend might be 100.0</span>
+<span class="sd">        :param args*: Parameters passed to main(args*).  See Tutorials 1 for</span>
+<span class="sd">            an example of useage. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simObj</span> <span class="o">=</span> <span class="n">obj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defaultGraphs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norun</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1">#read in comm channels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="k">async</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>  <span class="c1"># synch or async mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">events</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeDir</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent_conn</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">child_conn</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">curTime</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphEnabled</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphEarly</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>    <span class="c1">#dict of plots to plot before end of fastforarding</span>
+        <span class="c1">#Set default callbacks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span><span class="p">[</span><span class="s2">&quot;VARCHANGE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">changeVarsCallback</span>  <span class="c1"># Set a callback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span><span class="p">[</span><span class="s2">&quot;RESET&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">resetCallback</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span><span class="p">[</span><span class="s2">&quot;EXIT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">exitCallback</span>
+
+<div class="viewcode-block" id="PlasmaContext.runMain"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.runMain">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">runMain</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function launches the main simulation function in a child process.</span>
+<span class="sd">        This is necessary, becase on OS X for whatever reason the GUI fails to</span>
+<span class="sd">        respond if launched in the child process.</span>
+
+<span class="sd">        :param func: The name of a function, which should take a single parameter.</span>
+<span class="sd">            From the host process you would call PlasmaContext.runMain(main). </span>
+<span class="sd">            main would be defined with prototype main(args*). main(args*) will</span>
+<span class="sd">            call something like: pc = PlasmaContext(in1,*args) to create an</span>
+<span class="sd">            interface object.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#create bidirectional comm channels</span>
+        <span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span>
+        <span class="k">async</span> <span class="o">=</span> <span class="n">manager</span><span class="o">.</span><span class="n">dict</span><span class="p">()</span>  <span class="c1"># synch or async mode</span>
+        <span class="n">que</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="n">timeDir</span> <span class="o">=</span> <span class="kc">None</span> 
+        <span class="n">child_conn</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="c1">#run the simulation code in child process</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">child_conn</span><span class="p">,</span> <span class="n">child_conn</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">timeDir</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="k">async</span><span class="p">))</span>
+        <span class="c1">#p.daemon = True</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="c1">#run gui in parent process</span>
+        <span class="n">initGui</span><span class="p">(</span><span class="n">child_conn</span><span class="p">,</span> <span class="n">que</span><span class="p">,</span> <span class="n">timeDir</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="k">async</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_sendEarly</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is a test to see if the object obj to be sent to the GUI for </span>
+<span class="sd">        rendering/processing has been flaged for early plotting.  If so,</span>
+<span class="sd">        calculate if the sim is close enough to the end of the fast forward</span>
+<span class="sd">        to plot</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span><span class="o">.</span><span class="n">plottype</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graphEarly</span><span class="p">[</span><span class="n">obj</span><span class="o">.</span><span class="n">plottype</span><span class="p">]</span> <span class="c1">#Fire early?</span>
+            <span class="k">assert</span><span class="p">(</span><span class="n">time</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">ntime</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curTime</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">))</span>
+            <span class="n">ffs</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">simObj</span><span class="o">.</span><span class="n">fastforward</span><span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">))</span>
+            <span class="n">it</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ffs</span><span class="o">/</span> <span class="n">time</span><span class="p">)</span> <span class="c1">#Fast Forard stop divided by the plot frequency</span>
+            <span class="k">if</span> <span class="n">ntime</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">it</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">time</span><span class="p">:</span>    <span class="c1">#Fire Early</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_sendplot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Low level method to send an object to the GUI processes via pipe.</span>
+<span class="sd">           It also serializes the object using cPickle</span>
+
+<span class="sd">           :param obj: The object to send.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graphEnabled</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sendEarly</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>  <span class="c1">#self.graphEarly is set when fastforward is called</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">_tackOnTime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curTime</span>  <span class="c1"># Just sloppily glue the time on the object</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="kc">True</span>
+            <span class="n">iv</span> <span class="o">=</span> <span class="n">cPickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">iv</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">child_conn</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="c1"># Wait for response.  This will block until response recieved</span>
+
+    <span class="k">def</span> <span class="nf">_sendplotasync</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sends a plot, asynchronously.  It will not wait for a response before returning.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">cPickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+
+<div class="viewcode-block" id="PlasmaContext.graphBeforeEndOfFF"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.graphBeforeEndOfFF">[docs]</a>    <span class="k">def</span> <span class="nf">graphBeforeEndOfFF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plottype</span><span class="p">,</span> <span class="n">interval</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tells te system to graph any plot objects of type plottype at time interval # of steps</span>
+<span class="sd">        before the fastforward ends.  This ensures that even if you fastforward past all of a plots</span>
+<span class="sd">        graphing times, it will still draw the last one.</span>
+
+<span class="sd">        :param plottype: the string name of the plot</span>
+<span class="sd">        :param interval: how frequently the plot is generated.  In time steps</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphEarly</span><span class="p">[</span><span class="n">plottype</span><span class="p">]</span> <span class="o">=</span> <span class="n">interval</span></div>
+
+    <span class="c1"># Takes a layout index between 1 and 4, and a list of default graphs to plot</span>
+<div class="viewcode-block" id="PlasmaContext.newFrame"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.newFrame">[docs]</a>    <span class="k">def</span> <span class="nf">newFrame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">defaults</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates a new frame with a specified layout.</span>
+
+<span class="sd">        :param layout: The type of layout specified by a string, currently </span>
+<span class="sd">            there are four options: &quot;Layout1&quot;, &quot;Layout2v&quot;,&quot;Layout2h&quot;,</span>
+<span class="sd">            &quot;Layout3&quot;, and &quot;Layout4&quot;.  These correspond to one plot,</span>
+<span class="sd">            two plots arranged vertically, two plots arranged horizontally,</span>
+<span class="sd">            three plots and four plots.</span>
+
+<span class="sd">        :param defaults: a list of plot names to display.  If layout=&quot;Layout3&quot;</span>
+<span class="sd">            then defaults must have length 3.  The plot names correspond to the</span>
+<span class="sd">            codename field in addGraph(codename, desc).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">to</span> <span class="o">=</span> <span class="n">OpenFrame</span><span class="p">()</span>
+        <span class="n">to</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">layout</span>
+        <span class="n">to</span><span class="o">.</span><span class="n">defaults</span> <span class="o">=</span> <span class="n">defaults</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">cPickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">to</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.newDynamicVariable"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.newDynamicVariable">[docs]</a>    <span class="k">def</span> <span class="nf">newDynamicVariable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">varname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a dynamic variable, that can be changed in the simulation loop.  This</span>
+<span class="sd">        variable will appear as red in the built-in input editor.  When these variables</span>
+<span class="sd">        are updated they will appear automatically as attributes in the container object</span>
+<span class="sd">        specified in the constructor of PlasmaContext.  The automatically created field</span>
+<span class="sd">        will be all lowercase.</span>
+
+<span class="sd">        :param varname: A string specifying the name of the dynamic variable as it </span>
+<span class="sd">            appears in the editor.  </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">to</span> <span class="o">=</span> <span class="n">NewDynamicVariable</span><span class="p">()</span>
+        <span class="n">to</span><span class="o">.</span><span class="n">varname</span> <span class="o">=</span> <span class="n">varname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">cPickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">to</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.runOnce"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.runOnce">[docs]</a>    <span class="k">def</span> <span class="nf">runOnce</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1">#This really should directly press the step button</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="s2">&quot;RUNONCE&quot;</span><span class="p">)</span></div>
+
+    <span class="c1"># process events, such as callbacks and variable changes from the GUI</span>
+<div class="viewcode-block" id="PlasmaContext.getEvents"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.getEvents">[docs]</a>    <span class="k">def</span> <span class="nf">getEvents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pause</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is an important function, and must be called once per loop of the simulation.</span>
+<span class="sd">        This function responds to input from the GUI.  If this function is not called, the</span>
+<span class="sd">        GUI will be unresponsive.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simObj</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">que</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">readQ</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">pause</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="s2">&quot;RUNCONTROL&quot;</span><span class="p">)</span>  <span class="c1"># This simply makes sure the run once button runs only 1 timestep</span>
+
+        <span class="k">while</span> <span class="n">readQ</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">events</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="ow">not</span> <span class="n">pause</span><span class="p">)</span>
+                <span class="n">que</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">to</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">readQ</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># Run callbacks.  A signal sent from the GUI must have a signame attribute</span>
+        <span class="k">for</span> <span class="n">q</span> <span class="ow">in</span> <span class="n">que</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">signame</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">q</span><span class="o">.</span><span class="n">signame</span> <span class="o">==</span> <span class="s2">&quot;EXIT&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="s2">&quot;EXIT&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">showGraphs</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">norun</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">cb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callbacks</span><span class="p">[</span><span class="n">q</span><span class="o">.</span><span class="n">signame</span><span class="p">]</span>
+                <span class="n">cb</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">to</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.exit"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.exit">[docs]</a>    <span class="k">def</span> <span class="nf">exit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">child_conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="o">.</span><span class="n">join_thread</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div>
+
+    <span class="c1"># </span>
+<div class="viewcode-block" id="PlasmaContext.showGraphs"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showGraphs">[docs]</a>    <span class="k">def</span> <span class="nf">showGraphs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Enable or disable graphics for performance reasons</span>
+
+<span class="sd">        :param val: True or False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphEnabled</span> <span class="o">=</span> <span class="n">val</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.isGraphing"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.isGraphing">[docs]</a>    <span class="k">def</span> <span class="nf">isGraphing</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="k">async</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">except</span><span class="p">:</span>  <span class="c1"># Key does not exist.  Not drawing</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.setTime"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.setTime">[docs]</a>    <span class="k">def</span> <span class="nf">setTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the time in the control panel.</span>
+
+<span class="sd">        :param time: Simulation time</span>
+
+<span class="sd">        :param dt: Time step size</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="c1"># Let the graphs know the simulation time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">curTime</span> <span class="o">=</span> <span class="n">time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="n">dt</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">SetFrameTime</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">_tackOnTime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">curTime</span>  <span class="c1"># Just sloppily glue the time on the object</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">cPickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.pause"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.pause">[docs]</a>    <span class="k">def</span> <span class="nf">pause</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pauses the simulation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplotasync</span><span class="p">(</span><span class="s2">&quot;PAUSE&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.fastForward"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.fastForward">[docs]</a>    <span class="k">def</span> <span class="nf">fastForward</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows the simulation to fast forward.  Call immediatly after getEvents()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simObj</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;Must call getEvents before fastforward&#39;</span><span class="p">)</span>
+            <span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">global</span> <span class="n">_ffwding</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;fastforward&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curTime</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">fastforward</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">showGraphs</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">_ffwding</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">_ffwding</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="n">_ffwding</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">_ffwding</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span>
+                    <span class="n">_ffwding</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">showGraphs</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span></div>
+
+    <span class="c1"># Plot a user defined graph</span>
+<div class="viewcode-block" id="PlasmaContext.showUserDefined"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showUserDefined">[docs]</a>    <span class="k">def</span> <span class="nf">showUserDefined</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">definedplot</span><span class="p">,</span> <span class="n">early</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">early</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphBeforeEndOfFF</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">early</span><span class="p">)</span>
+        <span class="n">definedplot</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">definedplot</span><span class="p">)</span></div>
+
+    <span class="c1"># Plottype is optional.  Use it to rename the dv1 plottype</span>
+<div class="viewcode-block" id="PlasmaContext.showVelocity"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showVelocity">[docs]</a>    <span class="k">def</span> <span class="nf">showVelocity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">fvm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plottype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">early</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">pt</span> <span class="o">=</span> <span class="n">plottype</span>
+        <span class="k">if</span> <span class="n">pt</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pt</span> <span class="o">=</span> <span class="s2">&quot;DRAWVELOCITY&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="n">pt</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">early</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphBeforeEndOfFF</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="n">early</span><span class="p">)</span>
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawVelocity</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">fvm</span><span class="o">=</span><span class="n">fvm</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">plottype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dv1</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="n">plottype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.showPotential"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showPotential">[docs]</a>    <span class="k">def</span> <span class="nf">showPotential</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="s2">&quot;DRAWPOT&quot;</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawPotential</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.showEnergy"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showEnergy">[docs]</a>    <span class="k">def</span> <span class="nf">showEnergy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">maxtimeindex</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">early</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="s2">&quot;ENERGY&quot;</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">early</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphBeforeEndOfFF</span><span class="p">(</span><span class="s2">&quot;ENERGY&quot;</span><span class="p">,</span> <span class="n">early</span><span class="p">)</span>
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawEnergy</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">timeindex</span><span class="o">=</span><span class="n">maxtimeindex</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.showSimple"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showSimple">[docs]</a>    <span class="k">def</span> <span class="nf">showSimple</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">graphoptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">early</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">early</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphBeforeEndOfFF</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">early</span><span class="p">)</span>
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawSimple</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">xdata</span><span class="p">,</span> <span class="n">ydata</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">graphoptions</span><span class="o">=</span><span class="n">graphoptions</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.showPhase"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showPhase">[docs]</a>    <span class="k">def</span> <span class="nf">showPhase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ppart</span><span class="p">,</span> <span class="n">kpic</span><span class="p">,</span>
+                  <span class="n">plottype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">early</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">twophase</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="n">plotlabels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Position&quot;</span><span class="p">,</span> <span class="s2">&quot;Velocity&quot;</span><span class="p">]):</span>  <span class="c1"># data is the particle data, ppart.  kpic is array of num particles per tile</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">pt</span> <span class="o">=</span> <span class="n">plottype</span>
+        <span class="k">if</span> <span class="n">pt</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pt</span> <span class="o">=</span> <span class="s2">&quot;DRAWPHASE&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="n">pt</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">early</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphBeforeEndOfFF</span><span class="p">(</span><span class="n">pt</span><span class="p">,</span> <span class="n">early</span><span class="p">)</span>
+        <span class="c1"># shape is the bounds of the histogram, [[xmin,xmax], [ymin,ymax]]</span>
+        <span class="n">numPart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">kpic</span><span class="p">)</span>  <span class="c1"># number of particles</span>
+        <span class="n">numTiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">kpic</span><span class="p">)</span>  <span class="c1"># number of tiles</span>
+
+        <span class="n">xvInTile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">numPart</span><span class="p">),</span> <span class="n">ppart</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">isum</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">kk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kpic</span><span class="p">):</span>  <span class="c1"># De-tile particles in to one big fat array</span>
+            <span class="n">xvInTile</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">isum</span><span class="p">:</span><span class="n">kk</span> <span class="o">+</span> <span class="n">isum</span><span class="p">]</span> <span class="o">=</span> <span class="n">ppart</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">kk</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+            <span class="n">xvInTile</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">isum</span><span class="p">:</span><span class="n">kk</span> <span class="o">+</span> <span class="n">isum</span><span class="p">]</span> <span class="o">=</span> <span class="n">ppart</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">kk</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">twophase</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">xvInTile</span><span class="p">[</span><span class="n">twophase</span><span class="p">,</span> <span class="n">isum</span><span class="p">:</span><span class="n">kk</span> <span class="o">+</span> <span class="n">isum</span><span class="p">]</span> <span class="o">=</span> <span class="n">ppart</span><span class="p">[</span><span class="n">twophase</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">kk</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+            <span class="n">isum</span> <span class="o">+=</span> <span class="n">kk</span>
+
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawPhase</span><span class="p">(</span><span class="n">xvInTile</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">twophase</span><span class="o">=</span><span class="n">twophase</span><span class="p">,</span> 
+                <span class="n">plotlabels</span><span class="o">=</span><span class="n">plotlabels</span><span class="p">)</span>  <span class="c1"># copy the data</span>
+        <span class="k">if</span> <span class="n">plottype</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dv1</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="n">plottype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.showFastPhase"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showFastPhase">[docs]</a>    <span class="k">def</span> <span class="nf">showFastPhase</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ppart</span><span class="p">,</span> <span class="n">kpic</span><span class="p">):</span>  <span class="c1"># data is the particle data, ppart.  kpic is array of num particles per tile</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="s2">&quot;DRAWFASTPHASE&quot;</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="c1"># shape is the bounds of the histogram, [[xmin,xmax], [ymin,ymax]]</span>
+        <span class="n">numPart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">kpic</span><span class="p">)</span>  <span class="c1"># number of particles</span>
+        <span class="n">numTiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">kpic</span><span class="p">)</span>  <span class="c1"># number of tiles</span>
+
+        <span class="n">xvInTile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="n">numPart</span><span class="p">),</span> <span class="n">ppart</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">isum</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">kk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">kpic</span><span class="p">):</span>  <span class="c1"># De-tile particles in to one big fat array</span>
+            <span class="n">xvInTile</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">isum</span><span class="p">:</span><span class="n">kk</span> <span class="o">+</span> <span class="n">isum</span><span class="p">]</span> <span class="o">=</span> <span class="n">ppart</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">kk</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+            <span class="n">xvInTile</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">isum</span><span class="p">:</span><span class="n">kk</span> <span class="o">+</span> <span class="n">isum</span><span class="p">]</span> <span class="o">=</span> <span class="n">ppart</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="n">kk</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span>
+            <span class="n">isum</span> <span class="o">+=</span> <span class="n">kk</span>
+
+        <span class="n">H</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span><span class="n">xvInTile</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xvInTile</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawFastPhase</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">H</span><span class="p">)</span>  <span class="c1"># copy the data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.showTrajectory"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showTrajectory">[docs]</a>    <span class="k">def</span> <span class="nf">showTrajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="s2">&quot;DRAWTRAJ&quot;</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawTrajectory</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.showMultiTrajectories"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showMultiTrajectories">[docs]</a>    <span class="k">def</span> <span class="nf">showMultiTrajectories</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">itt</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">defaultplot</span><span class="p">,</span> <span class="n">graphoptions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">early</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">early</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphBeforeEndOfFF</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">early</span><span class="p">)</span>
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawMultipleTrajectories</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">itt</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">defaultplot</span><span class="p">,</span> <span class="n">graphoptions</span><span class="o">=</span><span class="n">graphoptions</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PlasmaContext.showDensity"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showDensity">[docs]</a>    <span class="k">def</span> <span class="nf">showDensity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">nx</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">():</span>
+            <span class="k">return</span>
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawElectronDensity</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.showScaler"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showScaler">[docs]</a>    <span class="k">def</span> <span class="nf">showScaler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="s2">&quot;DRAWDENSE&quot;</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawScaler</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.showPhi"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showPhi">[docs]</a>    <span class="k">def</span> <span class="nf">showPhi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">dta</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">plottype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">omn</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="s2">&quot;DRAWPHI&quot;</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawPhi</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">time</span><span class="p">),</span> <span class="n">phi</span><span class="p">,</span> <span class="n">dta</span><span class="p">],</span> <span class="n">dt</span><span class="p">,</span> <span class="n">omn</span><span class="o">=</span><span class="n">omn</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plottype</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">dv1</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="n">plottype</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.showSimpleImage"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showSimpleImage">[docs]</a>    <span class="k">def</span> <span class="nf">showSimpleImage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(),</span> <span class="n">labl</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">),</span> <span class="n">title</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">early</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">ticks_scale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="s1">&#39;Log&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">early</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">graphBeforeEndOfFF</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">early</span><span class="p">)</span>
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawSimpleImage</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span> <span class="n">labl</span><span class="o">=</span><span class="n">labl</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">ticks_scale</span><span class="o">=</span><span class="n">ticks_scale</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.showMultiTrajectory"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.showMultiTrajectory">[docs]</a>    <span class="k">def</span> <span class="nf">showMultiTrajectory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">partd</span><span class="p">,</span> <span class="n">itt</span><span class="p">,</span> <span class="n">comp</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">isGraphing</span><span class="p">(</span><span class="s2">&quot;DRAWMULTITRAJ&quot;</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">dv1</span> <span class="o">=</span> <span class="n">Graphs</span><span class="o">.</span><span class="n">DrawMultiTraj</span><span class="p">(</span><span class="n">partd</span><span class="p">,</span> <span class="n">itt</span><span class="p">,</span> <span class="n">comp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sendplot</span><span class="p">(</span><span class="n">dv1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.wait"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.wait">[docs]</a>    <span class="k">def</span> <span class="nf">wait</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Call after simulation loop has run.  This command blocks and keeps the GUI responsive</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">getEvents</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">30.0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.clearGraphList"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.clearGraphList">[docs]</a>    <span class="k">def</span> <span class="nf">clearGraphList</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Clears the default items in the right-click menu.  This</span>
+<span class="sd">        is eventually going to be depracated</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">ptr</span> <span class="o">=</span> <span class="n">ClearGraphStack</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">cPickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">ptr</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.updateSimInfo"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.updateSimInfo">[docs]</a>    <span class="k">def</span> <span class="nf">updateSimInfo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updated simulation metadata.  Currently the only field is &#39;tend&#39;, the end time</span>
+<span class="sd">        of the simulation.  This is done by passing a dictionary with key &#39;tend&#39; as a </span>
+<span class="sd">        string, followed by a float.  For example, {&#39;tend&#39;, 100.0}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">ptr</span> <span class="o">=</span> <span class="n">SimData</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">cPickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">ptr</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.addGraph"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.addGraph">[docs]</a>    <span class="k">def</span> <span class="nf">addGraph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">codename</span><span class="p">,</span> <span class="n">desc</span><span class="p">,</span> <span class="n">autoadd</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">            Add a graph to the menu system.  This is required to</span>
+<span class="sd">            display a plot</span>
+
+<span class="sd">            :param codename: This is the computer&#39;s name for a plot.</span>
+<span class="sd">                It does not have to be human readable, but it never</span>
+<span class="sd">                hurts to use a name that makes sense.</span>
+
+<span class="sd">            :param desc: The human readable name for the plot.  This</span>
+<span class="sd">                is what will appear in the right-click menu.</span>
+
+<span class="sd">            :param autoadd: Controls whether the plot is automatically</span>
+<span class="sd">                displayed on startup.  If set, a new plotting area will</span>
+<span class="sd">                be automatically created.</span>
+
+<span class="sd">            :param priority: Automatically change order plots are </span>
+<span class="sd">                displayed</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">ptr</span> <span class="o">=</span> <span class="n">ClearGraphStack</span><span class="p">()</span>
+        <span class="n">ptr</span><span class="o">.</span><span class="n">codename</span> <span class="o">=</span> <span class="n">codename</span>
+        <span class="n">ptr</span><span class="o">.</span><span class="n">desc</span> <span class="o">=</span> <span class="n">desc</span>
+        <span class="k">if</span> <span class="n">autoadd</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">defaultGraphs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DispItem</span><span class="p">(</span><span class="n">codename</span><span class="p">,</span> <span class="n">priority</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">cPickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">ptr</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PlasmaContext.RunNow"><a class="viewcode-back" href="../source/ProceduralInterface.html#ProceduralInterface.PlasmaContext.RunNow">[docs]</a>    <span class="k">def</span> <span class="nf">RunNow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">norun</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">ptr</span> <span class="o">=</span> <span class="n">RunNow</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">que</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">cPickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">ptr</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Joshua Kelly.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

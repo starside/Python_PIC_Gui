@@ -2,8 +2,6 @@ import wx
 import wx.stc as stc
 from lib import *
 
-# from FortranState import *
-
 from Signals import *
 
 

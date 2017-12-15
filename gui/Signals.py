@@ -42,6 +42,9 @@ class SetFrameTime:
 
 
 class SimData:
+    """
+    Class for conveying information to the simulation.  data is expected to be a dictionary
+    """
     def __init__(self, data):
         self.signame = "SIMDATA"
         self.data = data
