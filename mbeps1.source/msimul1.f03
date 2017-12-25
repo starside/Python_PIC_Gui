@@ -42,6 +42,14 @@
 ! elfield_diag1: longitudinal efield diagnostic
 ! del_elfield_diag1: delete longitudinal efield diagnostic
 !
+! init_efluidms_diag1: initialize electron fluid moments diagnostic
+! efluidms_diag1: electron fluid moments diagnostic
+! del_efluidms_diag1: delete electron fluid moments diagnostic
+!
+! init_ifluidms_diag1: initialize ion fluid moments diagnostic
+! ifluidms_diag1: ion fluid moments diagnostic
+! del_ifluidms_diag1: delete ion fluid moments diagnostic
+!
 ! init_evelocity_diag1: initialize electron velocity diagnostic
 ! evelocity_diag1: electron velocity diagnostic
 ! del_evelocity_diag1: delete electron velocity diagnostic
@@ -72,7 +80,7 @@
 !
 ! written by Viktor K. Decyk, UCLA
 ! copyright 1999-2016, regents of the university of california
-! update: october 17, 2017
+! update: december 9, 2017
       module f1
       use in1
       use minit1
@@ -113,6 +121,7 @@
       integer :: iuin = 8, iurr = 9, iuot = 18, iudm = 19
       integer :: iur = 17, iur0 = 27
       integer :: iude = 10, iup = 11, iuel = 12
+      integer :: iufe = 23, iufi = 24
       integer :: iudi = 20
       real :: ts
       character(len=10) :: cdrun
@@ -165,6 +174,8 @@
       real, dimension(:,:), allocatable :: wk
 ! wkdi = maximum frequency as a function of k for ion density
       real, dimension(:,:), allocatable :: wkdi
+! fmse/fmsi = electron/ion fluid moments
+      real, dimension(:,:), allocatable :: fmse, fmsi
 ! fv/fvi = global electron/ion velocity distribution functions
       real, dimension(:,:), allocatable :: fv, fvi
 ! fvm/fvmi = electron/ion vdrift, vth, entropy for global distribution
@@ -209,7 +220,7 @@
       public :: qe, qi, fxe, ffc, mixup, sct
       public :: part, ppbuff, ncl, ihole
       public :: ppart, pparti, kpic, kipic
-      public :: wt, sfield, pkw, pkwdi, wk, wkdi
+      public :: wt, sfield, pkw, pkwdi, wk, wkdi, fmse, fmsi
       public :: fv, fvi, fvm, fvmi, fvtm, fvtmi, fvtp, fvmtp, partd
       public :: wm, wmi, cwk
       private :: s, sfieldc
@@ -782,6 +793,8 @@
          itdi = itdi + 1
          ts = dt*real(ntime)
 ! performs frequency analysis of accumulated complex time series
+! zero out mode 0
+         denit(1) = cmplx(0.0,0.0)
          call micspect1(denit,wmi,pkwdi,pksdi,ts,t0,tdiag,mtdi,iwi,     &
      &modesxdi,nx,-1)
 ! find frequency with maximum power for each mode
@@ -912,6 +925,113 @@
       endif
       deallocate(elt)
       ceng = affp
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine init_efluidms_diag1()
+! initialize electron fluid moments diagnostic
+      implicit none
+! calculate first dimension of fluid arrays
+      if (npro==1) then
+         nprd = 1
+      else if (npro==2) then
+         nprd = 2
+      else if (npro==3) then
+         nprd = 3
+      else if (npro==4) then
+         nprd = 5
+      endif
+      if ((ndfm==1).or.(ndfm==3)) then
+         allocate(fmse(nprd,nxe))
+! open file for real data: updates nferec and possibly iufe
+         ffename = 'fmer1.'//cdrun
+         if (nferec==0) then
+            call dafopenv1(fmse,nx,iufe,nferec,trim(ffename))
+         endif
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine efluidms_diag1(fmse)
+! electron fluid moments diagnostic
+      implicit none
+! fmse = electron fluid moments
+      real, dimension(:,:), intent(inout) :: fmse
+! calculate electron fluid moments
+      if ((ndfm==1).or.(ndfm==3)) then
+         call dtimer(dtime,itime,-1)
+         fmse = 0.0
+         call dtimer(dtime,itime,1)
+         tdiag = tdiag + real(dtime)
+         call wmgprofx1(ppart,fxe,fmse,kpic,qbme,dt,ci,tdiag,npro,nx,mx,&
+     &relativity)
+! add guard cells with OpenMP: updates fmse
+         call mamcguard1(fmse,tdiag,nx)
+! calculates fluid quantities from fluid moments: updates fmse
+         call mfluidqs1(fmse,tdiag,npro,nx)
+! write real space diagnostic output: updates nferec
+          call dafwritev1(fmse,tdiag,iufe,nferec,nx)
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine del_efluidms_diag1()
+! delete electron fluid moments diagnostic
+      implicit none
+      if (nferec > 0) then
+         close(unit=iufe)
+         nferec = nferec - 1
+      endif
+      if (allocated(fmse)) deallocate(fmse)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine init_ifluidms_diag1()
+! initialize ion fluid moments diagnostic
+      implicit none
+      if ((ndfm==2).or.(ndfm==3)) then
+         allocate(fmsi(nprd,nxe))
+! open file for real data: updates nfirec and possibly iufi
+         ffiname = 'fmir1.'//cdrun
+         if (nfirec==0) then
+            call dafopenv1(fmsi,nx,iufi,nfirec,trim(ffiname))
+         endif
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine ifluidms_diag1(fmsi)
+! ion fluid moments diagnostic
+      implicit none
+! fmsi = ion fluid moments
+      real, dimension(:,:), intent(inout) :: fmsi
+! calculate ion fluid moments
+      if ((ndfm==2).or.(ndfm==3)) then
+         call dtimer(dtime,itime,-1)
+         fmsi = 0.0
+         call dtimer(dtime,itime,1)
+         tdiag = tdiag + real(dtime)
+         call wmgprofx1(pparti,fxe,fmsi,kipic,qbmi,dt,ci,tdiag,npro,nx, &
+     &mx,relativity)
+! add guard cells with OpenMP: updates fmsi
+         call mamcguard1(fmsi,tdiag,nx)
+! calculates fluid quantities from fluid moments: updates fmsi
+         call mfluidqs1(fmsi,tdiag,npro,nx)
+         fmsi = rmass*fmsi
+! write real space diagnostic output: updates nfirec
+         call dafwritev1(fmsi,tdiag,iufi,nfirec,nx)
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine del_ifluidms_diag1()
+! delete ion fluid moments diagnostic
+      implicit none
+      if (nfirec > 0) then
+         close(unit=iufi)
+         nfirec = nfirec - 1
+      endif
+      if (allocated(fmsi)) deallocate(fmsi)
       end subroutine
 !
 !-----------------------------------------------------------------------
@@ -1132,6 +1252,12 @@
       if (ntel > 0) then
          if (nelrec > 1) nelrec = 1
       endif
+      if (ntfm > 0) then
+         if (nferec > 1) nferec = 1
+         if (movion==1) then
+            if (nfirec > 1) nfirec = 1
+         endif
+      endif
       if (ntv > 0) then
          itv = 0; fvtm = 0.0
          if (movion==1) then
@@ -1141,7 +1267,6 @@
       if (ntt > 0) itt = 0
       end subroutine
 !
-
 !-----------------------------------------------------------------------
       subroutine close_diags1(iudm)
 ! close diagnostics
@@ -1155,6 +1280,13 @@
       if (ntp > 0) call del_potential_diag1()
 ! longitudinal efield diagnostic
       if (ntel > 0) call del_elfield_diag1()
+! fluid moments diagnostic
+      if (ntfm > 0) then
+! electrons
+         call del_efluidms_diag1()
+! ions
+         if (movion==1) call del_ifluidms_diag1()
+      endif
 ! ion density diagnostic
       if (movion==1) then
          if (ntdi > 0) call del_idensity_diag1()
@@ -1215,6 +1347,14 @@
 ! initialize longitudinal efield diagnostic
       if (ntel > 0) then
          call init_elfield_diag1()
+      endif
+!
+! initialize fluid moments diagnostic
+      if (ntfm > 0) then
+! electrons: allocates fmse
+         call init_efluidms_diag1()
+! ions: allocates fmsi
+         if (movion==1) call init_ifluidms_diag1()
       endif
 !
 ! initialize velocity diagnostic:
@@ -1572,6 +1712,37 @@
          endif
       endif
 !
+! write out fluid moments diagnostic parameter
+      write (iur) ntfm
+      if (ntfm > 0) then
+! write out electron record location
+         write (iur) nferec
+! write out record length (zero if error) and file name (if no error)
+         if (nferec > 0) then
+            inquire(file=ffename,recl=it,iostat=ios)
+            if (ios /= 0) it = 0
+            write (iur) it
+            if (it > 0) then
+               fname = ffename
+               write (iur) fname
+            endif
+         endif
+         if (movion==1) then
+! write out ion record location
+            write (iur) nfirec
+! write out record length (zero if error) and file name (if no error)
+            if (nfirec > 0) then
+               inquire(file=ffiname,recl=it,iostat=ios)
+               if (ios /= 0) it = 0
+               write (iur) it
+               if (it > 0) then
+                  fname = ffiname
+                  write (iur) fname
+               endif
+            endif
+         endif
+      endif
+!
 ! write out velocity diagnostic parameter
       write (iur) ntv
       if (ntv > 0) then
@@ -1880,6 +2051,71 @@
                   write (*,*) 'pksdi array read error, ios = ', ios
                   stop
                endif
+            endif
+         endif
+      endif
+!
+! read in fluid moments diagnostic parameter
+      read (iur,iostat=ios) it
+      if (ios /= 0) then
+         write (*,*) 'ntfm restart error, ios = ', ios
+         stop
+      endif
+      if (it /= ntfm) then
+         write (*,*) 'restart error: read/expected ntel=', it, ntfm
+         stop
+      endif
+! read in electron data
+      if (ntfm > 0) then
+! read in electron record location
+         read (iur,iostat=ios) nferec
+         if (ios /= 0) then
+            write (*,*) 'nferec restart error, ios = ', ios
+            stop
+         endif
+! read in record length (zero if error) and file name (if no error)
+         if (nferec > 0) then
+            read (iur,iostat=ios) it
+            if (ios /= 0) then
+               write (*,*) 'ntfm record length error, ios = ', ios
+               stop
+            endif
+            if (it==0) then
+               write (*,*) 'ntfm zero length record error'
+               stop
+            endif
+            read (iur,iostat=ios) fname
+            if (ios /= 0) then
+               write (*,*) 'ntfm file name error, ios = ', ios
+               stop
+            endif
+            ffename = fname
+         endif
+! read in ion data
+         if (movion==1) then
+! read in ion record location
+            read (iur,iostat=ios) nfirec
+            if (ios /= 0) then
+               write (*,*) 'nfirec restart error, ios = ', ios
+               stop
+            endif
+! read in ion record length (zero if error) and file name (if no error)
+            if (nfirec > 0) then
+               read (iur,iostat=ios) it
+               if (ios /= 0) then
+                  write (*,*) 'ntfm ion record length error, ios = ',ios
+                  stop
+               endif
+               if (it==0) then
+                  write (*,*) 'ntfm zero length ion record error'
+                  stop
+               endif
+               read (iur,iostat=ios) fname
+               if (ios /= 0) then
+                  write (*,*) 'ntfm ion file name error, ios = ', ios
+                  stop
+               endif
+               ffiname = fname
             endif
          endif
       endif

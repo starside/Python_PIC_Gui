@@ -312,6 +312,7 @@ def main(*args):
     # pkwdi = power spectrum for ion density
     # wk = maximum frequency as a function of k for potential
     # wkdi = maximum frequency as a function of k for ion density
+    # fmse/fmsi = electron/ion fluid moments
     # fv/fvi = global electron/ion velocity distribution functions
     # fvm/fvmi = electron/ion vdrift, vth, entropy for global distribution
     # fvtm/fvtmi = time history of electron/ion vdrift, vth, and entropy
@@ -380,6 +381,13 @@ def main(*args):
                          in1.relativity, False, irc)
         # add guard cells: updates cue
         mgard1.macguard1(sb1.cue, sb1.tguard, nx)
+
+        # save electron current for electron current diagnostic later
+        if (in1.ndc==0):
+            if (in1.ntje > 0):
+                it = ntime/in1.ntje
+                if (ntime==in1.ntje*it):
+                    sb1.oldcue[:] = numpy.copy(sb1.cue) 
 
         # deposit ion current with OpenMP: updates cui
         if (in1.movion == 1):

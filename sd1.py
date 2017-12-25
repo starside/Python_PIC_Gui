@@ -20,6 +20,11 @@ denergy_diag13: darwin energy diagnostic
 init_dspectrum13: allocate scratch arrays for darwin vector fields
 del_dspectrum13: delete scratch arrays for darwin vector fields
 
+init_edcurrent_diag13: initialize darwin electron current density
+                       diagnostic
+edcurrent_diag13: darwin electron current density diagnostic
+del_edcurrent_diag13: delete darwin electron current density diagnostic
+
 init_vdpotential_diag13: initialize darwin vector potential diagnostic
 vdpotential_diag13: darwin vector potential diagnostic
 del_vdpotential_diag13: delete darwin vector potential diagnostic
@@ -31,6 +36,10 @@ del_detfield_diag13: delete darwin transverse efield diagnostic
 init_dbfield_diag13: initialize darwin magnetic field diagnostic
 dbfield_diag13: darwin magnetic field diagnostic
 del_dbfield_diag13: delete darwin magnetic field diagnostic
+
+edfluidms_diag13: darwin electron fluid moments diagnostic
+
+idfluidms_diag13: darwin ion fluid moments diagnostic
 
 print_dtimings13: print darwin timing summaries
 
@@ -50,7 +59,7 @@ dread_drestart13: read in restart diagnostic file for darwin code
 
 written by Viktor K. Decyk and Joshua Kelly, UCLA
 copyright 1999-2016, regents of the university of california
-update: february 2, 2017
+update: december 11, 2017
 """
 import math
 import numpy
@@ -83,6 +92,8 @@ irc = numpy.zeros((1),int_type)
 irc2 = numpy.zeros((2),int_type)
 
 # declare and initialize timing data
+itime = numpy.empty((4),numpy.int32)
+dtime = numpy.empty((1),double_type)
 tguard = numpy.zeros((1),float_type)
 tfield = numpy.zeros((1),float_type)
 tdcjpost = numpy.zeros((1),float_type)
@@ -329,6 +340,51 @@ def del_dspectrum13():
       del wm
 
 #-----------------------------------------------------------------------
+def init_edcurrent_diag13():
+   """ initialize darwin electron current density diagnostic """
+   global curet, iuje, oldcue
+   fjename = "curek1." + s1.cdrun
+   in1.fjename[:] = fjename
+   in1.modesxje = int(min(in1.modesxje,nxh+1))
+# oldcue = previous current density
+   oldcue = numpy.zeros((2,nxe),float_type,'F')
+# curet = store selected fourier modes for electron current density
+   curet = numpy.empty((2,in1.modesxje),complex_type,'F')
+# open file: updates njerec and possibly iuje
+   if (in1.njerec==0):
+      mdiag1.dafopenvc1(curet,iuje,in1.njerec,fjename)
+
+#-----------------------------------------------------------------------
+def edcurrent_diag13(vfield):
+   """
+   darwin electron current density diagnostic
+   input/output:
+   vfield = scratch array for vector field
+   """
+   vfield[:] = numpy.copy(oldcue)
+# transform electron current density to fourier space: updates vfield
+   isign = -1
+   mfft1.mfft1rn(vfield,isign,s1.mixup,s1.sct,s1.tfft,in1.indx)
+# calculate smoothed electron current in fourier space: updates vfieldc
+   mfield1.msmooth13(vfield,vfieldc,s1.ffc,tfield,nx)
+# store selected fourier modes: updates curet
+   mfield1.mrdvmodes1(vfieldc,curet,tfield,nx,in1.modesxje)
+# write diagnostic output: updates njerec
+   mdiag1.dafwritevc1(curet,tdiag,sb1.iuje,in1.njerec,in1.modesxje)
+# transform smoothed electron current to real space: updates vfield
+   mfft1.mfft1crn(vfieldc,vfield,s1.mixup,s1.sct,s1.tfft,in1.indx)
+   mgard1.mcguard1(vfield,tguard,nx)
+
+#-----------------------------------------------------------------------
+def del_edcurrent_diag13():
+   """ delete darwin electron current density diagnostic """
+   global curet, oldcue
+   if (in1.njerec > 0):
+      in1.closeff(iuje)
+      in1.njerec -= 1
+   del curet, oldcue
+
+#-----------------------------------------------------------------------
 def init_vdpotential_diag13():
    """ initialize darwin vector potential diagnostic """
    global vpott
@@ -381,9 +437,10 @@ def vdpotential_diag13(vfield,vpkwi,vwk,ntime):
       global ita
       sb1.ita += 1
       ts = in1.dt*float(ntime)
+# performs frequency analysis of accumulated complex vector time series
       mdiag1.mivcspect1(vpott,wm,vpkw,vpks,ts,in1.t0,tdiag,sb1.mta,iw,
                         in1.modesxa,nx,1)
-# performs frequency analysis of accumulated complex vector time series
+# find frequency with maximum power for each mode
       vwk[0,:,0] = wm[numpy.argmax(vpkw[0,:,:,0],axis=1)]
       vwk[1,:,0] = wm[numpy.argmax(vpkw[1,:,:,0],axis=1)]
       vwk[0,:,1] = wm[numpy.argmax(vpkw[0,:,:,1],axis=1)]
@@ -456,9 +513,10 @@ def detfield_diag13(vfield,vpkwet,vwket,ntime):
       global itet
       sb1.itet += 1
       ts = in1.dt*float(ntime)
+# performs frequency analysis of accumulated complex vector time series
       mdiag1.mivcspect1(ett,wm,vpkwet,vpkset,ts,in1.t0,tdiag,sb1.mtet,
                         iw,in1.modesxet,nx,0)
-# performs frequency analysis of accumulated complex vector time series
+# find frequency with maximum power for each mode
       vwket[0,:,0] = wm[numpy.argmax(vpkwet[0,:,:,0],axis=1)]
       vwket[1,:,0] = wm[numpy.argmax(vpkwet[1,:,:,0],axis=1)]
       vwket[0,:,1] = wm[numpy.argmax(vpkwet[0,:,:,1],axis=1)]
@@ -517,6 +575,53 @@ def del_dbfield_diag13():
       in1.nbrec -= 1
    del bt
    in1.ceng = affp
+
+#-----------------------------------------------------------------------
+def edfluidms_diag13(fmse):
+   """
+   darwin electron fluid moments diagnostic
+   input/output:
+   fmse = electron fluid moments
+   """
+# calculate electron fluid moments
+   if ((in1.ndfm==1) or (in1.ndfm==3)):
+      s1.dtimer(dtime,itime,-1)
+      fmse.fill(0.0)
+      s1.dtimer(dtime,itime,1)
+      tdiag[0] += float(dtime)
+      mdiag1.wmgbprofx1(s1.ppart,sb1.fxyze,sb1.byze,fmse,s1.kpic,
+                        in1.omx,qbme,in1.dt,in1.ci,tdiag,in1.npro,nx,
+                        in1.mx,in1.relativity)
+# add guard cells with OpenMP: updates fmse
+      mgard1.mamcguard1(fmse,tdiag,nx)
+# calculates fluid quantities from fluid moments: updates fmse
+      mdiag1.mfluidqs13(fmse,tdiag,in1.npro,nx)
+# write real space diagnostic output: updates nferec
+      mdiag1.dafwritev1(fmse,tdiag,s1.iufe,in1.nferec,nx)
+
+#-----------------------------------------------------------------------
+def idfluidms_diag13(fmsi):
+   """
+   darwin ion fluid moments diagnostic
+   input/output:
+   fmsi = ion fluid moments
+   """
+# calculate ion fluid moments
+   if ((in1.ndfm==1) or (in1.ndfm==3)):
+      s1.dtimer(dtime,itime,-1)
+      fmsi.fill(0.0)
+      s1.dtimer(dtime,itime,1)
+      tdiag[0] += float(dtime)
+      mdiag1.wmgbprofx1(s1.pparti,sb1.fxyze,sb1.byze,fmsi,s1.kipic,
+                        in1.omx,qbmi,in1.dt,in1.ci,tdiag,in1.npro,nx,
+                        in1.mx,in1.relativity)
+# add guard cells with OpenMP: updates fmsi
+      mgard1.mamcguard1(fmsi,tdiag,nx)
+# calculates fluid quantities from fluid moments: updates fmsi
+      mdiag1.mfluidqs13(fmsi,tdiag,in1.npro,nx)
+      fmsi[:,:]  = in1.rmass*fmsi
+# write real space diagnostic output: updates nfirec
+      mdiag1.dafwritev1(fmsi,tdiag,s1.iufi,in1.nfirec,nx)
 
 #-----------------------------------------------------------------------
 def print_dtimings13(tinit,tloop,iuot):
@@ -607,9 +712,16 @@ def close_ddiags13(iudm):
 # longitudinal efield diagnostic
    if (in1.ntel > 0):
       s1.del_elfield_diag1()
-# electron current diagnostic
+# darwin fluid moments diagnostic
+   if (in1.ntfm > 0) :
+# electrons
+      s1.del_efluidms_diag1()
+# ions
+      if (in1.movion==1):
+         s1.del_ifluidms_diag1()
+# darwin electron current diagnostic
    if (in1.ntje > 0):
-      sb1.del_ecurrent_diag13()
+      del_edcurrent_diag13()
 # vector potential diagnostic
    if (in1.nta > 0):
       del_vdpotential_diag13()
@@ -688,9 +800,9 @@ def initialize_ddiagnostics13(ntime):
    if (in1.ntel > 0):
       s1.init_elfield_diag1()
 
-# initialize electron current density diagnostic
+# initialize darwin electron current density diagnostic
    if (in1.ntje > 0):
-      sb1.init_ecurrent_diag13()
+      init_edcurrent_diag13()
 
 # initialize ion current density diagnostic: allocates vpkwji, vwkji
    if (in1.movion==1):
@@ -709,6 +821,14 @@ def initialize_ddiagnostics13(ntime):
 # initialize darwin magnetic field diagnostic
    if (in1.ntb > 0):
       init_dbfield_diag13()
+
+# initialize fluid moments diagnostic
+   if (in1.ntfm > 0):
+# electrons: allocates fmse
+      sb1.init_efluidms_diag13()
+# ions: allocates fmsi
+      if (in1.movion==1):
+         sb1.init_ifluidms_diag13()
 
 # initialize velocity diagnostic
    if (in1.ntv > 0):
@@ -799,7 +919,7 @@ def darwin_predictor13(q2m0):
    mfield1.maddvrfield1(sb1.fxyze,cus,s1.fxe,tfield)
 
 #-----------------------------------------------------------------------
-def darwin_iteration(q2m0):
+def darwin_iteration(q2m0,ntime,k):
    """
    inner iteration loop
    input:
@@ -810,13 +930,30 @@ def darwin_iteration(q2m0):
    mdpush1.wmgdcjpost1(s1.ppart,sb1.fxyze,sb1.byze,sb1.cue,dcu,amu,
                        s1.kpic,in1.omx,in1.qme,qbme,in1.dt,in1.ci,
                        tdcjpost,nx,in1.mx,in1.relativity)
+# add guard cells for current, acceleration density, and momentum flux:
+# updates cue, dcu, amu
+   mgard1.macguard1(sb1.cue,sb1.tguard,nx)
+   mgard1.macguard1(dcu,tguard,nx)
+   mgard1.macguard1(amu,tguard,nx)
 
+# save electron current for electron current diagnostic later
+   if (k==(in1.ndc-1)):
+      if (in1.ntje > 0):
+         it = ntime/in1.ntje
+         if (ntime==in1.ntje*it):
+            oldcue[:] = numpy.copy(sb1.cue)
+         
 # deposit ion current and acceleration density and momentum flux
 # with OpenMP: updates cui, dcui, amui
    if (in1.movion==1):
       mdpush1.wmgdcjpost1(s1.pparti,sb1.fxyze,sb1.byze,sb1.cui,dcui,
                           amui,s1.kipic,in1.omx,in1.qmi,qbmi,in1.dt,
                           in1.ci,tdcjpost,nx,in1.mx,in1.relativity)
+# add guard cells for current, acceleration density, and momentum flux:
+# updates cui, dcui, amui
+      mgard1.macguard1(sb1.cui,sb1.tguard,nx)
+      mgard1.macguard1(dcui,tguard,nx)
+      mgard1.macguard1(amui,tguard,nx)
 # add electron and ion densities: updates cue, dcu, amu
       mfield1.maddcuei1(sb1.cue,sb1.cui,sb1.tfield,nxe)
       mfield1.maddcuei1(dcu,dcui,tfield,nxe)
@@ -824,12 +961,6 @@ def darwin_iteration(q2m0):
 
 # add scaled electric field: updates dcu
    mdpush1.mascfguard1(dcu,cus,q2m0,tdcjpost,nx)
-
-# add guard cells for current, acceleration density, and momentum flux:
-# updates cue, dcu, amu
-   mgard1.macguard1(sb1.cue,sb1.tguard,nx)
-   mgard1.macguard1(dcu,tguard,nx)
-   mgard1.macguard1(amu,tguard,nx)
 
 # transform current to fourier space: update cue
    isign = -1

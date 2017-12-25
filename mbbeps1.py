@@ -153,6 +153,7 @@ if (in1.treverse==1):
 # pkwdi = power spectrum for ion density
 # wk = maximum frequency as a function of k for potential
 # wkdi = maximum frequency as a function of k for ion density
+# fmse/fmsi = electron/ion fluid moments
 # fv/fvi = global electron/ion velocity distribution functions
 # fvm/fvmi = electron/ion vdrift, vth, entropy for global distribution
 # fvtm/fvtmi = time history of electron/ion vdrift, vth, and entropy
@@ -205,6 +206,16 @@ for ntime in xrange(nstart,nloop):
       it = ntime/in1.ntar
       if (ntime==in1.ntar*it):
          sb1.oldcu[:] = numpy.copy(sb1.cue)
+
+# fluid moments diagnostic
+   if (in1.ntfm > 0):
+      it = int(ntime/in1.ntfm)
+      if (ntime==in1.ntfm*it):
+# updates fmse
+         sb1.efluidms_diag13(s1.fmse)
+         if (in1.movion==1):
+# updates fmsi
+            sb1.ifluidms_diag13(s1.fmsi)
 
 # deposit electron current with OpenMP: updates ppart, kpic, cue
    dtimer(dtime,itime,-1)

@@ -52,13 +52,17 @@
 ! bfield_diag13: magnetic field diagnostic
 ! del_bfield_diag13: delete magnetic field diagnostic
 !
+! init_efluidms_diag13: initialize electron fluid moments diagnostic
+! efluidms_diag13: electron fluid moments diagnostic
+!
+! init_ifluidms_diag13: initialize ion fluid moments diagnostic
+! ifluidms_diag13: ion fluid moments diagnostic
+!
 ! init_evelocity_diag13: initialize electron velocity diagnostic
 ! evelocity_diag13: electron velocity diagnostic
-! del_evelocity_diag13: delete electron velocity diagnostic
 !
 ! init_ivelocity_diag13: initialize ion velocity diagnostic
 ! ivelocity_diag13: ion velocity diagnostic
-! del_ivelocity_diag13: delete ion velocity diagnostic
 !
 ! init_traj_diag13: initialize trajectory diagnostic
 ! traj_diag13: trajectory diagnostic
@@ -81,7 +85,7 @@
 !
 ! written by Viktor K. Decyk, UCLA
 ! copyright 1999-2016, regents of the university of california
-! update: january 12, 2017
+! update: december 9, 2017
       module fb1
       use f1
       use mbpush1
@@ -228,6 +232,7 @@
       subroutine init_electrons13()
 ! initialize electrons for 1-2/2d code
       implicit none
+!
 ! part = particle array
       allocate(part(idimp,max(np,npi)))
 ! background electrons
@@ -237,8 +242,14 @@
      &irc)
          if (irc /= 0) stop
 ! initialize particle velocities
-         call wmvdistr1h(part,1,vtx,vty,vtz,vx0,vy0,vz0,ci,npx,nvdist,  &
-     &relativity,irc)
+! special cases
+         if (nvdist==3) then
+            call mvbdistr1h(part,1,vtx,vtz,vx0,vz0,omx,omy,omz,npx,irc)
+! general cases
+         else
+            call wmvdistr1h(part,1,vtx,vty,vtz,vx0,vy0,vz0,ci,npx,nvdist&
+     &,relativity,irc)
+         endif
          if (irc /= 0) stop
       endif
 ! beam electrons
@@ -249,8 +260,15 @@
      &,irc)
          if (irc /= 0) stop
 ! initialize particle velocities
-         call wmvdistr1h(part,it,vtdx,vtdy,vtdz,vdx,vdy,vdz,ci,npxb,    &
+! special cases
+         if (nvdist==3) then
+            call mvbdistr1h(part,it,vtdx,vtdz,vdx,vdz,omx,omy,omz,npxb, &
+     &irc)
+! general cases
+         else
+            call wmvdistr1h(part,it,vtdx,vtdy,vtdz,vdx,vdy,vdz,ci,npxb, &
      &nvdist,relativity,irc)
+         endif
          if (irc /= 0) stop
       endif
 !
@@ -374,8 +392,15 @@
      &ndprofi,irc)
          if (irc /= 0) stop
 ! initialize particle velocities
-         call wmvdistr1h(part,1,vtxi,vtyi,vtzi,vxi0,vyi0,vzi0,ci,npxi,  &
-     &nvdist,relativity,irc)
+! special cases
+         if (nvdist==3) then
+            call mvbdistr1h(part,1,vtxi,vtzi,vxi0,vzi0,omx,omy,omz,npxi,&
+     &irc)
+! general cases
+         else
+            call wmvdistr1h(part,1,vtxi,vtyi,vtzi,vxi0,vyi0,vzi0,ci,npxi&
+     &,nvdist,relativity,irc)
+         endif
       endif
 ! beam ions
       if (npxbi > 0) then
@@ -384,8 +409,15 @@
          call mfdistr1(part,ampdxi,scaledxi,shiftdxi,it,npxbi,nx,ipbc,  &
      &ndprofi,irc)
 ! initialize particle velocities
-         call wmvdistr1h(part,it,vtdxi,vtdyi,vtdzi,vdxi,vdyi,vdzi,ci,   &
+! special cases
+         if (nvdist==3) then
+            call mvbdistr1h(part,it,vtdxi,vtdzi,vdxi,vdzi,omx,omy,omz,  &
+     &npxbi,irc)
+! general cases
+         else
+            call wmvdistr1h(part,it,vtdxi,vtdyi,vtdzi,vdxi,vdyi,vdzi,ci,&
      &npxbi,nvdist,relativity,irc)
+         endif
       endif
 !
 ! mark ion beam particles
@@ -726,9 +758,12 @@
       if ((ndji==2).or.(ndji==3)) then
          itji = itji + 1
          ts = dt*real(ntime)
+! performs frequency analysis of accumulated complex vector time series
+! zero out mode 0
+         curit(:,1) = cmplx(0.0,0.0)
          call mivcspect1(curit,wmi,vpkwji,vpksji,ts,t0,tdiag,mtji,iwi,  &
      &modesxji,nx,-1)
-! performs frequency analysis of accumulated complex time series
+! find frequency with maximum power for each mode
          vwkji(1,:,1) = wmi(maxloc(vpkwji(1,:,:,1),dim=2))
          vwkji(2,:,1) = wmi(maxloc(vpkwji(2,:,:,1),dim=2))
          vwkji(1,:,2) = wmi(maxloc(vpkwji(1,:,:,2),dim=2))
@@ -794,7 +829,7 @@
 ! write diagnostic output: updates narrec
       call dafwritevc1(vpotr,tdiag,iuar,narrec,modesxar)
 ! transform radiative vector potential to real space: updates vfield
-      if ((ndp==1).or.(ndp==3)) then
+      if ((ndar==1).or.(ndar==3)) then
          call mfft1crn(vfieldc,vfield,mixup,sct,tfft,indx)
          call mcguard1(vfield,tguard,nx)
       endif
@@ -802,9 +837,10 @@
       if ((ndar==2).or.(ndar==3)) then
          itar = itar + 1
          ts = dt*real(ntime)
+! performs frequency analysis of accumulated complex vector time series
          call mivcspect1(vpotr,wmr,vpkwr,vpksr,ts,t0,tdiag,mtar,iwr,    &
      &modesxar,nx,1)
-! performs frequency analysis of accumulated complex vector time series
+! find frequency with maximum power for each mode
          vwkr(1,:,1) = wmr(maxloc(vpkwr(1,:,:,1),dim=2))
          vwkr(2,:,1) = wmr(maxloc(vpkwr(2,:,:,1),dim=2))
          vwkr(1,:,2) = wmr(maxloc(vpkwr(1,:,:,2),dim=2))
@@ -820,7 +856,7 @@
          close(unit=iuar)
          narrec = narrec - 1
       endif
-      deallocate(vpotr)
+      deallocate(vpotr,oldcu)
 ! spectral analysis
       if ((ndar==2).or.(ndar==3)) then
          deallocate(vpkwr,vwkr,vpksr)
@@ -873,9 +909,10 @@
       if ((nda==2).or.(nda==3)) then
          ita = ita + 1
          ts = dt*real(ntime)
+! performs frequency analysis of accumulated complex vector time series
          call mivcspect1(vpott,wmr,vpkw,vpks,ts,t0,tdiag,mta,iwr,modesxa&
      &,nx,1)
-! performs frequency analysis of accumulated complex vector time series
+! find frequency with maximum power for each mode
          vwk(1,:,1) = wmr(maxloc(vpkw(1,:,:,1),dim=2))
          vwk(2,:,1) = wmr(maxloc(vpkw(2,:,:,1),dim=2))
          vwk(1,:,2) = wmr(maxloc(vpkw(1,:,:,2),dim=2))
@@ -942,9 +979,10 @@
       if ((ndet==2).or.(ndet==3)) then
          itet = itet + 1
          ts = dt*real(ntime)
+! performs frequency analysis of accumulated complex vector time series
          call mivcspect1(ett,wmr,vpkwet,vpkset,ts,t0,tdiag,mtet,iwr,    &
      &modesxet,nx,0)
-! performs frequency analysis of accumulated complex vector time series
+! find frequency with maximum power for each mode
          vwket(1,:,1) = wmr(maxloc(vpkwet(1,:,:,1),dim=2))
          vwket(2,:,1) = wmr(maxloc(vpkwet(2,:,:,1),dim=2))
          vwket(1,:,2) = wmr(maxloc(vpkwet(1,:,:,2),dim=2))
@@ -1007,6 +1045,82 @@
       end subroutine
 !
 !-----------------------------------------------------------------------
+      subroutine init_efluidms_diag13()
+! initialize electron fluid moments diagnostic
+      implicit none
+! calculate first dimension of fluid arrays
+      if (npro==1) then
+         nprd = 1
+      else if (npro==2) then
+         nprd = 4
+      else if (npro==3) then
+         nprd = 10
+      else if (npro==4) then
+         nprd = 14
+      endif
+      if ((ndfm==1).or.(ndfm==3)) then
+         allocate(fmse(nprd,nxe))
+! open file for real data: updates nferec and possibly iufe
+         ffename = 'fmer1.'//cdrun
+         if (nferec==0) then
+            call dafopenv1(fmse,nx,iufe,nferec,trim(ffename))
+         endif
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine efluidms_diag13(fmse)
+! electron fluid moments diagnostic
+      implicit none
+! fmse = electron fluid moments
+      real, dimension(:,:), intent(inout) :: fmse
+! calculate electron fluid moments
+      if ((ndfm==1).or.(ndfm==3)) then
+         call dtimer(dtime,itime,-1)
+         fmse = 0.0
+         call dtimer(dtime,itime,1)
+         tdiag = tdiag + real(dtime)
+         call wmprofx13(ppart,fmse,kpic,ci,tdiag,npro,mx,relativity)
+! add guard cells with OpenMP: updates fmse
+         call mamcguard1(fmse,tdiag,nx)
+! calculates fluid quantities from fluid moments: updates fmse
+         call mfluidqs13(fmse,tdiag,npro,nx)
+! write real space diagnostic output: updates nferec
+         call dafwritev1(fmse,tdiag,iufe,nferec,nx)
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine init_ifluidms_diag13()
+! initialize ion fluid moments diagnostic
+      implicit none
+      call init_ifluidms_diag1()
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine ifluidms_diag13(fmsi)
+! ion fluid moments diagnostic
+      implicit none
+! fmsi = ion fluid moments
+      real, dimension(:,:), intent(inout) :: fmsi
+! calculate ion fluid moments
+      if ((ndfm==2).or.(ndfm==3)) then
+         call dtimer(dtime,itime,-1)
+         fmsi = 0.0
+         call dtimer(dtime,itime,1)
+         tdiag = tdiag + real(dtime)
+         call wmprofx13(pparti,fmsi,kipic,ci,tdiag,npro,mx,relativity)
+! add guard cells with OpenMP: updates fmsi
+         call mamcguard1(fmsi,tdiag,nx)
+! calculates fluid quantities from fluid moments: updates fmsi
+         call mfluidqs13(fmsi,tdiag,npro,nx)
+         fmsi = rmass*fmsi
+! write real space diagnostic output: updates nfirec
+         call dafwritev1(fmsi,tdiag,iufi,nfirec,nx)
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
       subroutine init_evelocity_diag13()
 ! initialize electron velocity diagnostic
       implicit none
@@ -1045,14 +1159,6 @@
       end subroutine
 !
 !-----------------------------------------------------------------------
-      subroutine del_evelocity_diag13()
-! delete electron velocity diagnostic
-      implicit none
-      deallocate(sfv)
-      call del_evelocity_diag1()
-      end subroutine
-!
-!-----------------------------------------------------------------------
       subroutine init_ivelocity_diag13()
 ! initialize ion velocity diagnostic
       implicit none
@@ -1087,14 +1193,6 @@
       if (ndv==2) itv = itv + 1
 ! store time history of ion vdrift, vth, and entropy
       fvtmi(itv,:,:) = fvmi
-      end subroutine
-!
-!-----------------------------------------------------------------------
-      subroutine del_ivelocity_diag13()
-! delete ion velocity diagnostic
-      implicit none
-      call del_ivelocity_diag1()
-      deallocate(sfvi)
       end subroutine
 !
 !-----------------------------------------------------------------------
@@ -1249,6 +1347,13 @@
       if (ntp > 0) call del_potential_diag1()
 ! longitudinal efield diagnostic
       if (ntel > 0) call del_elfield_diag1()
+! fluid moments diagnostic
+      if (ntfm > 0) then
+! electrons
+         call del_efluidms_diag1()
+! ions
+         if (movion==1) call del_ifluidms_diag1()
+      endif
 ! electron current diagnostic
       if (ntje > 0) call del_ecurrent_diag13()
 ! radiative vector potential diagnostic
@@ -1286,10 +1391,8 @@
       if (ntw > 0) call del_energy_diag13()
       if (ntv > 0) then
          call del_evelocity_diag1()
-         deallocate(sfv)
          if (movion==1) then
             call del_ivelocity_diag1()
-            deallocate(sfvi)
          endif
       endif
       if (ntt > 0) call del_traj_diag1()
@@ -1372,6 +1475,14 @@
 ! initialize magnetic field diagnostic
       if (ntb > 0) then
          call init_bfield_diag13()
+      endif
+!
+! initialize fluid moments diagnostic
+      if (ntfm > 0) then
+! electrons: allocates fmse
+         call init_efluidms_diag13()
+! ions: allocates fmsi
+         if (movion==1) call init_ifluidms_diag13()
       endif
 !
 ! initialize velocity diagnostic

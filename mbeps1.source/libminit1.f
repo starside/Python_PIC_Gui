@@ -23,6 +23,10 @@
 !         distribution with drift for 1d code
 ! WDISTR1H calculates initial particle velocities with waterbag velocity
 !          distribution with drift for 1-2/2d code
+! VBDISTR1H calculates initial particle velocities for a magnetized
+!           plasma with maxwellian velocity with drift in direction
+!           parallel to B, ring distribution in directions perpendicular
+!           to B for 1-2/2d code
 ! DBLKP1L finds the maximum number of particles in each tile
 ! ranorm gaussian random number generator
 ! randum uniform random number generator
@@ -42,7 +46,7 @@
 !          for a gaussian density profile with no background density
 ! written by Viktor K. Decyk, UCLA
 ! copyright 2016, regents of the university of california
-! update: may 15, 2017
+! update: december 5, 2017
 !-----------------------------------------------------------------------
       subroutine NEXTRAN1(nextrand,ndim,np)
 ! for 1d code, this subroutine skips over nextrand groups of random
@@ -417,9 +421,6 @@
       dsum2 = dsum2 + part(3,j+js)
       dsum3 = dsum3 + part(4,j+js)
    20 continue
-      sum1 = dsum1
-      sum2 = dsum2
-      sum3 = dsum3
       at1 = 1.0/real(npx)
       sum1 = at1*real(dsum1) - vdx
       sum2 = at1*real(dsum2) - vdy
@@ -539,9 +540,6 @@
       dsum2 = dsum2 + part(3,j+js)
       dsum3 = dsum3 + part(4,j+js)
    20 continue
-      sum1 = dsum1
-      sum2 = dsum2
-      sum3 = dsum3
       at1 = 1.0/real(npx)
       sum1 = at1*real(dsum1) - vdx
       sum2 = at1*real(dsum2) - vdy
@@ -558,7 +556,7 @@
 ! for 1d code, this subroutine calculates initial particle
 ! velocity with waterbag velocity distribution with drift
 ! part(2,n) = velocity vx of particle n
-! vtx = maximum velocity of particles in x direction
+! vtx = maximum velocity/sqrt(3) of particles in x direction
 ! vdx = drift velocity of particles in x direction
 ! jstart = starting location in particle array
 ! npx = number of particles distributed in x direction
@@ -600,7 +598,7 @@
 ! part(2,n) = velocity vx of particle n
 ! part(3,n) = velocity vy of particle n
 ! part(4,n) = velocity vz of particle n
-! vtx/vty/vtz = maximum velocity of particles in x/y/z direction
+! vtx/vty/vtz = maximum velocity/sqrt(3) of particles in x/y/z direction
 ! vdx/vdy/vdz = drift velocity of particles in x/y/z direction
 ! jstart = starting location in particle array
 ! npx = number of particles distributed in x direction
@@ -636,9 +634,6 @@
       dsum2 = dsum2 + part(3,j+js)
       dsum3 = dsum3 + part(4,j+js)
    20 continue
-      sum1 = dsum1
-      sum2 = dsum2
-      sum3 = dsum3
       at1 = 1.0/real(npx)
       sum1 = at1*real(dsum1) - vdx
       sum2 = at1*real(dsum2) - vdy
@@ -648,6 +643,122 @@
       part(3,j+js) = part(3,j+js) - sum2
       part(4,j+js) = part(4,j+js) - sum3
    30 continue
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine VBDISTR1H(part,vtr,vtz,vdr,vdz,omx,omy,omz,jstart,npx, &
+     &idimp,nop)
+! for 1-2/2d code, this subroutine calculates initial particle
+! velocities for a magnetized plasma with maxwellian velocity with
+! drift in direction parallel to B, ring distribution in directions
+! perpendicular to B.  The algorithm due to phil pritchett proceeds by
+! first assuming B is in the z direction, then rotating to the
+! co-ordinates to match the actual B direction
+! part(2,n) = velocity vx of particle n
+! part(3,n) = velocity vy of particle n
+! part(4,n) = velocity vz of particle n
+! vtr/vtz = thermal velocity of particles in azimuthal/B direction
+! vdt/vdz = drift velocity of particles in azimuthal/B direction
+! omx/omy/omz = magnetic field electron cyclotron frequency in x/y/z 
+! jstart = starting location in particle array
+! npx = number of particles distributed in x direction
+! idimp = size of phase space = 4
+! nop = maximum number of particles
+! randum = uniform random number
+! ranorm = gaussian random number with zero mean and unit variance
+      implicit none
+      integer jstart, npx, idimp, nop
+      real part, vtr, vtz, vdr, vdz, omx, omy, omz
+      dimension part(idimp,nop)
+! local data
+      integer j, js, ndir
+      real twopi, at1, at2, sum1, sum2, sum3
+      real ox, oy, oz, px, py, pz, qx, qy, qz, vx, vy, vz
+      double precision dsum1, dsum2, dsum3
+      double precision randum, ranorm
+      js = jstart - 1
+      if ((js+npx).gt.nop) return
+      twopi = 6.28318530717959
+! maxwell velocity distribution with ring distribution in x and y,
+! maxwell velocity distribution in z
+      do 10 j = 1, npx
+      at1 = twopi*randum()
+      part(2,j+js) = vdr*cos(at1) + vtr*ranorm()
+      part(3,j+js) = vdr*sin(at1) + vtr*ranorm()
+      part(4,j+js) = vtz*ranorm()
+   10 continue
+! add correct drift
+      dsum1 = 0.0d0
+      dsum2 = 0.0d0
+      dsum3 = 0.0d0
+      do 20 j = 1, npx
+      dsum1 = dsum1 + part(2,j+js)
+      dsum2 = dsum2 + part(3,j+js)
+      dsum3 = dsum3 + part(4,j+js)
+   20 continue
+      at1 = 1.0/real(npx)
+      sum1 = at1*real(dsum1)
+      sum2 = at1*real(dsum2)
+      sum3 = at1*real(dsum3) - vdz
+      do 30 j = 1, npx
+      part(2,j+js) = part(2,j+js) - sum1
+      part(3,j+js) = part(3,j+js) - sum2
+      part(4,j+js) = part(4,j+js) - sum3
+   30 continue
+! rotate perpendicular and parallel component to align with actual B field
+      at1 = sqrt(omx*omx + omy*omy + omz*omz)
+! exit if zero B field
+      if (at1.eq.0.0) return
+! first create unit vector in B direction
+      at1 = 1.0/at1
+      ox = omx*at1
+      oy = omy*at1
+      oz = omz*at1
+! then create unit vector in first perpendicular direction
+! find direction with smallest component of B
+      ndir = 1
+      at1 = abs(omx)
+      at2 = abs(omy)
+      if (at2.le.at1) then
+         ndir = 2
+         at1 = at2
+      endif
+      if (abs(omz).lt.at1) ndir = 3
+! take the cross product of that direction with B
+! vpr1 = x cross B
+      if (ndir.eq.1) then
+         at1 = 1.0/sqrt(oy*oy + oz*oz)
+         px = 0.0
+         py = -oz*at1
+         pz = oy*at1
+! vpr1 = y cross B
+      else if (ndir.eq.2) then
+         at1 = 1.0/sqrt(ox*ox + oz*oz)
+         px = oz*at1
+         py = 0.0
+         pz = -ox*at1
+! vpr1 = z cross B
+      else if (ndir.eq.3) then
+         at1 = 1.0/sqrt(ox*ox + oy*oy)
+         px = -oy*at1
+         py = ox*at1
+         pz = 0.0
+      endif
+! finally create unit vector in second perpendicular direction
+! vpr2 = B cross vpr1
+      qx = oy*pz - oz*py
+      qy = oz*px - ox*pz
+      qz = ox*py - oy*px
+! rotate particle velocities
+      do 40 j = 1, npx
+      vx = part(2,j+js)
+      vy = part(3,j+js)
+      vz = part(4,j+js)
+! store components in appropriate direction
+      part(2,j+js) = vz*ox + vx*px + vy*qx
+      part(3,j+js) = vz*oy + vx*py + vy*qy
+      part(4,j+js) = vz*oz + vx*pz + vy*qz
+   40 continue
       return
       end
 !-----------------------------------------------------------------------

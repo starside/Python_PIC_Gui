@@ -16,6 +16,9 @@
 ! override input data
       idcode = 1
       ndim = 1
+      if (nts > 0) then
+         nsxv = min(nsxv,1); nsvv = 0
+      endif
 !
 ! create string from idrun
       write (cdrun,'(i10)') idrun
@@ -123,6 +126,7 @@
 ! pkwdi = power spectrum for ion density
 ! wk = maximum frequency as a function of k for potential
 ! wkdi = maximum frequency as a function of k for ion density
+! fmse/fmsi = electron/ion fluid moments
 ! fv/fvi = global electron/ion velocity distribution functions
 ! fvm/fvmi = electron/ion vdrift, vth, entropy for global distribution
 ! fvtm/fvtmi = time history of electron/ion vdrift, vth, and entropy
@@ -269,7 +273,20 @@
          endif
       endif
 !
-! velocity diagnostic:
+! fluid moments diagnostic
+      if (ntfm > 0) then
+         it = ntime/ntfm
+         if (ntime==ntfm*it) then
+! updates fmse
+            call efluidms_diag1(fmse)
+            if (movion==1) then
+! updates fmsi
+               call ifluidms_diag1(fmsi)
+            endif
+         endif
+      endif
+!
+! velocity diagnostic
       if (ntv > 0) then
          it = ntime/ntv
          if (ntime==ntv*it) then

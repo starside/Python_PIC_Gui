@@ -165,6 +165,7 @@ if (in1.treverse==1):
 # pkwdi = power spectrum for ion density
 # wk = maximum frequency as a function of k for potential
 # wkdi = maximum frequency as a function of k for ion density
+# fmse/fmsi = electron/ion fluid moments
 # fv/fvi = global electron/ion velocity distribution functions
 # fvm/fvmi = electron/ion vdrift, vth, entropy for global distribution
 # fvtm/fvtmi = time history of electron/ion vdrift, vth, and entropy
@@ -214,6 +215,13 @@ for ntime in xrange(nstart,nloop):
                     in1.relativity,False,irc)
 # add guard cells: updates cue
    mgard1.macguard1(sb1.cue,sb1.tguard,nx)
+
+# save electron current for electron current diagnostic later
+   if (in1.ndc==0):
+      if (in1.ntje > 0):
+         it = ntime/in1.ntje
+         if (ntime==in1.ntje*it):
+            sb1.oldcue[:] = numpy.copy(sb1.cue)
 
 # deposit ion current with OpenMP: updates cui
    if (in1.movion==1):
@@ -327,7 +335,7 @@ for ntime in xrange(nstart,nloop):
          dtimer(dtime,itime,1)
          sd1.tdcjpost[0] += float(dtime)
 # updates: dcu, cus, byze, fxyze
-      sd1.darwin_iteration(sd1.q2m0)
+      sd1.darwin_iteration(sd1.q2m0,ntime,k)
 
    pass
 
@@ -339,12 +347,12 @@ for ntime in xrange(nstart,nloop):
 # copy guard cells: updates fxyze
    mgard1.mcguard1(sb1.fxyze,sb1.tguard,nx)
 
-# electron current density diagnostic:
+# darwin electron current density diagnostic:
 # updates vfield=electron current
    if (in1.ntje > 0):
       it = ntime/in1.ntje
       if (ntime==in1.ntje*it):
-         sb1.ecurrent_diag13(sb1.vfield)
+         sd1.edcurrent_diag13(sb1.vfield)
 # display smoothed electron current
          graf1.dvector1(sb1.vfield,' ELECTRON CURRENT',ntime,999,0,2,nx,
                         irc)
@@ -449,6 +457,16 @@ for ntime in xrange(nstart,nloop):
                         irc)
          if (irc[0]==1): break
          irc[0] = 0
+
+# fluid moments diagnostic
+   if (in1.ntfm > 0):
+      it = int(ntime/in1.ntfm)
+      if (ntime==in1.ntfm*it):
+# updates fmse
+         sd1.edfluidms_diag13(s1.fmse)
+         if (in1.movion==1):
+# updates fmsi
+            sd1.idfluidms_diag13(s1.fmsi)
 
 # velocity diagnostic
    if (in1.ntv > 0):

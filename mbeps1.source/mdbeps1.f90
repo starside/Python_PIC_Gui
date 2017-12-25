@@ -169,6 +169,7 @@
 ! vwk = maximum frequency as a function of k for vector potential
 ! vpkwet = power spectrum for transverse efield
 ! vwket = maximum frequency as a function of k for transverse efield
+! oldcue = previous current density with guard cells
       call initialize_ddiagnostics13(ntime)
 !
 ! read in restart diagnostic file to continue interrupted run
@@ -214,15 +215,11 @@
 ! add guard cells: updates cue
       call macguard1(cue,tguard,nx)
 !
-! electron current density diagnostic: updates vfield
-      if (ntje > 0) then
-         it = ntime/ntje
-         if (ntime==ntje*it) then
-            call ecurrent_diag13(vfield)
-! display smoothed electron current
-            call dvector1(vfield,' ELECTRON CURRENT',ntime,999,0,2,nx,  &
-     &irc)
-            if (irc==1) exit; irc = 0
+! save electron current for electron current diagnostic later
+      if (ndc==0) then
+         if (ntje > 0) then
+            it = ntime/ntje
+            if (ntime==ntje*it) oldcue = cue
          endif
       endif
 !
@@ -355,6 +352,18 @@
 ! copy guard cells: updates fxyze
       call mcguard1(fxyze,tguard,nx)
 !
+! darwin electron current density diagnostic: updates vfield
+      if (ntje > 0) then
+         it = ntime/ntje
+         if (ntime==ntje*it) then
+            call edcurrent_diag13(vfield)
+! display smoothed electron current
+            call dvector1(vfield,' ELECTRON CURRENT',ntime,999,0,2,nx,  &
+     &irc)
+            if (irc==1) exit; irc = 0
+         endif
+      endif
+!
 ! ion current density diagnostic: updates vfield, vpkwji, vwkji
       if (movion==1) then
          if (ntji > 0) then
@@ -459,6 +468,19 @@
 ! display magnetic field
             call dvector1(vfield,' MAGNETIC FIELD',ntime,999,0,2,nx,irc)
             if (irc==1) exit; irc = 0
+         endif
+      endif
+!
+! fluid moments diagnostic
+      if (ntfm > 0) then
+         it = ntime/ntfm
+         if (ntime==ntfm*it) then
+! updates fmse
+            call edfluidms_diag13(fmse)
+            if (movion==1) then
+! updates fmsi
+               call idfluidms_diag13(fmsi)
+            endif
          endif
       endif
 !

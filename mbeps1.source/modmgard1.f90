@@ -11,9 +11,11 @@
 !          calls AGUARD1L
 ! macguard1 accumulates local periodic vector field
 !           calls ACGUARD1L
+! mamcguard1 accumulates local periodic tensor field
+!            calls AMCGUARD1L
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: august 4, 2016
+! update: december 6, 2017
 !
       use libmgard1_h
       implicit none
@@ -111,6 +113,28 @@
       case (2)
          call ACGUARD1L(cu,nx,nxe)
       end select
+! record time
+      call dtimer(dtime,itime,1)
+      tguard = tguard + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mamcguard1(amu,tguard,nx)
+! accumulates local periodic tensor field
+      implicit none
+      integer, intent(in) :: nx
+      real, intent(inout) :: tguard
+      real, dimension(:,:), intent(inout) :: amu
+! local data
+      integer :: ndim, nxe
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      ndim = size(amu,1); nxe = size(amu,2)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+! call low level procedure
+      call AMCGUARD1L(amu,nx,ndim,nxe)
 ! record time
       call dtimer(dtime,itime,1)
       tguard = tguard + real(dtime)

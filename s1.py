@@ -43,6 +43,14 @@ init_elfield_diag1: initialize longitudinal efield diagnostic
 elfield_diag1: longitudinal efield diagnostic
 del_elfield_diag1: delete longitudinal efield diagnostic
 
+init_efluidms_diag1: initialize electron fluid moments diagnostic
+efluidms_diag1: electron fluid moments diagnostic
+del_efluidms_diag1: delete electron fluid moments diagnostic
+
+init_ifluidms_diag1: initialize ion fluid moments diagnostic
+ifluidms_diag1: ion fluid moments diagnostic
+del_ifluidms_diag1: delete ion fluid moments diagnostic
+
 init_evelocity_diag1: initialize electron velocity diagnostic
 evelocity_diag1: electron velocity diagnostic
 del_evelocity_diag1: delete electron velocity diagnostic
@@ -73,13 +81,14 @@ close_restart1: close reset and restart files
 
 written by Viktor K. Decyk and Joshua Kelly, UCLA
 copyright 1999-2016, regents of the university of california
-update: january 30, 2017
+update: december 9, 2017
 """
 import math
 import numpy
 
 # sys.path.append('./mbeps1.source')
 from libmpush1 import *
+from dtimer import *
 
 int_type = numpy.int32
 double_type = numpy.float64
@@ -111,9 +120,12 @@ itdi = 0
 # default Fortran unit numbers
 iuin = 8; iudm = 19
 iude = 10; iup = 11; iuel = 12
+iufe = 23; iufi = 24
 iudi = 20
 
 # declare and initialize timing data
+itime = numpy.empty((4),numpy.int32)
+dtime = numpy.empty((1),double_type)
 tdpost = numpy.zeros((1),float_type)
 tguard = numpy.zeros((1),float_type)
 tfft = numpy.zeros((1),float_type)
@@ -712,9 +724,12 @@ def idensity_diag1(sfield,pkwdi,wkdi,ntime):
       global itdi
       itdi += 1
       ts = in1.dt*float(ntime)
+# performs frequency analysis of accumulated complex time series
+# zero out mode 0
+      denit[0] = numpy.complex(0.0,0.0)
       mdiag1.micspect1(denit,wmi,pkwdi,pksdi,ts,in1.t0,tdiag,mtdi,iwi,
                        in1.modesxdi,nx,-1)
-# performs frequency analysis of accumulated complex time series
+# find frequency with maximum power for each mode
       wkdi[:,0] = wmi[numpy.argmax(pkwdi[:,:,0],axis=1)]
       wkdi[:,1] = wmi[numpy.argmax(pkwdi[:,:,1],axis=1)]
 
@@ -784,9 +799,10 @@ def potential_diag1(sfield,pkw,wk,ntime):
       global itp
       itp += 1
       ts = in1.dt*float(ntime)
+# performs frequency analysis of accumulated complex time series
       mdiag1.micspect1(pott,wm,pkw,pks,ts,in1.t0,tdiag,mtp,iw,
                        in1.modesxp,nx,1)
-# performs frequency analysis of accumulated complex time series
+# find frequency with maximum power for each mode
       wk[:,0] = wm[numpy.argmax(pkw[:,:,0],axis=1)]
       wk[:,1] = wm[numpy.argmax(pkw[:,:,1],axis=1)]
 
@@ -843,6 +859,104 @@ def del_elfield_diag1():
       in1.nelrec -= 1
    del elt
    in1.ceng = affp
+
+#-----------------------------------------------------------------------
+def init_efluidms_diag1():
+   """ initialize electron fluid moments diagnostic """
+   global fmse, iufe
+# calculate first dimension of fluid arrays
+   if (in1.npro==1):
+      in1.nprd = 1
+   elif (in1.npro==2):
+      in1.nprd = 2
+   elif (in1.npro==3):
+      in1.nprd = 3
+   elif (in1.npro==4):
+      in1.nprd = 5
+   if ((in1.ndfm==1) or (in1.ndfm==3)):
+# fmse = electron fluid moments
+      fmse = numpy.empty((in1.nprd,nxe),float_type,'F')
+# open file for real data: updates nferec and possibly iufe
+      ffename = "fmer1." + cdrun
+      in1.ffename[:] = ffename
+      if (in1.nferec==0):
+         mdiag1.dafopenv1(fmse,nx,iufe,in1.nferec,ffename)
+
+#-----------------------------------------------------------------------
+def efluidms_diag1(fmse):
+   """
+   electron fluid moments diagnostic
+   input/output:
+   fmse = electron fluid moments
+   """
+# calculate electron fluid moments
+   if ((in1.ndfm==1) or (in1.ndfm==3)):
+      dtimer(dtime,itime,-1)
+      fmse.fill(0.0)
+      dtimer(dtime,itime,1)
+      tdiag[0] += float(dtime)
+      mdiag1.wmgprofx1(ppart,fxe,fmse,kpic,qbme,in1.dt,in1.ci,tdiag,
+                       in1.npro,nx,in1.mx,in1.relativity)
+# add guard cells with OpenMP: updates fmse
+      mgard1.mamcguard1(fmse,tdiag,nx)
+# calculates fluid quantities from fluid moments: updates fmse
+      mdiag1.mfluidqs1(fmse,tdiag,in1.npro,nx)
+# write real space diagnostic output: updates nferec
+      mdiag1.dafwritev1(fmse,tdiag,iufe,in1.nferec,nx)
+
+#-----------------------------------------------------------------------
+def del_efluidms_diag1():
+   """ delete electron fluid moments diagnostic """
+   global fmse
+   if (in1.nferec > 0):
+      in1.closeff(iufe)
+      in1.nferec -= 1
+   del fmse
+
+#-----------------------------------------------------------------------
+def init_ifluidms_diag1():
+   """ initialize ion fluid moments diagnostic """
+   global fmsi, iufi
+   if ((in1.ndfm==2) or (in1.ndfm==3)):
+# fmsi = ion fluid moments
+      fmsi = numpy.empty((in1.nprd,nxe),float_type,'F')
+# open file for real data: updates nfirec and possibly iufi
+      ffiname = "fmir1." + cdrun
+      in1.ffiname[:] = ffiname
+      if (in1.nfirec==0):
+          mdiag1.dafopenv1(fmsi,nx,iufi,in1.nfirec,ffiname)
+
+#-----------------------------------------------------------------------
+def ifluidms_diag1(fmsi):
+   """
+   ion fluid moments diagnostic
+   input/output:
+   fmsi = ion fluid moments
+   """
+# calculate ion fluid moments
+   if ((in1.ndfm==2) or (in1.ndfm==3)):
+      dtimer(dtime,itime,-1)
+      fmsi.fill(0.0)
+      dtimer(dtime,itime,1)
+      tdiag[0] += float(dtime)
+      mdiag1.wmgprofx1(pparti,fxe,fmsi,kipic,qbmi,in1.dt,in1.ci,tdiag,
+                       in1.npro,nx,in1.mx,in1.relativity)
+# add guard cells with OpenMP: updates fmsi
+      mgard1.mamcguard1(fmsi,tdiag,nx)
+# calculates fluid quantities from fluid moments: updates fmsi
+      mdiag1.mfluidqs1(fmsi,tdiag,in1.npro,nx)
+      fmsi[:,:]  = in1.rmass*fmsi
+# write real space diagnostic output: updates nfirec
+      mdiag1.dafwritev1(fmsi,tdiag,iufi,in1.nfirec,nx)
+
+#-----------------------------------------------------------------------
+def del_ifluidms_diag1():
+   """ ion fluid moments diagnostic """
+   global fmsi
+   if (in1.nfirec > 0):
+      in1.closeff(iufi)
+      in1.nfirec -= 1
+   del fmsi
 
 #-----------------------------------------------------------------------
 def init_evelocity_diag1():
@@ -1062,6 +1176,12 @@ def reset_diags1():
    if (in1.ntel > 0):
       if (in1.nelrec > 1):
          in1.nelrec = 1
+   if (in1.ntfm > 0):
+      if (in1.nferec > 1):
+         in1.nferec = 1
+      if (in1.movion==1):
+         if (in1.nfirec > 0):
+             in1.nfirec = 1
    if (in1.ntv > 0):
       itv = 0
       if ("fvtm" in globals()):
@@ -1089,8 +1209,15 @@ def close_diags1(iudm):
 # longitudinal efield diagnostic
    if (in1.ntel > 0):
       del_elfield_diag1()
-   if (in1.movion==1):
+# fluid moments diagnostic
+   if (in1.ntfm > 0) :
+# electrons
+      del_efluidms_diag1()
+# ions
+      if (in1.movion==1):
+         del_ifluidms_diag1()
 # ion density diagnostic
+   if (in1.movion==1):
       if (in1.ntdi > 0):
          del_idensity_diag1()
 # write final diagnostic metafile
@@ -1146,6 +1273,14 @@ def initialize_diagnostics1(ntime):
 # initialize longitudinal efield diagnostic
    if (in1.ntel > 0):
       init_elfield_diag1()
+
+# initialize fluid moments diagnostic
+   if (in1.ntfm > 0):
+# electrons: allocates fmse
+      init_efluidms_diag1()
+# ions: allocates fmsi
+      if (in1.movion==1):
+         init_ifluidms_diag1()
 
 # initialize velocity diagnostic:
    if (in1.ntv > 0):
@@ -1442,6 +1577,29 @@ def dwrite_restart1(iur):
             it = 0
             i1[0] = it; i1.tofile(iur)
 
+# write out fluid moments diagnostic parameter
+   i1[0] = in1.ntfm; i1.tofile(iur)
+   if (in1.ntfm > 0):
+# write out electron record location
+      i1[0] = in1.nferec; i1.tofile(iur)
+# write out record length (zero if error) and file name (if no error)
+      if (in1.nferec > 0):
+         it = mdiag1.fnrecl(in1.ffename)
+         i1[0] = it; i1.tofile(iur)
+         if (it > 0):
+            fname[:] = ''.join(in1.ffename)
+            fname.tofile(iur)
+      if (in1.movion==1):
+# write out ion record location
+         i1[0] = in1.nfirec; i1.tofile(iur)
+# write out record length (zero if error) and file name (if no error)
+         if (in1.nfirec > 0):
+            it = mdiag1.fnrecl(in1.ffiname)
+            i1[0] = it; i1.tofile(iur)
+            if (it > 0):
+               fname[:] = ''.join(in1.ffiname)
+               fname.tofile(iur)
+
 # write out velocity diagnostic parameter
    i1[0] = in1.ntv; i1.tofile(iur)
    if (in1.ntv > 0):
@@ -1618,6 +1776,36 @@ def dread_restart1(iur):
             il = ir*it*iq
             pksdi[:,:,:] = (numpy.fromfile(iur,double_type,il).
                             reshape(4,it,iq))
+
+# read in fluid moments diagnostic parameter
+   i1[:] = numpy.fromfile(iur,int_type,1); it = i1[0]
+   if (it != in1.ntfm):
+      print "restart error: read/expected ntfm=", it, in1.ntfm
+      exit(1)
+# read in electron data
+   if (in1.ntfm > 0):
+# read in electron record location
+      i1[:] = numpy.fromfile(iur,int_type,1); in1.nferec = i1[0]
+# read in record length (zero if error) and file name (if no error)
+      if (in1.nferec > 0):
+         i1[:] = numpy.fromfile(iur,int_type,1); it = i1[0]
+         if (it==0):
+            print "ntfm zero length record error"
+            exit(1)
+         fname[:] = numpy.fromfile(iur,'S32',1)
+         in1.ffename[:] = str(fname[0])
+# read in ion data
+      if (in1.movion==1):
+# read in ion record location
+         i1[:] = numpy.fromfile(iur,int_type,1); in1.nfirec = i1[0]
+# read in ion record length (zero if error) and file name (if no error)
+         if (in1.nfirec > 0):
+            i1[:] = numpy.fromfile(iur,int_type,1); it = i1[0]
+            if (it==0):
+               print "ntfm zero length ion record error"
+               exit(1)
+            fname[:] = numpy.fromfile(iur,'S32',1)
+            in1.ffiname[:] = str(fname[0])
 
 # read in velocity diagnostic parameter
    i1[:] = numpy.fromfile(iur,int_type,1); it = i1[0]

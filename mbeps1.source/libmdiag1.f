@@ -17,6 +17,37 @@
 !        and entropy for standard particle array
 ! VDIST13 calculates 3 component velocity distribution, velocity
 !         moments, and entropy.
+! PROFX13L calculates fluid moments from particle quantities: density,
+!           momentum, momentum flux, energy, energy flux, assumes
+!           particle positions and velocities at same time level
+!           for 1-2/2d code
+! RPROFX13L calculates fluid moments from relativistic particle
+!           quantities: density, velocity, velocity flux, energy,
+!           energy flux, assumes particle positions and velocities at 
+!           same time level, for 1-2/2d code
+! PROFX1L calculates fluid moments from particle quantities: density,
+!         momentum, momentum flux, energy, energy flux, assumes
+!         particle positions and velocities at same time level
+!         for 1d code
+! RPROFX1L calculates fluid moments from relativistic particle
+!          quantities: density, velocity, velocity flux, energy,
+!          energy flux, assumes particle positions and velocities at 
+!          same time level, for 1d code
+! GPROFX1L calculates fluid moments from particle quantities:
+!          density, momentum, momentum flux, energy, energy flux,
+!          assumes particle positions and velocities not at same time
+!          levels and electrostatic fields
+! GRPROFX1L calculates fluid moments from relativistic particle
+!           quantities: density, velocity, velocity flux, energy,
+!           energy flux, assumes particle positions and velocities
+!           not at same time levels and electrostatic fields
+! GBPROFX13L calculates fluid moments from particle quantities:
+!            density, momentum, momentum flux, energy, energy flux,
+!            assumes particle positions and velocities not at same time
+!            levels and electromagnetic fields
+! FLUIDQS13 calculates fluid quantities from fluid moments:
+!           density, velocity field, pressure tensor, energy, heat flux
+!           for 1-2/2d code
 ! STPTRAJ1 sets test charge distribution by setting a particle id
 !          in particle location 3 for 1d code
 ! STPTRAJ13 sets test charge distribution by setting a particle id
@@ -31,7 +62,7 @@
 !           id in particle location 5
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: may 30, 2017
+! update: december 8, 2017
 !-----------------------------------------------------------------------
       subroutine CSPECT1(fc,wm,pkw,t0,dt,nt,iw,modesx,ntd,iwd,modesxd)
 ! this subroutine performs frequency analysis of complex time series,
@@ -310,8 +341,8 @@
       sumvx = 0.0d0
       sumvx2 = 0.0d0
 ! loop over tiles
-!$OMP PARALLEL DO
-!$OMP& PRIVATE(j,k,npp,nvx,vx,ssumvx,ssumvx2)
+!$OMP PARALLEL DO                                                       &
+!$OMP& PRIVATE(j,k,npp,nvx,vx,ssumvx,ssumvx2)                           &
 !$OMP& REDUCTION(+:sumvx) REDUCTION(+:sumvx2)
       do 40 k = 1, mx1
       npp = kpic(k)
@@ -425,10 +456,10 @@
       sumvy2 = 0.0d0
       sumvz2 = 0.0d0
 ! loop over tiles
-!$OMP PARALLEL DO
-!$OMP& PRIVATE(j,k,npp,nvx,nvy,nvz,vx,vy,vz,ssumvx,ssumvy,ssumvz,       
-!$OMP& ssumvx2,ssumvy2,ssumvz2)
-!$OMP& REDUCTION(+:sumvx) REDUCTION(+:sumvy) REDUCTION(+:sumvz)         
+!$OMP PARALLEL DO                                                       &
+!$OMP& PRIVATE(j,k,npp,nvx,nvy,nvz,vx,vy,vz,ssumvx,ssumvy,ssumvz,       &
+!$OMP& ssumvx2,ssumvy2,ssumvz2)                                         &
+!$OMP& REDUCTION(+:sumvx) REDUCTION(+:sumvy) REDUCTION(+:sumvz)         &
 !$OMP& REDUCTION(+:sumvx2) REDUCTION(+:sumvy2) REDUCTION(+:sumvz2)
       do 40 k = 1, mx1
       npp = kpic(k)
@@ -568,8 +599,7 @@
       anmv = 2.0
       sumpx = 0.0d0
 ! loop over tiles
-!$OMP PARALLEL DO
-!$OMP& PRIVATE(j,k,npp,nvx,px,p2,ssumpx) REDUCTION(+:sumpx) 
+!$OMP PARALLEL DO PRIVATE(j,k,npp,nvx,px,p2,ssumpx) REDUCTION(+:sumpx) 
       do 40 k = 1, mx1
       npp = kpic(k)
       ssumpx = 0.0d0
@@ -644,7 +674,7 @@
       anmv = 2.0
       sumpx = 0.0d0
 ! loop over tiles
-!$OMP PARALLEL DO
+!$OMP PARALLEL DO                                                       &
 !$OMP& PRIVATE(j,k,npp,nvx,px,py,pz,p2,ssumpx) REDUCTION(+:sumpx)     
       do 40 k = 1, mx1
       npp = kpic(k)
@@ -831,6 +861,1498 @@
       fvm(1,3) = sumvx
       fvm(2,3) = sumvy
       fvm(3,3) = sumvz
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine PROFX13L(ppart,fms,kpic,nppmx,idimp,npro,mx,nprd,nxv,  &
+     &mx1)
+! for 1-2/2d code, this subroutine calculates fluid moments from
+! particle quantities: density, momentum, momentum flux, energy,
+! energy flux
+! assumes particle positions and velocities are at the same time level
+! using first-order linear interpolation
+! OpenMP version using guard cells
+! data deposited in tiles
+! particles stored segmented array
+! 72 flops/particle, 32 loads, 28 stores
+! input: all, output: ppart, fms
+! fluid moments are approximated by values at the nearest grid points
+! fms(i,n)=mci*(1.-dx) and fms(i,n+1)=mci*dx
+! where n = nearest grid point and dx = x-n
+! where for i = 1, mci = 1.0
+! where for i = 2, 4, mci = vi, where i = x,y,z
+! where for i = 5, 10, mci = vj*vk, where jk = xx,xy,xz,yy,yz,zz
+! where for i = 11, mci = (vx**2+vy**2+vz**2)
+! where for i = 12, 14, mci = (vx**2+vy**2+vz**2)*vi, where i = x,y,z
+! ppart(1,n,m) = position x of particle n in tile m
+! ppart(2,n,m) = velocity vx of particle n in tile m
+! ppart(3,n,m) = velocity vy of particle n in tile m
+! ppart(4,n,m) = velocity vz of particle n in tile m
+! fms(i,j) = ith component of fluid moments at grid (j)
+! kpic = number of particles per tile
+! nppmx = maximum number of particles in tile
+! idimp = size of phase space = 4
+! npro = (1,2,3,4) = (density,momentum,momentum flux,energy+energy flux)
+! if npro = n is selected, all profiles less than n are also calculated
+! mx = number of grids in sorting cell in x
+! nprd = maximum number of fluid components, nprd >= 14
+! nxv = second dimension of field array, must be >= nx+1
+! mx1 = (system length in x direction - 1)/mx + 1
+      implicit none
+      integer nppmx, idimp, npro, mx, nprd, nxv, mx1
+      real ppart, fms
+      integer kpic
+      dimension ppart(idimp,nppmx,mx1), fms(nprd,nxv)
+      dimension kpic(mx1)
+! local data
+      integer MXV
+      parameter(MXV=129)
+      integer noff, npp, npr
+      integer j, k, ii, nn
+      real dxp, amx, vx, vy, vz, x, w, dx
+      real sfms, sg
+!     dimension sfms(nprd,MXV), sg(14)
+      dimension sfms(nprd,mx+1), sg(14)
+! calculate number of components required
+      npr = 0
+      if (npro==1) then
+         npr = 1
+      else if (npro==2) then
+         npr = 4
+      else if (npro==3) then
+         npr = 10
+      else if (npro==4) then
+         npr = 14
+      endif
+      if (npr > nprd) npr = nprd
+! error if local array is too small
+!     if (mx.ge.MXV) return
+! loop over tiles
+!$OMP PARALLEL DO                                                       &
+!$OMP& PRIVATE(j,k,ii,noff,npp,nn,x,w,dxp,amx,dx,vx,vy,vz,sfms,sg)
+      do 90 k = 1, mx1
+      noff = mx*(k - 1)
+      npp = kpic(k)
+! zero out local accumulator
+      do 20 j = 1, mx+1
+      do 10 ii = 1, npr
+      sfms(ii,j) = 0.0
+   10 continue
+   20 continue
+! loop over particles in tile
+      do 40 j = 1, npp
+! find interpolation weights
+      x = ppart(1,j,k)
+      nn = x
+      dxp = x - real(nn)
+      nn = nn - noff + 1
+      amx = 1.0 - dxp
+! deposit fluid moments
+      vx = ppart(2,j,k)
+      vy = ppart(3,j,k)
+      vz = ppart(4,j,k)
+      sg(1) = 1.0
+      sg(2) = vx
+      sg(3) = vy
+      sg(4) = vz
+      if (npr > 4) then
+         x = vx*vx
+         sg(5) = x
+         sg(6) = vx*vy
+         sg(7) = vx*vz
+         dx = vy*vy
+         w = x + dx
+         sg(8) = dx
+         sg(9) = vy*vz
+         dx = vz*vz
+         sg(10) = dx
+         w = 0.5*(w + dx)
+         sg(11) = w
+         sg(12) = w*vx
+         sg(13) = w*vy
+         sg(14) = w*vz
+      endif
+      do 30 ii = 1, npr
+      sfms(ii,nn) = sfms(ii,nn) + sg(ii)*amx
+      sfms(ii,nn+1) = sfms(ii,nn+1) + sg(ii)*dxp
+   30 continue
+   40 continue
+! deposit fluid moments to interior points in global array
+      nn = min(mx,nxv-noff)
+      do 60 j = 2, nn
+      do 50 ii = 1, npr
+      fms(ii,j+noff) = fms(ii,j+noff) + sfms(ii,j)
+   50 continue
+   60 continue
+! deposit fluid moments to edge points in global array
+      nn = min(mx+1,nxv-noff)
+      do 70 ii = 1, npr
+!$OMP ATOMIC
+      fms(ii,1+noff) = fms(ii,1+noff) + sfms(ii,1)
+   70 continue
+      if (nn > mx) then
+         do 80 ii = 1, npr
+!$OMP ATOMIC
+         fms(ii,nn+noff) = fms(ii,nn+noff) + sfms(ii,nn)
+   80    continue
+      endif
+   90 continue
+!$OMP END PARALLEL DO
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine RPROFX13L(ppart,fms,kpic,ci,nppmx,idimp,npro,mx,nprd,  &
+     &nxv,mx1)
+! for 1-2/2d code, this subroutine calculates fluid moments from
+! particle quantities: density, velocity, velocity flux, energy, energy
+! flux, for relativistic particles
+! assumes particle positions and velocities are at the same time level
+! using first-order linear interpolation
+! OpenMP version using guard cells
+! data deposited in tiles
+! particles stored segmented array
+! 81 flops/particle, 2 divides, 1 sqrt, 32 loads, 28 stores
+! input: all, output: ppart, fms
+! fluid moments are approximated by values at the nearest grid points
+! fms(i,n)=mci*(1.-dx) and fms(i,n+1)=mci*dx
+! where n = nearest grid point and dx = x-n
+! where for i = 1, mci = 1.0
+! where for i = 2, 4, mci = vi, where i = x,y,z
+! where for i = 5, 10, mci = vj*vk, where jk = xx,xy,xz,yy,yz,zz
+! where for i = 11, mci = gami*p2/(1.0 + gami)
+! where p2 = px*px + py*py + pz*pz
+! where for i = 12, 14, mci = (gami*p2/(1.0 + gami))*vi, where i = x,y,z
+! ppart(1,n,m) = position x of particle n in tile m
+! ppart(2,n,m) = momentum px of particle n in tile m
+! ppart(3,n,m) = momentum py of particle n in tile m
+! ppart(4,n,m) = momentum pz of particle n in tile m
+! fms(i,j) = ith component of fluid moments at grid (j)
+! kpic = number of particles per tile
+! ci = reciprocal of velocity of light
+! nppmx = maximum number of particles in tile
+! idimp = size of phase space = 4
+! npro = (1,2,3,4) = (density,velocity,velocity flux,energy+energy flux)
+! if npro = n is selected, all profiles less than n are also calculated
+! mx = number of grids in sorting cell in x
+! nprd = maximum number of fluid components, nprd >= 14
+! nxv = second dimension of field array, must be >= nx+1
+! mx1 = (system length in x direction - 1)/mx + 1
+      implicit none
+      integer nppmx, idimp, npro, mx, nprd, nxv, mx1
+      real ci
+      real ppart, fms
+      integer kpic
+      dimension ppart(idimp,nppmx,mx1), fms(nprd,nxv)
+      dimension kpic(mx1)
+! local data
+      integer MXV
+      parameter(MXV=129)
+      integer noff, npp, npr
+      integer j, k, ii, nn
+      real dxp, amx, vx, vy, vz, x, w
+      real ci2, p2, gami
+      real sfms, sg
+!     dimension sfms(nprd,MXV), sg(14)
+      dimension sfms(nprd,mx+1), sg(14)
+      ci2 = ci*ci
+! calculate number of components required
+      npr = 0
+      if (npro==1) then
+         npr = 1
+      else if (npro==2) then
+         npr = 4
+      else if (npro==3) then
+         npr = 10
+      else if (npro==4) then
+         npr = 14
+      endif
+      if (npr > nprd) npr = nprd
+! error if local array is too small
+!     if (mx.ge.MXV) return
+! loop over tiles
+!$OMP PARALLEL DO                                                       &
+!$OMP& PRIVATE(j,k,ii,noff,npp,nn,x,w,dxp,amx,vx,vy,vz,p2,gami,sfms,sg)
+      do 90 k = 1, mx1
+      noff = mx*(k - 1)
+      npp = kpic(k)
+! zero out local accumulator
+      do 20 j = 1, mx+1
+      do 10 ii = 1, npr
+      sfms(ii,j) = 0.0
+   10 continue
+   20 continue
+! loop over particles in tile
+      do 40 j = 1, npp
+! find interpolation weights
+      x = ppart(1,j,k)
+      nn = x
+      dxp = x - real(nn)
+      nn = nn - noff + 1
+      amx = 1.0 - dxp
+! find inverse gamma
+      vx = ppart(2,j,k)
+      vy = ppart(3,j,k)
+      vz = ppart(4,j,k)
+      p2 = vx*vx + vy*vy + vz*vz
+      gami = 1.0/sqrt(1.0 + p2*ci2)
+! deposit fluid moments
+      vx = vx*gami
+      vy = vy*gami
+      vz = vz*gami
+      sg(1) = 1.0
+      sg(2) = vx
+      sg(3) = vy
+      sg(4) = vz
+      if (npr > 4) then
+         sg(5) = vx*vx
+         sg(6) = vx*vy
+         sg(7) = vx*vz
+         sg(8) = vy*vy
+         sg(9) = vy*vz
+         sg(10) = vz*vz
+         w = gami*p2/(1.0 + gami)
+         sg(11) = w
+         sg(12) = w*vx
+         sg(13) = w*vy
+         sg(14) = w*vz
+      endif
+      do 30 ii = 1, npr
+      sfms(ii,nn) = sfms(ii,nn) + sg(ii)*amx
+      sfms(ii,nn+1) = sfms(ii,nn+1) + sg(ii)*dxp
+   30 continue
+   40 continue
+! deposit fluid moments to interior points in global array
+      nn = min(mx,nxv-noff)
+      do 60 j = 2, nn
+      do 50 ii = 1, npr
+      fms(ii,j+noff) = fms(ii,j+noff) + sfms(ii,j)
+   50 continue
+   60 continue
+! deposit fluid moments to edge points in global array
+      nn = min(mx+1,nxv-noff)
+      do 70 ii = 1, npr
+!$OMP ATOMIC
+      fms(ii,1+noff) = fms(ii,1+noff) + sfms(ii,1)
+   70 continue
+      if (nn > mx) then
+         do 80 ii = 1, npr
+!$OMP ATOMIC
+         fms(ii,nn+noff) = fms(ii,nn+noff) + sfms(ii,nn)
+   80    continue
+      endif
+   90 continue
+!$OMP END PARALLEL DO
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine PROFX1L(ppart,fms,kpic,nppmx,idimp,npro,mx,nprd,nxv,mx1&
+     &)
+! for 1d code, this subroutine calculates fluid moments from particle
+! quantities: density, momentum, momentum flux, energy, energy flux
+! assumes particle positions and velocities are at the same time level
+! using first-order linear interpolation
+! OpenMP version using guard cells
+! data deposited in tiles
+! particles stored segmented array
+! 27 flops/particle, 12 loads, 10 stores
+! input: all, output: ppart, fms
+! fluid moments are approximated by values at the nearest grid points
+! fms(i,n)=mci*(1.-dx) and fms(i,n+1)=mci*dx
+! where n = nearest grid point and dx = x-n
+! where for i = 1, mci = 1.0
+! where for i = 2, mci = vi, where i = x
+! where for i = 3, mci = vj*vk, where jk = xx
+! where for i = 4, mci = (vx**2)
+! where for i = 5, mci = (vx**2+)*vi, where i = x
+! ppart(1,n,m) = position x of particle n in tile m
+! ppart(2,n,m) = velocity vx of particle n in tile m
+! fms(i,j) = ith component of fluid moments at grid (j)
+! kpic = number of particles per tile
+! nppmx = maximum number of particles in tile
+! idimp = size of phase space = 2
+! npro = (1,2,3,4) = (density,momentum,momentum flux,energy+energy flux)
+! if npro = n is selected, all profiles less than n are also calculated
+! mx = number of grids in sorting cell in x
+! nprd = maximum number of fluid components, nprd >= 5
+! nxv = second dimension of field array, must be >= nx+1
+! mx1 = (system length in x direction - 1)/mx + 1
+      implicit none
+      integer nppmx, idimp, npro, mx, nprd, nxv, mx1
+      real ppart, fms
+      integer kpic
+      dimension ppart(idimp,nppmx,mx1), fms(nprd,nxv)
+      dimension kpic(mx1)
+! local data
+      integer MXV
+      parameter(MXV=129)
+      integer noff, npp, npr
+      integer j, k, ii, nn
+      real dxp, amx, vx, x, w
+      real sfms, sg
+!     dimension sfms(nprd,MXV), sg(5)
+      dimension sfms(nprd,mx+1), sg(5)
+! calculate number of components required
+      npr = 0
+      if (npro==1) then
+         npr = 1
+      else if (npro==2) then
+         npr = 2
+      else if (npro==3) then
+         npr = 3
+      else if (npro==4) then
+         npr = 5
+      endif
+      if (npr > nprd) npr = nprd
+! error if local array is too small
+!     if (mx.ge.MXV) return
+! loop over tiles
+!$OMP PARALLEL DO                                                       &
+!$OMP& PRIVATE(j,k,ii,noff,npp,nn,x,w,dxp,amx,vx,sfms,sg)
+      do 90 k = 1, mx1
+      noff = mx*(k - 1)
+      npp = kpic(k)
+! zero out local accumulator
+      do 20 j = 1, mx+1
+      do 10 ii = 1, npr
+      sfms(ii,j) = 0.0
+   10 continue
+   20 continue
+! loop over particles in tile
+      do 40 j = 1, npp
+! find interpolation weights
+      x = ppart(1,j,k)
+      nn = x
+      dxp = x - real(nn)
+      nn = nn - noff + 1
+      amx = 1.0 - dxp
+! deposit fluid moments
+      vx = ppart(2,j,k)
+      sg(1) = 1.0
+      sg(2) = vx
+      if (npr > 2) then
+         x = vx*vx
+         sg(3) = x
+         w = 0.5*x
+         sg(4) = w
+         sg(5) = w*vx
+      endif
+      do 30 ii = 1, npr
+      sfms(ii,nn) = sfms(ii,nn) + sg(ii)*amx
+      sfms(ii,nn+1) = sfms(ii,nn+1) + sg(ii)*dxp
+   30 continue
+   40 continue
+! deposit fluid moments to interior points in global array
+      nn = min(mx,nxv-noff)
+      do 60 j = 2, nn
+      do 50 ii = 1, npr
+      fms(ii,j+noff) = fms(ii,j+noff) + sfms(ii,j)
+   50 continue
+   60 continue
+! deposit fluid moments to edge points in global array
+      nn = min(mx+1,nxv-noff)
+      do 70 ii = 1, npr
+!$OMP ATOMIC
+      fms(ii,1+noff) = fms(ii,1+noff) + sfms(ii,1)
+   70 continue
+      if (nn > mx) then
+         do 80 ii = 1, npr
+!$OMP ATOMIC
+         fms(ii,nn+noff) = fms(ii,nn+noff) + sfms(ii,nn)
+   80    continue
+      endif
+   90 continue
+!$OMP END PARALLEL DO
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine RPROFX1L(ppart,fms,kpic,ci,nppmx,idimp,npro,mx,nprd,nxv&
+     &,mx1)
+! for 1d code, this subroutine calculates fluid moments from particle
+! quantities: density, velocity, velocity flux, energy, energy flux,
+! for relativistic particles
+! assumes particle positions and velocities are at the same time level
+! using first-order linear interpolation
+! OpenMP version using guard cells
+! data deposited in tiles
+! particles stored segmented array
+! 32 flops/particle, 2 divides, 1 sqrt, 12 loads, 10 stores
+! input: all, output: ppart, fms
+! fluid moments are approximated by values at the nearest grid points
+! fms(i,n)=mci*(1.-dx) and fms(i,n+1)=mci*dx
+! where n = nearest grid point and dx = x-n
+! where for i = 1, mci = 1.0
+! where for i = 2, mci = vi, where i = x
+! where for i = 3, mci = vj*vk, where jk = xx
+! where for i = 4, mci = gami*p2/(1.0 + gami), where p2 = px*px
+! where for i = 5, mci = (gami*p2/(1.0 + gami))*vi, where i = x
+! ppart(1,n,m) = position x of particle n in tile m
+! ppart(2,n,m) = momentum px of particle n in tile m
+! fms(i,j) = ith component of fluid moments at grid (j)
+! kpic = number of particles per tile
+! ci = reciprocal of velocity of light
+! nppmx = maximum number of particles in tile
+! idimp = size of phase space = 2
+! npro = (1,2,3,4) = (density,velocity,velocity flux,energy+energy flux)
+! if npro = n is selected, all profiles less than n are also calculated
+! mx = number of grids in sorting cell in x
+! nprd = maximum number of fluid components, nprd >= 14
+! nxv = second dimension of field array, must be >= nx+1
+! mx1 = (system length in x direction - 1)/mx + 1
+      implicit none
+      integer nppmx, idimp, npro, mx, nprd, nxv, mx1
+      real ci
+      real ppart, fms
+      integer kpic
+      dimension ppart(idimp,nppmx,mx1), fms(nprd,nxv)
+      dimension kpic(mx1)
+! local data
+      integer MXV
+      parameter(MXV=129)
+      integer noff, npp, npr
+      integer j, k, ii, nn
+      real dxp, amx, vx, x, w
+      real ci2, p2, gami
+      real sfms, sg
+!     dimension sfms(nprd,MXV), sg(5)
+      dimension sfms(nprd,mx+1), sg(5)
+      ci2 = ci*ci
+! calculate number of components required
+      npr = 0
+      if (npro==1) then
+         npr = 1
+      else if (npro==2) then
+         npr = 2
+      else if (npro==3) then
+         npr = 3
+      else if (npro==4) then
+         npr = 5
+      endif
+      if (npr > nprd) npr = nprd
+! error if local array is too small
+!     if (mx.ge.MXV) return
+! loop over tiles
+!$OMP PARALLEL DO                                                       &
+!$OMP& PRIVATE(j,k,ii,noff,npp,nn,x,w,dxp,amx,vx,p2,gami,sfms,sg)
+      do 90 k = 1, mx1
+      noff = mx*(k - 1)
+      npp = kpic(k)
+! zero out local accumulator
+      do 20 j = 1, mx+1
+      do 10 ii = 1, npr
+      sfms(ii,j) = 0.0
+   10 continue
+   20 continue
+! loop over particles in tile
+      do 40 j = 1, npp
+! find interpolation weights
+      x = ppart(1,j,k)
+      nn = x
+      dxp = x - real(nn)
+      nn = nn - noff + 1
+      amx = 1.0 - dxp
+! find inverse gamma
+      vx = ppart(2,j,k)
+      p2 = vx*vx
+      gami = 1.0/sqrt(1.0 + p2*ci2)
+! deposit fluid moments
+      vx = vx*gami
+      sg(1) = 1.0
+      sg(2) = vx
+      if (npr > 2) then
+         sg(3) = vx*vx
+         w = gami*p2/(1.0 + gami)
+         sg(4) = w
+         sg(5) = w*vx
+      endif
+      do 30 ii = 1, npr
+      sfms(ii,nn) = sfms(ii,nn) + sg(ii)*amx
+      sfms(ii,nn+1) = sfms(ii,nn+1) + sg(ii)*dxp
+   30 continue
+   40 continue
+! deposit fluid moments to interior points in global array
+      nn = min(mx,nxv-noff)
+      do 60 j = 2, nn
+      do 50 ii = 1, npr
+      fms(ii,j+noff) = fms(ii,j+noff) + sfms(ii,j)
+   50 continue
+   60 continue
+! deposit fluid moments to edge points in global array
+      nn = min(mx+1,nxv-noff)
+      do 70 ii = 1, npr
+!$OMP ATOMIC
+      fms(ii,1+noff) = fms(ii,1+noff) + sfms(ii,1)
+   70 continue
+      if (nn > mx) then
+         do 80 ii = 1, npr
+!$OMP ATOMIC
+         fms(ii,nn+noff) = fms(ii,nn+noff) + sfms(ii,nn)
+   80    continue
+      endif
+   90 continue
+!$OMP END PARALLEL DO
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine GPROFX1L(ppart,fx,fms,kpic,qbm,dt,idimp,nppmx,npro,nx, &
+     &mx,nprd,nxv,mx1)
+! for 1d code, this subroutine calculates fluid moments from particle
+! quantities: density, momentum, momentum flux, energy, energy flux,
+! assumes particle positions and velocities not at same time levels
+! using first-order linear interpolation.
+! OpenMP version using guard cells
+! data deposited in tiles
+! particles stored segmented array
+! 32 flops/particle, 14 loads, 10 stores, if all profiles calculated
+! input: all, output: fms
+! fluid moments are approximated by values at the nearest grid points
+! fms(i,n)=mci*(1.-dx) and fms(i,n+1)=mci*dx
+! where n = nearest grid point and dx = x-n
+! where for i = 1, mci = 1.0
+! where for i = 2, mci = vi, where i = x
+! where for i = 3, mci = vj*vk, where jk = xx
+! where for i = 4, mci = (vx**2)
+! where for i = 5, mci = (vx**2+)*vi, where i = x
+! velocity equations used are:
+! v(t+dt/2) = v(t-dt/2) + (q/m)*fx(x(t))*dt, where q/m is charge/mass,
+! and x(t+dt) = x(t) + v(t+dt/2)*dt
+! fx(x(t)) is approximated by interpolation from the nearest grid points
+! fx(x) = (1-dx)*fx(n)+dx*fx(n+1)
+! where n = nearest grid point and dx = x-n
+! ppart(1,n,m) = position x of particle n in partition in tile m
+! ppart(2,n,m) = velocity vx of particle n in partition in tile m
+! fx(j) = force/charge at grid point j, that is convolution of electric
+! field over particle shape
+! fms(i,j) = ith component of fluid moments at grid (j)
+! kpic(k) = number of particles in tile k
+! qbm = particle charge/mass
+! dt = time interval between successive calculations
+! idimp = size of phase space = 2
+! nppmx = maximum number of particles in tile
+! npro = (1,2,3,4) = (density,momentum,momentum flux,energy+energy flux)
+! if npro = n is selected, all profiles less than n are also calculated
+! nx = system length in x direction
+! mx = number of grids in sorting cell in x
+! nprd = maximum number of fluid components, nprd >= 5
+! nxv = first dimension of field array, must be >= nx+1
+! mx1 = (system length in x direction - 1)/mx + 1
+      implicit none
+      integer idimp, nppmx, npro, nx, mx, nprd, nxv, mx1
+      real qbm, dt
+      real ppart, fx, fms
+      integer kpic
+      dimension ppart(idimp,nppmx,mx1)
+      dimension fx(nxv), fms(nprd,nxv)
+      dimension kpic(mx1)
+! local data
+      integer MXV, MYV
+      parameter(MXV=33,MYV=33)
+      integer noff, npp, npr
+      integer j, k, ii, nn
+      real qtmh, dxp, amx, x, w, dx, vx
+      real sfx, sfms, sg
+!     dimension sfx(MXV), sfms(nprd,MXV), sg(5)
+      dimension sfx(mx+1), sfms(nprd,mx+1), sg(5)
+! calculate number of components required
+      npr = 0
+      if (npro==1) then
+         npr = 1
+      else if (npro==2) then
+         npr = 2
+      else if (npro==3) then
+         npr = 3
+      else if (npro==4) then
+         npr = 5
+      endif
+      if (npr > nprd) npr = nprd
+      qtmh = 0.5*qbm*dt
+! error if local array is too small
+!     if ((mx.ge.MXV).or.(my.ge.MYV)) return
+! loop over tiles
+!$OMP PARALLEL DO                                                       &
+!$OMP& PRIVATE(j,k,ii,noff,npp,nn,x,w,dxp,amx,dx,vx,sfx,sfms,sg)
+      do 100 k = 1, mx1
+      noff = mx*(k - 1)
+      npp = kpic(k)
+! load local fields from global array
+      do 10 j = 1, min(mx,nx-noff)+1
+      sfx(j) = fx(j+noff)
+   10 continue
+! zero out local accumulator
+      do 30 j = 1, mx+1
+      do 20 ii = 1, npr
+      sfms(ii,j) = 0.0
+   20 continue
+   30 continue
+! loop over particles in tile
+      do 50 j = 1, npp
+! find interpolation weights
+      x = ppart(1,j,k)
+      nn = x
+      dxp = x - real(nn)
+      nn = nn - noff + 1
+      amx = 1.0 - dxp
+! find acceleration
+      dx = amx*sfx(nn) + dxp*sfx(nn+1)
+! calculate half impulse
+      x = qtmh*dx
+! half acceleration
+      vx = ppart(2,j,k) + x
+! deposit fluid moments
+      sg(1) = 1.0
+      sg(2) = vx
+      if (npr > 2) then
+         x = vx*vx
+         sg(3) = x
+         w = 0.5*x
+         sg(4) = w
+         sg(5) = w*vx
+      endif
+      do 40 ii = 1, npr
+      sfms(ii,nn) = sfms(ii,nn) + sg(ii)*amx
+      sfms(ii,nn+1) = sfms(ii,nn+1) + sg(ii)*dxp
+   40 continue
+   50 continue
+! deposit fluid moments to interior points in global array
+      nn = min(mx,nxv-noff)
+      do 70 j = 2, nn
+      do 60 ii = 1, npr
+      fms(ii,j+noff) = fms(ii,j+noff) + sfms(ii,j)
+   60 continue
+   70 continue
+! deposit fluid moments to edge points in global array
+      nn = min(mx+1,nxv-noff)
+      do 80 ii = 1, npr
+!$OMP ATOMIC
+      fms(ii,1+noff) = fms(ii,1+noff) + sfms(ii,1)
+   80 continue
+      if (nn > mx) then
+         do 90 ii = 1, npr
+!$OMP ATOMIC
+         fms(ii,nn+noff) = fms(ii,nn+noff) + sfms(ii,nn)
+   90    continue
+      endif
+  100 continue
+!$OMP END PARALLEL DO
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine GRPROFX1L(ppart,fx,fms,kpic,qbm,dt,ci,idimp,nppmx,npro,&
+     &nx,mx,nprd,nxv,mx1)
+! for 1d code, this subroutine calculates fluid moments from particle
+! quantities: density, velocity, velocity flux, energy, energy flux,
+! for relativistic particles
+! assumes particle positions and velocities not at same time levels
+! using first-order linear interpolation.
+! OpenMP version using guard cells
+! data deposited in tiles
+! particles stored segmented array
+! 37 flops/particle, 14 loads, 10 stores, 2 divides, 1 sqrt, 
+! if all profiles calculated
+! input: all, output: fms
+! fluid moments are approximated by values at the nearest grid points
+! fms(i,n)=mci*(1.-dx) and fms(i,n+1)=mci*dx
+! where n = nearest grid point and dx = x-n
+! where for i = 1, mci = 1.0
+! where for i = 2, mci = vi, where i = x
+! where for i = 3, mci = vj*vk, where jk = xx
+! where for i = 4, mci = gami*p2/(1.0 + gami), where p2 = px*px
+! where for i = 5, mci = (gami*p2/(1.0 + gami))*vi, where i = x
+! momentum equations used are:
+! px(t+dt/2) = px(t-dt/2) + (q/m)*fx(x(t))*dt,
+! where q/m is charge/mass, and
+! x(t+dt) = x(t) + px(t+dt/2)*dtg, where
+! dtg = dtc/sqrt(1.+(px(t+dt/2)*px(t+dt/2))*ci*ci)
+! fx(x(t)) is approximated by interpolation from the nearest grid points
+! fx(x) = (1-dx)*fx(n)+dx*fx(n+1)
+! where n = nearest grid point and dx = x-n
+! ppart(1,n,m) = position x of particle n in partition in tile m
+! ppart(2,n,m) = momentum px of particle n in partition in tile m
+! fx(j) = force/charge at grid point j, that is convolution of electric
+! field over particle shape
+! fms(i,j) = ith component of fluid moments at grid (j)
+! kpic(k) = number of particles in tile k
+! qbm = particle charge/mass
+! dt = time interval between successive calculations
+! ci = reciprocal of velocity of light
+! idimp = size of phase space = 2
+! nppmx = maximum number of particles in tile
+! npro = (1,2,3,4) = (density,momentum,momentum flux,energy+energy flux)
+! if npro = n is selected, all profiles less than n are also calculated
+! nx = system length in x direction
+! mx = number of grids in sorting cell in x
+! nprd = maximum number of fluid components, nprd >= 5
+! nxv = first dimension of field array, must be >= nx+1
+! mx1 = (system length in x direction - 1)/mx + 1
+      implicit none
+      integer idimp, nppmx, npro, nx, mx, nprd, nxv, mx1
+      real qbm, dt, ci
+      real ppart, fx, fms
+      integer kpic
+      dimension ppart(idimp,nppmx,mx1)
+      dimension fx(nxv), fms(nprd,nxv)
+      dimension kpic(mx1)
+! local data
+      integer MXV, MYV
+      parameter(MXV=33,MYV=33)
+      integer noff, npp, npr
+      integer j, k, ii, nn
+      real qtmh, ci2, gami, dxp, amx, x, w, dx, vx, p2
+      real sfx, sfms, sg
+!     dimension sfx(MXV), sfms(nprd,MXV), sg(5)
+      dimension sfx(mx+1), sfms(nprd,mx+1), sg(5)
+! calculate number of components required
+      npr = 0
+      if (npro==1) then
+         npr = 1
+      else if (npro==2) then
+         npr = 2
+      else if (npro==3) then
+         npr = 3
+      else if (npro==4) then
+         npr = 5
+      endif
+      if (npr > nprd) npr = nprd
+      qtmh = 0.5*qbm*dt
+      ci2 = ci*ci
+! error if local array is too small
+!     if ((mx.ge.MXV).or.(my.ge.MYV)) return
+! loop over tiles
+!$OMP PARALLEL DO                                                       &
+!$OMP& PRIVATE(j,k,ii,noff,npp,nn,x,w,dxp,amx,dx,vx,p2,gami,sfx,sfms,sg)
+      do 100 k = 1, mx1
+      noff = mx*(k - 1)
+      npp = kpic(k)
+! load local fields from global array
+      do 10 j = 1, min(mx,nx-noff)+1
+      sfx(j) = fx(j+noff)
+   10 continue
+! zero out local accumulator
+      do 30 j = 1, mx+1
+      do 20 ii = 1, npr
+      sfms(ii,j) = 0.0
+   20 continue
+   30 continue
+! loop over particles in tile
+      do 50 j = 1, npp
+! find interpolation weights
+      x = ppart(1,j,k)
+      nn = x
+      dxp = x - real(nn)
+      nn = nn - noff + 1
+      amx = 1.0 - dxp
+! find acceleration
+      dx = amx*sfx(nn) + dxp*sfx(nn+1)
+! calculate half impulse
+      x = qtmh*dx
+! half acceleration
+      vx = ppart(2,j,k) + x
+! update inverse gamma
+      p2 = vx*vx
+      gami = 1.0/sqrt(1.0 + p2*ci2)
+! calculate average velocity
+      vx = gami*vx
+! deposit fluid moments
+      sg(1) = 1.0
+      sg(2) = vx
+      if (npr > 2) then
+         sg(3) = vx*vx
+         w = gami*p2/(1.0 + gami)
+         sg(4) = w
+         sg(5) = w*vx
+      endif
+      do 40 ii = 1, npr
+      sfms(ii,nn) = sfms(ii,nn) + sg(ii)*amx
+      sfms(ii,nn+1) = sfms(ii,nn+1) + sg(ii)*dxp
+   40 continue
+   50 continue
+! deposit fluid moments to interior points in global array
+      nn = min(mx,nxv-noff)
+      do 70 j = 2, nn
+      do 60 ii = 1, npr
+      fms(ii,j+noff) = fms(ii,j+noff) + sfms(ii,j)
+   60 continue
+   70 continue
+! deposit fluid moments to edge points in global array
+      nn = min(mx+1,nxv-noff)
+      do 80 ii = 1, npr
+!$OMP ATOMIC
+      fms(ii,1+noff) = fms(ii,1+noff) + sfms(ii,1)
+   80 continue
+      if (nn > mx) then
+         do 90 ii = 1, npr
+!$OMP ATOMIC
+         fms(ii,nn+noff) = fms(ii,nn+noff) + sfms(ii,nn)
+   90    continue
+      endif
+  100 continue
+!$OMP END PARALLEL DO
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine GBPROFX13L(ppart,fxyz,byz,fms,kpic,omx,qbm,dt,idimp,   &
+     &nppmx,npro,nx,mx,nprd,nxv,mx1)
+! for 1-2/2d code, this subroutine calculates fluid moments from
+! particle quantities: density, momentum, momentum flux, energy,
+! energy flux,
+! assumes particle positions and velocities not at same time levels
+! using first-order linear interpolation.
+! OpenMP version using guard cells
+! data deposited in tiles
+! particles stored segmented array
+! 142 flops/particle, 1 divide, 44 loads, 28 stores
+! if all profiles calculated
+! input: all, output: fms
+! fluid moments are approximated by values at the nearest grid points
+! fms(i,n)=mci*(1.-dx) and fms(i,n+1)=mci*dx
+! where n = nearest grid point and dx = x-n
+! where for i = 1, mci = 1.0
+! where for i = 2, 4, mci = vi, where i = x,y,z
+! where for i = 5, 10, mci = vj*vk, where jk = xx,xy,xz,yy,yz,zz
+! where for i = 11, mci = (vx**2+vy**2+vz**2)
+! where for i = 12, 14, mci = (vx**2+vy**2+vz**2)*vi, where i = x,y,z
+! velocity equations at t=t+dt/2 are calculated from:
+! vx(t+dt/2) = rot(1)*(vx(t-dt/2) + .5*(q/m)*fx(x(t))*dt) +
+!    rot(2)*(vy(t-dt/2) + .5*(q/m)*fy(x(t))*dt) +
+!    rot(3)*(vz(t-dt/2) + .5*(q/m)*fz(x(t))*dt) + .5*(q/m)*fx(x(t))*dt)
+! vy(t+dt/2) = rot(4)*(vx(t-dt/2) + .5*(q/m)*fx(x(t))*dt) +
+!    rot(5)*(vy(t-dt/2) + .5*(q/m)*fy(x(t))*dt) +
+!    rot(6)*(vz(t-dt/2) + .5*(q/m)*fz(x(t))*dt) + .5*(q/m)*fy(x(t))*dt)
+! vz(t+dt/2) = rot(7)*(vx(t-dt/2) + .5*(q/m)*fx(x(t))*dt) +
+!    rot(8)*(vy(t-dt/2) + .5*(q/m)*fy(x(t))*dt) +
+!    rot(9)*(vz(t-dt/2) + .5*(q/m)*fz(x(t))*dt) + .5*(q/m)*fz(x(t))*dt)
+! where q/m is charge/mass, and the rotation matrix is given by:
+!    rot(1) = (1 - (om*dt/2)**2 + 2*(omx*dt/2)**2)/(1 + (om*dt/2)**2)
+!    rot(2) = 2*(omz*dt/2 + (omx*dt/2)*(omy*dt/2))/(1 + (om*dt/2)**2)
+!    rot(3) = 2*(-omy*dt/2 + (omx*dt/2)*(omz*dt/2))/(1 + (om*dt/2)**2)
+!    rot(4) = 2*(-omz*dt/2 + (omx*dt/2)*(omy*dt/2))/(1 + (om*dt/2)**2)
+!    rot(5) = (1 - (om*dt/2)**2 + 2*(omy*dt/2)**2)/(1 + (om*dt/2)**2)
+!    rot(6) = 2*(omx*dt/2 + (omy*dt/2)*(omz*dt/2))/(1 + (om*dt/2)**2)
+!    rot(7) = 2*(omy*dt/2 + (omx*dt/2)*(omz*dt/2))/(1 + (om*dt/2)**2)
+!    rot(8) = 2*(-omx*dt/2 + (omy*dt/2)*(omz*dt/2))/(1 + (om*dt/2)**2)
+!    rot(9) = (1 - (om*dt/2)**2 + 2*(omz*dt/2)**2)/(1 + (om*dt/2)**2)
+! and om**2 = omx**2 + omy**2 + omz**2
+! the rotation matrix is determined by:
+! omy = (q/m)*by(x(t)), and omz = (q/m)*bz(x(t)).
+! fx(x(t)) is approximated by interpolation from the nearest grid points
+! fx(x) = (1-dx)*fx(n)+dx*fx(n+1)
+! where n = nearest grid point and dx = x-n
+! similarly for fy(x), fz(x), by(x), bz(x)
+! ppart(1,n,m) = position x of particle n in tile m at t
+! ppart(2,n,m) = velocity vx of particle n in tile m at t - dt/2
+! ppart(3,n,m) = velocity vy of particle n in tile m at t - dt/2
+! ppart(4,n,m) = velocity vz of particle n in tile m at t - dt/2
+! fxyz(1,j) = x component of force/charge at grid (j)
+! fxyz(2,j) = y component of force/charge at grid (j)
+! fxyz(3,j) = z component of force/charge at grid (j)
+! that is, convolution of electric field over particle shape
+! byz(1,j) = y component of magnetic field at grid (j)
+! byz(2,j) = z component of magnetic field at grid (j)
+! that is, the convolution of magnetic field over particle shape
+! fms(i,j) = ith component of fluid moments at grid (j)
+! kpic(k) = number of particles in tile k
+! omx = magnetic field electron cyclotron frequency in x
+! qbm = particle charge/mass ratio
+! dt = time interval between successive calculations
+! idimp = size of phase space = 4
+! nppmx = maximum number of particles in tile
+! npro = (1,2,3,4) = (density,momentum,momentum flux,energy+energy flux)
+! if npro = n is selected, all profiles less than n are also calculated
+! nx = system length in x direction
+! mx = number of grids in sorting cell in x
+! nprd = maximum number of fluid components, nprd >= 14
+! nxv = second dimension of field arrays, must be >= nx+1
+! mx1 = (system length in x direction - 1)/mx + 1
+      implicit none
+      integer idimp, nppmx, npro, nx, mx, nprd, nxv, mx1
+      real omx, qbm, dt
+      real ppart, fxyz, byz, fms
+      integer kpic
+      dimension ppart(idimp,nppmx,mx1)
+      dimension fxyz(3,nxv), byz(2,nxv)
+      dimension fms(nprd,nxv)
+      dimension kpic(mx1)
+! local data
+      integer MXV
+      parameter(MXV=129)
+      integer noff, npp, npr
+      integer j, k, ii, nn
+      real qtmh, dxp, amx, dx, dy, dz, ox, oy, oz
+      real acx, acy, acz, omxt, omyt, omzt, omt, anorm
+      real rot1, rot2, rot3, rot4, rot5, rot6, rot7, rot8, rot9
+      real x, y, z, w, vx, vy, vz
+      real sfxyz, sbyz, sfms, sg
+!     dimension sfxyz(3,MXV), sbyz(2,MXV)
+!     dimension sfms(nprd,MXV),, sg(14)
+      dimension sfxyz(3,mx+1), sbyz(2,mx+1)
+      dimension sfms(nprd,mx+1), sg(14)
+! calculate number of components required
+      npr = 0
+      if (npro==1) then
+         npr = 1
+      else if (npro==2) then
+         npr = 4
+      else if (npro==3) then
+         npr = 10
+      else if (npro==4) then
+         npr = 14
+      endif
+      if (npr > nprd) npr = nprd
+      qtmh = 0.5*qbm*dt
+! error if local array is too small
+!     if (mx.ge.MXV) return
+! loop over tiles
+!$OMP PARALLEL DO                                                       &
+!$OMP& PRIVATE(j,k,ii,noff,npp,nn,x,y,z,w,dxp,amx,dx,dy,dz,ox,oy,oz,vx, &
+!$OMP& vy,vz,acx,acy,acz,omxt,omyt,omzt,omt,anorm,rot1,rot2,rot3,rot4,  &
+!$OMP& rot5,rot6,rot7,rot8,rot9,sfxyz,sbyz,sfms,sg)
+      do 110 k = 1, mx1
+      noff = mx*(k - 1)
+      npp = kpic(k)
+! load local fields from global array
+      nn = min(mx,nx-noff) + 1
+      do 10 j = 1, nn
+      sfxyz(1,j) = fxyz(1,j+noff)
+      sfxyz(2,j) = fxyz(2,j+noff)
+      sfxyz(3,j) = fxyz(3,j+noff)
+   10 continue
+      do 20 j = 1, nn
+      sbyz(1,j) = byz(1,j+noff)
+      sbyz(2,j) = byz(2,j+noff)
+   20 continue
+! zero out local accumulators
+      do 40 j = 1, mx+1
+      do 30 ii = 1, npr
+      sfms(ii,j) = 0.0
+   30 continue
+   40 continue
+! loop over particles in tile
+      do 60 j = 1, npp
+! find interpolation weights
+      x = ppart(1,j,k)
+      nn = x
+      dxp = x - real(nn)
+      nn = nn - noff + 1
+      amx = 1.0 - dxp
+! find electric field
+      dx = amx*sfxyz(1,nn) + dxp*sfxyz(1,nn+1)
+      dy = amx*sfxyz(2,nn) + dxp*sfxyz(2,nn+1)
+      dz = amx*sfxyz(3,nn) + dxp*sfxyz(3,nn+1)
+! find magnetic field
+      ox = omx
+      oy = amx*sbyz(1,nn) + dxp*sbyz(1,nn+1)
+      oz = amx*sbyz(2,nn) + dxp*sbyz(2,nn+1)
+! calculate half impulse
+      x = qtmh*dx
+      y = qtmh*dy
+      z = qtmh*dz
+! half acceleration
+      vx = ppart(2,j,k)
+      vy = ppart(3,j,k)
+      vz = ppart(4,j,k)
+      acx = vx + x
+      acy = vy + y
+      acz = vz + z
+! calculate cyclotron frequency
+      omxt = qtmh*ox
+      omyt = qtmh*oy
+      omzt = qtmh*oz
+! calculate rotation matrix
+      omt = omxt*omxt + omyt*omyt + omzt*omzt
+      anorm = 2.0/(1.0 + omt)
+      omt = 0.5*(1.0 - omt)
+      rot4 = omxt*omyt
+      rot7 = omxt*omzt
+      rot8 = omyt*omzt
+      rot1 = omt + omxt*omxt
+      rot5 = omt + omyt*omyt
+      rot9 = omt + omzt*omzt
+      rot2 = omzt + rot4
+      rot4 = -omzt + rot4
+      rot3 = -omyt + rot7
+      rot7 = omyt + rot7
+      rot6 = omxt + rot8
+      rot8 = -omxt + rot8
+! new velocity
+      x = (rot1*acx + rot2*acy + rot3*acz)*anorm + x
+      y = (rot4*acx + rot5*acy + rot6*acz)*anorm + y
+      z = (rot7*acx + rot8*acy + rot9*acz)*anorm + z
+! calculate average velocity
+      vx = 0.5*(x + vx)
+      vy = 0.5*(y + vy)
+      vz = 0.5*(z + vz)
+! deposit fluid moments
+      sg(1) = 1.0
+      sg(2) = vx
+      sg(3) = vy
+      sg(4) = vz
+      if (npr > 4) then
+         x = vx*vx
+         sg(5) = x
+         sg(6) = vx*vy
+         sg(7) = vx*vz
+         y = vy*vy
+         w = x + y
+         sg(8) = y
+         sg(9) = vy*vz
+         dx = vz*vz
+         sg(10) = dx
+         w = 0.5*(w + dx)
+         sg(11) = w
+         sg(12) = w*vx
+         sg(13) = w*vy
+         sg(14) = w*vz
+      endif
+      do 50 ii = 1, npr
+      sfms(ii,nn) = sfms(ii,nn) + sg(ii)*amx
+      sfms(ii,nn+1) = sfms(ii,nn+1) + sg(ii)*dxp
+   50 continue
+   60 continue
+! deposit fluid moments to interior points in global array
+      nn = min(mx,nxv-noff)
+      do 80 j = 2, nn
+      do 70 ii = 1, npr
+      fms(ii,j+noff) = fms(ii,j+noff) + sfms(ii,j)
+   70 continue
+   80 continue
+! deposit fluid moments to edge points in global array
+      nn = min(mx+1,nxv-noff)
+      do 90 ii = 1, npr
+!$OMP ATOMIC
+      fms(ii,1+noff) = fms(ii,1+noff) + sfms(ii,1)
+   90 continue
+      if (nn > mx) then
+         do 100 ii = 1, npr
+!$OMP ATOMIC
+         fms(ii,nn+noff) = fms(ii,nn+noff) + sfms(ii,nn)
+  100    continue
+      endif
+  110 continue
+!$OMP END PARALLEL DO
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine GRBPROFX13L(ppart,fxyz,byz,fms,kpic,omx,qbm,dt,ci,idimp&
+     &,nppmx,npro,nx,mx,nprd,nxv,mx1)
+! for 1-2/2d code, this subroutine calculates fluid moments from
+! particle quantities: density, velocity, velocity flux, energy,
+! energy flux, for relativistic particles
+! assumes particle positions and velocities not at same time levels
+! using first-order linear interpolation.
+! OpenMP version using guard cells
+! data deposited in tiles
+! particles stored segmented array
+! 160 flops/particle, 4 divides, 2 sqrt, 44 loads, 28 stores
+! if all profiles calculated
+! input: all, output: fms
+! fluid moments are approximated by values at the nearest grid points
+! fms(i,n)=mci*(1.-dx) and fms(i,n+1)=mci*dx
+! where n = nearest grid point and dx = x-n
+! where for i = 1, mci = 1.0
+! where for i = 2, 4, mci = vi, where i = x,y,z
+! where for i = 5, 10, mci = vj*vk, where jk = xx,xy,xz,yy,yz,zz
+! where for i = 11, mci =  gami*p2/(1.0 + gami),
+! where p2 = px*px + py*py + pz*pz
+! where for i = 12, 14, mci = (gami*p2/(1.0 + gami))*vi, where i = x,y,z
+! momentum equations at t=t+dt/2 are calculated from:
+! px(t+dt/2) = rot(1)*(px(t-dt/2) + .5*(q/m)*fx(x(t),y(t))*dt) +
+!    rot(2)*(py(t-dt/2) + .5*(q/m)*fy(x(t),y(t))*dt) +
+!    rot(3)*(pz(t-dt/2) + .5*(q/m)*fz(x(t),y(t))*dt) +
+!    .5*(q/m)*fx(x(t),y(t))*dt)
+! py(t+dt/2) = rot(4)*(px(t-dt/2) + .5*(q/m)*fx(x(t),y(t))*dt) +
+!    rot(5)*(py(t-dt/2) + .5*(q/m)*fy(x(t),y(t))*dt) +
+!    rot(6)*(pz(t-dt/2) + .5*(q/m)*fz(x(t),y(t))*dt) +
+!    .5*(q/m)*fy(x(t),y(t))*dt)
+! pz(t+dt/2) = rot(7)*(px(t-dt/2) + .5*(q/m)*fx(x(t),y(t))*dt) +
+!    rot(8)*(py(t-dt/2) + .5*(q/m)*fy(x(t),y(t))*dt) +
+!    rot(9)*(pz(t-dt/2) + .5*(q/m)*fz(x(t),y(t))*dt) +
+!    .5*(q/m)*fz(x(t),y(t))*dt)
+! where q/m is charge/mass, and the rotation matrix is given by:
+!    rot(1) = (1 - (om*dt/2)**2 + 2*(omx*dt/2)**2)/(1 + (om*dt/2)**2)
+!    rot(2) = 2*(omz*dt/2 + (omx*dt/2)*(omy*dt/2))/(1 + (om*dt/2)**2)
+!    rot(3) = 2*(-omy*dt/2 + (omx*dt/2)*(omz*dt/2))/(1 + (om*dt/2)**2)
+!    rot(4) = 2*(-omz*dt/2 + (omx*dt/2)*(omy*dt/2))/(1 + (om*dt/2)**2)
+!    rot(5) = (1 - (om*dt/2)**2 + 2*(omy*dt/2)**2)/(1 + (om*dt/2)**2)
+!    rot(6) = 2*(omx*dt/2 + (omy*dt/2)*(omz*dt/2))/(1 + (om*dt/2)**2)
+!    rot(7) = 2*(omy*dt/2 + (omx*dt/2)*(omz*dt/2))/(1 + (om*dt/2)**2)
+!    rot(8) = 2*(-omx*dt/2 + (omy*dt/2)*(omz*dt/2))/(1 + (om*dt/2)**2)
+!    rot(9) = (1 - (om*dt/2)**2 + 2*(omz*dt/2)**2)/(1 + (om*dt/2)**2)
+! and om**2 = omx**2 + omy**2 + omz**2
+! the rotation matrix is determined by:
+! omy = (q/m)*by(x(t),y(t))*gami, and omz = (q/m)*bz(x(t),y(t))*gami.
+! fx(x(t)) is approximated by interpolation from the nearest grid points
+! fx(x) = (1-dx)*fx(n)+dx*fx(n+1)
+! where n = nearest grid point and dx = x-n
+! similarly for fy(x), fz(x), by(x), bz(x)
+! ppart(1,n,m) = position x of particle n in tile m at t
+! ppart(2,n,m) = momentum px of particle n in tile m at t - dt/2
+! ppart(3,n,m) = momentum py of particle n in tile m at t - dt/2
+! ppart(4,n,m) = momentum pz of particle n in tile m at t - dt/2
+! fxyz(1,j) = x component of force/charge at grid (j)
+! fxyz(2,j) = y component of force/charge at grid (j)
+! fxyz(3,j) = z component of force/charge at grid (j)
+! that is, convolution of electric field over particle shape
+! byz(1,j) = y component of magnetic field at grid (j)
+! byz(2,j) = z component of magnetic field at grid (j)
+! that is, the convolution of magnetic field over particle shape
+! fms(i,j) = ith component of fluid moments at grid (j)
+! kpic(k) = number of particles in tile k
+! omx = magnetic field electron cyclotron frequency in x
+! qbm = particle charge/mass ratio
+! dt = time interval between successive calculations
+! ci = reciprical of velocity of light
+! idimp = size of phase space = 4
+! nppmx = maximum number of particles in tile
+! npro = (1,2,3,4) = (density,velocity,velocity flux,energy+energy flux)
+! if npro = n is selected, all profiles less than n are also calculated
+! nx = system length in x direction
+! mx = number of grids in sorting cell in x
+! nprd = maximum number of fluid components, nprd >= 14
+! nxv = second dimension of field arrays, must be >= nx+1
+! mx1 = (system length in x direction - 1)/mx + 1
+      implicit none
+      integer idimp, nppmx, npro, nx, mx, nprd, nxv, mx1
+      real omx, qbm, dt, ci
+      real ppart, fxyz, byz, fms
+      integer kpic
+      dimension ppart(idimp,nppmx,mx1)
+      dimension fxyz(3,nxv), byz(2,nxv)
+      dimension fms(nprd,nxv)
+      dimension kpic(mx1)
+! local data
+      integer MXV
+      parameter(MXV=129)
+      integer noff, npp, npr
+      integer j, k, ii, nn
+      real qtmh, ci2, gami, qtmg, dxp, amx, dx, dy, dz, ox, oy, oz
+      real acx, acy, acz, omxt, omyt, omzt, omt, anorm
+      real rot1, rot2, rot3, rot4, rot5, rot6, rot7, rot8, rot9
+      real x, y, z, w, vx, vy, vz, p2
+      real sfxyz, sbyz, sfms, sg
+!     dimension sfxyz(3,MXV), sbyz(2,MXV)
+!     dimension sfms(nprd,MXV),, sg(14)
+      dimension sfxyz(3,mx+1), sbyz(2,mx+1)
+      dimension sfms(nprd,mx+1), sg(14)
+! calculate number of components required
+      npr = 0
+      if (npro==1) then
+         npr = 1
+      else if (npro==2) then
+         npr = 4
+      else if (npro==3) then
+         npr = 10
+      else if (npro==4) then
+         npr = 14
+      endif
+      if (npr > nprd) npr = nprd
+      qtmh = 0.5*qbm*dt
+      ci2 = ci*ci
+! error if local array is too small
+!     if (mx.ge.MXV) return
+! loop over tiles
+!$OMP PARALLEL DO                                                       &
+!$OMP& PRIVATE(j,k,ii,noff,npp,nn,x,y,z,w,dxp,amx,dx,dy,dz,ox,oy,oz,vx, &
+!$OMP& vy,vz,acx,acy,acz,omxt,omyt,omzt,omt,anorm,rot1,rot2,rot3,rot4,  &
+!$OMP& rot5,rot6,rot7,rot8,rot9,p2,gami,qtmg,sfxyz,sbyz,sfms,sg)
+      do 110 k = 1, mx1
+      noff = mx*(k - 1)
+      npp = kpic(k)
+! load local fields from global array
+      nn = min(mx,nx-noff) + 1
+      do 10 j = 1, nn
+      sfxyz(1,j) = fxyz(1,j+noff)
+      sfxyz(2,j) = fxyz(2,j+noff)
+      sfxyz(3,j) = fxyz(3,j+noff)
+   10 continue
+      do 20 j = 1, nn
+      sbyz(1,j) = byz(1,j+noff)
+      sbyz(2,j) = byz(2,j+noff)
+   20 continue
+! zero out local accumulators
+      do 40 j = 1, mx+1
+      do 30 ii = 1, npr
+      sfms(ii,j) = 0.0
+   30 continue
+   40 continue
+! loop over particles in tile
+      do 60 j = 1, npp
+! find interpolation weights
+      x = ppart(1,j,k)
+      nn = x
+      dxp = x - real(nn)
+      nn = nn - noff + 1
+      amx = 1.0 - dxp
+! find electric field
+      dx = amx*sfxyz(1,nn) + dxp*sfxyz(1,nn+1)
+      dy = amx*sfxyz(2,nn) + dxp*sfxyz(2,nn+1)
+      dz = amx*sfxyz(3,nn) + dxp*sfxyz(3,nn+1)
+! find magnetic field
+      ox = omx
+      oy = amx*sbyz(1,nn) + dxp*sbyz(1,nn+1)
+      oz = amx*sbyz(2,nn) + dxp*sbyz(2,nn+1)
+! calculate half impulse
+      x = qtmh*dx
+      y = qtmh*dy
+      z = qtmh*dz
+! half acceleration
+      vx = ppart(2,j,k)
+      vy = ppart(3,j,k)
+      vz = ppart(4,j,k)
+      acx = vx + x
+      acy = vy + y
+      acz = vz + z
+! find inverse gamma
+      p2 = acx*acx + acy*acy + acz*acz
+      gami = 1.0/sqrt(1.0 + p2*ci2)
+! renormalize magnetic field
+      qtmg = qtmh*gami
+! calculate cyclotron frequency
+      omxt = qtmg*ox
+      omyt = qtmg*oy
+      omzt = qtmg*oz
+! calculate rotation matrix
+      omt = omxt*omxt + omyt*omyt + omzt*omzt
+      anorm = 2.0/(1.0 + omt)
+      omt = 0.5*(1.0 - omt)
+      rot4 = omxt*omyt
+      rot7 = omxt*omzt
+      rot8 = omyt*omzt
+      rot1 = omt + omxt*omxt
+      rot5 = omt + omyt*omyt
+      rot9 = omt + omzt*omzt
+      rot2 = omzt + rot4
+      rot4 = -omzt + rot4
+      rot3 = -omyt + rot7
+      rot7 = omyt + rot7
+      rot6 = omxt + rot8
+      rot8 = -omxt + rot8
+! new velocity
+      x = (rot1*acx + rot2*acy + rot3*acz)*anorm + x
+      y = (rot4*acx + rot5*acy + rot6*acz)*anorm + y
+      z = (rot7*acx + rot8*acy + rot9*acz)*anorm + z
+! calculate average momentum
+      vx = 0.5*(x + vx)
+      vy = 0.5*(y + vy)
+      vz = 0.5*(z + vz)
+! find inverse gamma
+      p2 = vx*vx + vy*vy + vz*vz
+      gami = 1.0/sqrt(1.0 + p2*ci2)
+! calculate average velocity
+      vx = gami*vx
+      vy = gami*vy
+      vz = gami*vz
+! deposit fluid moments
+      sg(1) = 1.0
+      sg(2) = vx
+      sg(3) = vy
+      sg(4) = vz
+      if (npr > 4) then
+         sg(5) = vx*vx
+         sg(6) = vx*vy
+         sg(7) = vx*vz
+         sg(8) = vy*vy
+         sg(9) = vy*vz
+         sg(10) = vz*vz
+         w = gami*p2/(1.0 + gami)
+         sg(11) = w
+         sg(12) = w*vx
+         sg(13) = w*vy
+         sg(14) = w*vz
+      endif
+      do 50 ii = 1, npr
+      sfms(ii,nn) = sfms(ii,nn) + sg(ii)*amx
+      sfms(ii,nn+1) = sfms(ii,nn+1) + sg(ii)*dxp
+   50 continue
+   60 continue
+! deposit fluid moments to interior points in global array
+      nn = min(mx,nxv-noff)
+      do 80 j = 2, nn
+      do 70 ii = 1, npr
+      fms(ii,j+noff) = fms(ii,j+noff) + sfms(ii,j)
+   70 continue
+   80 continue
+! deposit fluid moments to edge points in global array
+      nn = min(mx+1,nxv-noff)
+      do 90 ii = 1, npr
+!$OMP ATOMIC
+      fms(ii,1+noff) = fms(ii,1+noff) + sfms(ii,1)
+   90 continue
+      if (nn > mx) then
+         do 100 ii = 1, npr
+!$OMP ATOMIC
+         fms(ii,nn+noff) = fms(ii,nn+noff) + sfms(ii,nn)
+  100    continue
+      endif
+  110 continue
+!$OMP END PARALLEL DO
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine FLUIDQS13(fms,npro,nx,nprd,nxv)
+! for 1-2/2d code, this subroutine calculates fluid quantities from
+! fluid moments: density, velocity field, pressure tensor, energy,
+! heat flux
+! assumes guard cells have been added
+! OpenMP version
+! 42 flops/grid, 1 divide, 26 loads, 12 stores,
+! if all profiles calculated
+! input: all, output: fms
+! fluid quantities are calculated as follows:
+! fms(1,:) = density n is unchanged
+! fms(2:4,:) = velocity field u, calculated from momentum and density n:
+! u = fms(2:4,:)/n where n /= 0.0
+! fms(5:10) = pressure tensor P, calculated from momentum flux, velocity
+! field u and density n: P = fms(5:10,:) - n*[u,u]
+! fms(11,:) = energy density U is unchanged
+! fms(12:14,:) = heat flux Q, calculated from energy U, energy flux,
+! velocity field u and pressure P: Q = fms(12:14,:) - u.P - u*U
+! on entry:
+! fms(i,j) = ith component of fluid moments at grid point j
+! on exit
+! fms(i,j) = ith component of fluid quantities at grid point j
+! npro = (1,2,3,4) = (density,momentum,momentum flux,energy flux)
+! if npro = n is selected, all profiles less than n are also calculated
+! nx = system length in x direction
+! nprd = maximum number of fluid components, nprd >= 14
+! nxv = second dimension of current array, must be >= nx+1
+      implicit none
+      integer npro, nx, nprd, nxv
+      real fms
+      dimension fms(nprd,nxv)
+! local data
+      integer j, npr
+      real at1, at2
+      double precision dt1, dt2, dtx, dty, dtz
+! calculate number of components required
+      npr = 0
+      if (npro==1) then
+         npr = 1
+      else if (npro==2) then
+         npr = 4
+      else if (npro==3) then
+         npr = 10
+      else if (npro==4) then
+         npr = 14
+      endif
+      if (npr > nprd) npr = nprd
+! exit if error
+      if (npr < 4) return
+      do 10 j = 1, nx
+      at1 = fms(1,j)
+! calculate velocity field
+      if (at1.gt.0.0) then
+         at2 = 1.0/at1
+         fms(2,j) = fms(2,j)*at2
+         fms(3,j) = fms(3,j)*at2
+         fms(4,j) = fms(4,j)*at2
+      else
+         fms(2,j) = 0.0
+         fms(3,j) = 0.0
+         fms(4,j) = 0.0
+      endif
+      if (npr < 10) go to 10
+! calculate pressure tensor
+      dt1 = dble(at1)
+      dtx = dble(fms(2,j))
+      dty = dble(fms(3,j))
+      dtz = dble(fms(4,j))
+      dt2 = dble(fms(5,j))
+      fms(5,j) = dt2 - dt1*dtx*dtx
+      dt2 = dble(fms(6,j))
+      fms(6,j) = dt2 - dt1*dtx*dty
+      dt2 = dble(fms(7,j))
+      fms(7,j) = dt2 - dt1*dtx*dtz
+      dt2 = dble(fms(8,j))
+      fms(8,j) = dt2 - dt1*dty*dty
+      dt2 = dble(fms(9,j))
+      fms(9,j) = dt2 - dt1*dty*dtz
+      dt2 = dble(fms(10,j))
+      fms(10,j) = dt2 - dt1*dtz*dtz
+! calculate heat flux
+      if (npr < 14) go to 10
+      dt1 = fms(11,j)
+      dt2 = dtx*fms(5,j) + dty*fms(6,j) + dtz*fms(7,j)
+      dt2 = fms(12,j) - dt2 - dtx*dt1
+      fms(12,j) = dt2
+      dt2 = dtx*fms(6,j) + dty*fms(8,j) + dtz*fms(9,j)
+      dt2 = fms(13,j) - dt2 - dty*dt1
+      fms(13,j) = dt2
+      dt2 = dtx*fms(7,j) + dty*fms(9,j) + dtz*fms(10,j)
+      dt2 = fms(14,j) - dt2 - dtz*dt1
+      fms(14,j) = dt2
+   10 continue
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine FLUIDQS1(fms,npro,nx,nprd,nxv)
+! for 1d code, this subroutine calculates fluid quantities from fluid
+! moments: density, velocity field, pressure tensor, energy, heat flux
+! assumes guard cells have been added
+! OpenMP version
+! 21 flops/grid, 1 divide, 15 loads, 7 stores
+! if all profiles calculated
+! input: all, output: fms
+! fluid quantities are calculated as follows:
+! fms(1,:) = density n is unchanged
+! fms(2,:) = velocity field u, calculated from momentum and density n:
+! u = fms(2,:)/n where n /= 0.0
+! fms(3) = pressure tensor P, calculated from momentum flux, velocity
+! field u and density n: P = fms(3,:) - n*[u,u]
+! fms(4,:) = energy density U is unchanged
+! fms(5,:) = heat flux Q, calculated from energy U, energy flux,
+! velocity field u and pressure P: Q = fms(5,:) - u.P - u*U
+! on entry:
+! fms(i,j) = ith component of fluid moments at grid point j
+! on exit
+! fms(i,j) = ith component of fluid quantities at grid point j
+! npro = (1,2,3,4) = (density,momentum,momentum flux,energy flux)
+! if npro = n is selected, all profiles less than n are also calculated
+! nx = system length in x direction
+! nprd = maximum number of fluid components, nprd >= 5
+! nxv = second dimension of current array, must be >= nx+1
+      implicit none
+      integer npro, nx, nprd, nxv
+      real fms
+      dimension fms(nprd,nxv)
+! local data
+      integer j, npr
+      real at1, at2
+      double precision dt1, dt2, dtx
+! calculate number of components required
+      npr = 0
+      if (npro==1) then
+         npr = 1
+      else if (npro==2) then
+         npr = 2
+      else if (npro==3) then
+         npr = 3
+      else if (npro==4) then
+         npr = 5
+      endif
+      if (npr > nprd) npr = nprd
+! exit if error
+      if (npr < 2) return
+      do 10 j = 1, nx
+      at1 = fms(1,j)
+! calculate velocity field
+      if (at1.gt.0.0) then
+         at2 = 1.0/at1
+         fms(2,j) = fms(2,j)*at2
+      else
+         fms(2,j) = 0.0
+      endif
+      if (npr < 6) go to 10
+! calculate pressure tensor
+      dt1 = dble(at1)
+      dtx = dble(fms(2,j))
+      dt2 = dble(fms(3,j))
+      fms(3,j) = dt2 - dt1*dtx*dtx
+! calculate heat flux
+      if (npr < 5) go to 10
+      dt1 = fms(4,j)
+      dt2 = dtx*fms(3,j)
+      dt2 = fms(5,j) - dt2 - dtx*dt1
+      fms(5,j) = dt2
+   10 continue
       return
       end
 !-----------------------------------------------------------------------
@@ -1050,8 +2572,7 @@
       nprobt = 0
       if (idimp < 3) return
 ! loop over tiles
-!$OMP PARALLEL DO
-!$OMP& PRIVATE(j,k,npp,nt) REDUCTION(+:nprobt)
+!$OMP PARALLEL DO PRIVATE(j,k,npp,nt) REDUCTION(+:nprobt)
       do 20 k = 1, mx1
       npp = kpic(k)
       nt = 0
@@ -1087,8 +2608,7 @@
       nprobt = 0
       if (idimp < 5) return
 ! loop over tiles
-!$OMP PARALLEL DO
-!$OMP& PRIVATE(j,k,npp,nt) REDUCTION(+:nprobt)
+!$OMP PARALLEL DO PRIVATE(j,k,npp,nt) REDUCTION(+:nprobt)
       do 20 k = 1, mx1
       npp = kpic(k)
       nt = 0
@@ -1126,8 +2646,7 @@
       real tn
       if (idimp < 3) return
 ! loop over tiles
-!$OMP PARALLEL DO
-!$OMP& PRIVATE(i,j,k,npp,tn)
+!$OMP PARALLEL DO PRIVATE(i,j,k,npp,tn)
       do 30 k = 1, mx1
       npp = kpic(k)
 ! loop over particles in tile
@@ -1169,8 +2688,7 @@
       real tn
       if (idimp < 5) return
 ! loop over tiles
-!$OMP PARALLEL DO
-!$OMP& PRIVATE(i,j,k,npp,tn)
+!$OMP PARALLEL DO PRIVATE(i,j,k,npp,tn)
       do 30 k = 1, mx1
       npp = kpic(k)
 ! loop over particles in tile

@@ -43,4 +43,12 @@
          end subroutine
       end interface
 !
+      interface
+         subroutine AMCGUARD1L(amu,nx,ndim,nxe)
+         implicit none
+         integer, intent(in) :: nx, ndim, nxe
+         real, dimension(ndim,nxe), intent(inout) :: amu
+         end subroutine
+      end interface
+!
       end module

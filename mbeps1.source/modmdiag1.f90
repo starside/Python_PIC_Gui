@@ -5,10 +5,14 @@
 ! Fortran90 wrappers to 1d OpenMP PIC library libmdiag1.f
 ! get_funit returns an unconnected fortran unit number
 ! fnrecl find record length of direct access file
+! dafopen1 opens new binary file for real 1d scalar data.
+! dafopenv1 opens new binary file for real 1d vector data.
 ! dafopenc1 opens new binary file for complex 1d scalar data.
 ! dafopenvc1 opens new binary file for complex 1d vector data.
-! dafwritec1 writes scalar record in direct access binary file
-! dafwritevc1 writes vector record in direct access binary file
+! dafwrite1 writes real scalar record in direct access binary file
+! dafwritev1 writes real vector record in direct access binary file
+! dafwritec1 writes complex scalar record in direct access binary file
+! dafwritevc1 writes complex vector record in direct access binary file
 ! mcspect1 performs frequency analysis of complex time series
 !          calls CSPECT1
 ! micspect1 performs incremental frequency analysis of complex scalar
@@ -26,6 +30,53 @@
 ! mvdist1 calculates 1 component velocity distribution, velocity
 !         moments, and entropy with standard particle array
 !         calls VPDIST1 or VDIST13
+! mprofx13 calculates fluid moments from particle quantities
+!          assumes particle positions and velocities at same time level
+!          for 1-2/2d code
+!          calls PROFX13L
+! mrprofx13 calculates fluid moments from relativistic particle
+!           quantities.  assumes particle positions and momenta at same
+!           time level, for 1-2/2d code
+!           calls RPROFX13L
+! mprofx1 calculates fluid moments from particle quantities
+!         assumes particle positions and velocities at same time level
+!         for 1d code
+!         calls PROFX1L
+! mrprofx1 calculates fluid moments from relativistic particle
+!          quantities.  assumes particle positions and momenta at same
+!          time level, for 1d code
+!          calls RPROFX1L
+! mgprofx1 calculates fluid moments from particle quantities
+!          and electrostatic fields assumes particle positions and
+!          velocities not at same time levels
+!          calls GPROFX1L
+! mgrprofx1 calculates fluid moments from relativistic particle
+!           quantities and electrostatic fields.  assumes particle
+!           positions and velocities not at same time levels
+!           calls GRPROFX1L
+! mgbprofx1 calculates fluid moments from particle quantities and 
+!           electromagnetic fields assumes particle positions and
+!           velocities not at same time levels
+!           calls GBPROFX13L
+! mgrbprofx1 calculates fluid moments from relativistic particle
+!            quantities. assumes particle positions and velocities
+!            not at same time levels
+!            calls GRBPROFX13L
+! mfluidqs13 calculates fluid quantities from fluid moments
+!             for 1-2/2d code
+!             calls FLUIDQS13
+! mfluidqs1 calculates fluid quantities from fluid moments for 1d code
+!             calls FLUIDQS1
+! wmprofx13 generic procedure to calculate fluid moments for 1-2/2d code
+!           calls mprofx13 or mrprofx13
+! wmprofx1 generic procedure to calculate fluid moments
+!          calls mprofx1 or mrprofx1 for 1d code
+! wmgprofx1 generic procedure to calculate fluid moments with
+!           electrostatic fields
+!           calls mgprofx1 or mgrprofx1
+! wmgbprofx1 generic procedure to calculate fluid moments with
+!            electromagnetic fields
+!            calls mgbprofx1 or mgrbprofx1
 ! settraj1 sets test charge distribution by setting a particle id in
 !          particle location 3 or 5
 !          calls STPTRAJ1 or STPTRAJ13
@@ -38,7 +89,7 @@
 !           calls STPBEAM1 or STPBEAM13
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: may 30, 2017
+! update: december 8, 2017
 !
       use libmdiag1_h
       implicit none
@@ -73,6 +124,50 @@
       inquire(file=fname,recl=it,iostat=ios)
       if (ios /= 0) it = 0
       end function
+!
+!-----------------------------------------------------------------------
+      subroutine dafopen1(f,nx,iunit,nrec,fname)
+! this subroutine opens new direct access binary file
+! f = 1d real scalar data array to be written in each record
+! nx = number of data elements per record to be written in x 
+! iunit = fortran unit number to be used 
+! nrec = returns initial record number
+! fname = file name
+      implicit none
+      integer, intent(in) :: nx
+      integer, intent(inout) :: iunit, nrec
+      real, dimension(:), intent(in) :: f
+      character(len=*), intent(in) :: fname
+! local data
+      integer :: lrec
+      inquire(iolength=lrec) f(1); lrec = lrec*nx
+      iunit = get_funit(iunit)
+      open(unit=iunit,file=fname,form='unformatted',access='direct',    &
+     &recl=lrec,status='replace')
+      nrec = 1
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine dafopenv1(f,nx,iunit,nrec,fname)
+! this subroutine opens new direct access binary file
+! f = 1d real vector data array to be written in each record
+! nx = number of data elements per record to be written in x 
+! iunit = fortran unit number to be used 
+! nrec = returns initial record number
+! fname = file name
+      implicit none
+      integer, intent(in) :: nx
+      integer, intent(inout) :: iunit, nrec
+      real, dimension(:,:), intent(in) :: f
+      character(len=*), intent(in) :: fname
+! local data
+      integer :: lrec
+      inquire(iolength=lrec) f(1,1); lrec = lrec*size(f,1)*nx
+      iunit = get_funit(iunit)
+      open(unit=iunit,file=fname,form='unformatted',access='direct',    &
+     &recl=lrec,status='replace')
+      nrec = 1
+      end subroutine
 !
 !-----------------------------------------------------------------------
       subroutine dafopenc1(fc,iunit,nrec,fname)
@@ -115,9 +210,58 @@
       end subroutine
 !
 !-----------------------------------------------------------------------
+      subroutine dafwrite1(f,tdiag,iunit,nrec,nx)
+! this subroutine writes real scalar record in direct access binary file
+! f = real scalar data array to be written
+! iunit = fortran unit number to be used 
+! nrec = record number for write (then updated to next record)
+! nx = number of elements to be written in record
+      implicit none
+      integer, intent(in) :: iunit, nx
+      integer, intent(inout) :: nrec
+      real, intent(inout) :: tdiag
+      real, dimension(:), intent(in) :: f
+! local data
+      integer :: j
+      integer, dimension(4) :: itime
+      double precision :: dtime
+      if (nrec < 1) return
+      call dtimer(dtime,itime,-1)
+      write (unit=iunit,rec=nrec) (f(j),j=1,nx)
+      nrec = nrec + 1
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine dafwritev1(f,tdiag,iunit,nrec,nx)
+! this subroutine writes real vector record in direct access binary file
+! f = real vector data array to be written
+! iunit = fortran unit number to be used 
+! nrec = record number for write (then updated to next record)
+! nx = number of elements to be written in record
+      implicit none
+      integer, intent(in) :: iunit, nx
+      integer, intent(inout) :: nrec
+      real, intent(inout) :: tdiag
+      real, dimension(:,:), intent(in) :: f
+! local data
+      integer :: j, k, ndim
+      integer, dimension(4) :: itime
+      double precision :: dtime
+      ndim = size(f,1)
+      if (nrec < 1) return
+      call dtimer(dtime,itime,-1)
+      write (unit=iunit,rec=nrec) ((f(j,k),j=1,ndim),k=1,nx)
+      nrec = nrec + 1
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
       subroutine dafwritec1(fc,tdiag,iunit,nrec,nx)
 ! this subroutine writes scalar record in direct access binary file
-! fc = scalar data array to be written
+! fc = complex scalar data array to be written
 ! iunit = fortran unit number to be used 
 ! nrec = record number for write (then updated to next record)
 ! nx = number of elements to be written in record
@@ -141,7 +285,7 @@
 !-----------------------------------------------------------------------
       subroutine dafwritevc1(fc,tdiag,iunit,nrec,nx)
 ! this subroutine writes vector record in direct access binary file
-! fc = vector data array to be written
+! fc = complex vector data array to be written
 ! iunit = fortran unit number to be used 
 ! nrec = record number for write (then updated to next record)
 ! nx = number of elements to be written in record
@@ -329,6 +473,360 @@
 ! record time
       call dtimer(dtime,itime,1)
       tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mprofx13(ppart,fms,kpic,tdiag,npro,mx)
+! calculates fluid moments from particle quantities
+! assumes particle positions and velocities at same time level
+! for 1-2/2d code
+      implicit none
+      integer, intent(in) :: npro, mx
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! local data
+      integer :: idimp, nppmx, nprd, nxv, mx1
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      idimp = size(ppart,1); nppmx = size(ppart,2)
+      nprd = size(fms,1); nxv = size(fms,2)
+      mx1 = size(kpic,1)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+      call PROFX13L(ppart,fms,kpic,nppmx,idimp,npro,mx,nprd,nxv,mx1)
+! record time
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mrprofx13(ppart,fms,kpic,ci,tdiag,npro,mx)
+! calculates fluid moments from relativistic particle quantities
+! assumes particle positions and momenta at same time level
+! for 1-2/2d code
+      integer, intent(in) :: npro, mx
+      real, intent(in) :: ci
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! local data
+      integer :: idimp, nppmx, nprd, nxv, mx1
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      idimp = size(ppart,1); nppmx = size(ppart,2)
+      nprd = size(fms,1); nxv = size(fms,2)
+      mx1 = size(kpic,1)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+      call RPROFX13L(ppart,fms,kpic,ci,nppmx,idimp,npro,mx,nprd,nxv,mx1)
+! record time
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mprofx1(ppart,fms,kpic,tdiag,npro,mx)
+! calculates fluid moments from particle quantities
+! assumes particle positions and velocities at same time level
+! for 1d code
+      implicit none
+      integer, intent(in) :: npro, mx
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! local data
+      integer :: idimp, nppmx, nprd, nxv, mx1
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      idimp = size(ppart,1); nppmx = size(ppart,2)
+      nprd = size(fms,1); nxv = size(fms,2)
+      mx1 = size(kpic,1)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+      call PROFX1L(ppart,fms,kpic,nppmx,idimp,npro,mx,nprd,nxv,mx1)
+! record time
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mrprofx1(ppart,fms,kpic,ci,tdiag,npro,mx)
+! calculates fluid moments from relativistic particle quantities
+! assumes particle positions and momenta at same time level
+! for 2d code
+      integer, intent(in) :: npro, mx
+      real, intent(in) :: ci
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! local data
+      integer :: idimp, nppmx, nprd, nxv, mx1
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      idimp = size(ppart,1); nppmx = size(ppart,2)
+      nprd = size(fms,1); nxv = size(fms,2)
+      mx1 = size(kpic,1)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+      call RPROFX1L(ppart,fms,kpic,ci,nppmx,idimp,npro,mx,nprd,nxv,mx1)
+! record time
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mgprofx1(ppart,fx,fms,kpic,qbm,dt,tdiag,npro,nx,mx)
+! calculates fluid moments from particle quantities
+! and electrostatic fields
+! assumes particle positions and velocities not at same time levels
+      implicit none
+      integer, intent(in) :: npro, nx, mx
+      real, intent(in) :: qbm, dt
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:), intent(in) :: fx
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! local data
+      integer :: idimp, nppmx, nprd, nxv, mx1
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      idimp = size(ppart,1); nppmx = size(ppart,2)
+      nprd = size(fms,1); nxv = size(fms,2)
+      mx1 = size(kpic,1)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+      call GPROFX1L(ppart,fx,fms,kpic,qbm,dt,idimp,nppmx,npro,nx,mx,nprd&
+     &,nxv,mx1)
+! record time
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mgrprofx1(ppart,fx,fms,kpic,qbm,dt,ci,tdiag,npro,nx,mx)
+! calculates fluid moments from relativistic particle quantities
+! and electrostatic fields
+! assumes particle positions and velocities not at same time levels
+      implicit none
+      integer, intent(in) :: npro, nx, mx
+      real, intent(in) :: qbm, dt, ci
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:), intent(in) :: fx
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! local data
+      integer :: idimp, nppmx, nprd, nxv, mx1
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      idimp = size(ppart,1); nppmx = size(ppart,2)
+      nprd = size(fms,1); nxv = size(fms,2)
+      mx1 = size(kpic,1)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+      call GRPROFX1L(ppart,fx,fms,kpic,qbm,dt,ci,idimp,nppmx,npro,nx,mx,&
+     &nprd,nxv,mx1)
+! record time
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mgbprofx1(ppart,fxyz,byz,fms,kpic,omx,qbm,dt,tdiag,npro&
+     &,nx,mx)
+! calculates fluid moments from particle quantities
+! and electromagnetic fields
+! assumes particle positions and velocities not at same time levels
+      implicit none
+      integer, intent(in) :: npro, nx, mx
+      real, intent(in) :: omx, qbm, dt
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:,:), intent(in) :: fxyz, byz
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! local data
+      integer :: idimp, nppmx, nprd, nxv, mx1
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      idimp = size(ppart,1); nppmx = size(ppart,2)
+      nprd = size(fms,1); nxv = size(fms,2)
+      mx1 = size(kpic,1)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+      call GBPROFX13L(ppart,fxyz,byz,fms,kpic,omx,qbm,dt,idimp,nppmx,   &
+     &npro,nx,mx,nprd,nxv,mx1)
+! record time
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mgrbprofx1(ppart,fxyz,byz,fms,kpic,omx,qbm,dt,ci,tdiag,&
+     &npro,nx,mx)
+! calculates fluid moments from relativistic particle quantities
+! and electromagnetic fields
+! assumes particle positions and velocities not at same time levels
+      implicit none
+      integer, intent(in) :: npro, nx, mx
+      real, intent(in) :: omx, qbm, dt, ci
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:,:), intent(in) :: fxyz, byz
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! local data
+      integer :: idimp, nppmx, nprd, nxv, mx1
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      idimp = size(ppart,1); nppmx = size(ppart,2)
+      nprd = size(fms,1); nxv = size(fms,2)
+      mx1 = size(kpic,1)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+      call GRBPROFX13L(ppart,fxyz,byz,fms,kpic,omx,qbm,dt,ci,idimp,nppmx&
+     &,npro,nx,mx,nprd,nxv,mx1)
+! record time
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mfluidqs13(fms,tdiag,npro,nx)
+! calculates fluid quantities from fluid moments for 1-2/2d code
+      implicit none
+      integer, intent(in) :: npro, nx
+      real, intent(inout) :: tdiag
+      real, dimension(:,:), intent(inout) :: fms
+! local data
+      integer :: nprd, nxv
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      nprd = size(fms,1); nxv = size(fms,2)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+      call FLUIDQS13(fms,npro,nx,nprd,nxv)
+! record time
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mfluidqs1(fms,tdiag,npro,nx)
+! calculates fluid quantities from fluid moments for 1d code
+      implicit none
+      integer, intent(in) :: npro, nx
+      real, intent(inout) :: tdiag
+      real, dimension(:,:), intent(inout) :: fms
+! local data
+      integer :: nprd, nxv
+      integer, dimension(4) :: itime
+      double precision :: dtime
+! extract dimensions
+      nprd = size(fms,1); nxv = size(fms,2)
+! initialize timer
+      call dtimer(dtime,itime,-1)
+      call FLUIDQS1(fms,npro,nx,nprd,nxv)
+! record time
+      call dtimer(dtime,itime,1)
+      tdiag = tdiag + real(dtime)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine wmprofx13(ppart,fms,kpic,ci,tdiag,npro,mx,relativity)
+! generic procedure to calculate fluid moments
+! assumes particle positions and velocities at same time levels
+! for 1-2/2d code
+      integer, intent(in) :: npro, mx, relativity
+      real, intent(in) :: ci
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! updates fms
+      if (relativity==1) then
+         call mrprofx13(ppart,fms,kpic,ci,tdiag,npro,mx)
+      else
+         call mprofx13(ppart,fms,kpic,tdiag,npro,mx)
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine wmprofx1(ppart,fms,kpic,ci,tdiag,npro,mx,relativity)
+! generic procedure to calculate fluid moments
+! assumes particle positions and velocities at same time levels
+! for 1d code
+      integer, intent(in) :: npro, mx, relativity
+      real, intent(in) :: ci
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! updates fms
+      if (relativity==1) then
+         call mrprofx1(ppart,fms,kpic,ci,tdiag,npro,mx)
+      else
+         call mprofx1(ppart,fms,kpic,tdiag,npro,mx)
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine wmgprofx1(ppart,fx,fms,kpic,qbm,dt,ci,tdiag,npro,nx,mx,&
+     &relativity)
+! generic procedure to calculate fluid moments with electrostatic fields
+! assumes particle positions and velocities not at same time levels
+      implicit none
+      integer, intent(in) :: npro, nx, mx, relativity
+      real, intent(in) :: qbm, dt, ci
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:), intent(in) :: fx
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! updates fms
+      if (relativity==1) then
+         call mgrprofx1(ppart,fx,fms,kpic,qbm,dt,ci,tdiag,npro,nx,mx)
+      else
+         call mgprofx1(ppart,fx,fms,kpic,qbm,dt,tdiag,npro,nx,mx)
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine wmgbprofx1(ppart,fxyz,byz,fms,kpic,omx,qbm,dt,ci,tdiag,&
+     &npro,nx,mx,relativity)
+! generic procedure to calculate fluid moments with electrostatic fields
+! assumes particle positions and velocities not at same time levels
+      implicit none
+      integer, intent(in) :: npro, nx, mx, relativity
+      real, intent(in) :: omx, qbm, dt, ci
+      real, intent(inout) :: tdiag
+      real, dimension(:,:,:), intent(in) :: ppart
+      real, dimension(:,:), intent(in) :: fxyz, byz
+      real, dimension(:,:), intent(inout) :: fms
+      integer, dimension(:), intent(in) :: kpic
+! updates fms
+      if (relativity==1) then
+         call mgrbprofx1(ppart,fxyz,byz,fms,kpic,omx,qbm,dt,ci,tdiag,   &
+     &npro,nx,mx)
+      else
+         call mgbprofx1(ppart,fxyz,byz,fms,kpic,omx,qbm,dt,tdiag,npro,nx&
+     &,mx)
+      endif
       end subroutine
 !
 !-----------------------------------------------------------------------

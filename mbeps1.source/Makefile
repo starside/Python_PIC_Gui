@@ -84,8 +84,7 @@ MPCC = gcc -fopenmp
 CC = gcc
 
 PYTHON = python
-F2PY = $(PYTHON) f2py
-
+F2PY = $(PYTHON) f2py 
 PFC = $(F2PY) --fcompiler=gnu95
 PCC = $(F2PY) --compiler=unix
 
@@ -106,6 +105,7 @@ PYCCOPTS = $(CCOPTS) -fPIC
 
 LOPTS = -lgomp
 #LGOPTS = -lYgl -L/usr/X11R6/lib -lX11
+#LGOPTS = gks1/Ygl-4.2/libYgl.a -L/usr/X11R6/lib -lX11
 LEGACY =
 
 # Makefile PGI compiler with Linux
@@ -190,7 +190,7 @@ EDMODS = modmdpush1.o
 
 #Tektronix
 #GOBJS = libt1.o plot10.o libplt10.o dlibgks1.o libgks1.o libgraf1_h.o \
-# modgraf1.o
+#modgraf1.o
 # Postcript printer
 #GOBJS = libpsp.o dlibgks1.o libgks1.o  libgraf1_h.o modgraf1.o
 # X11 graphics needs Ygl from http://www.thp.uni-duisburg.de/Ygl/
@@ -201,8 +201,8 @@ GOBJS = nullgks1.o libgraf1_h.o modgraf1.o
 #GOBJS = libt1.o plot10.o libplt10.o dlibgks1.o libgks1.o libgraf1_h.o \
 #modgraf1.o libgks2.o libgraf2_h.o modgraf2.o
 #No graphics
-GOBJS = nullgks1.o nullgks2.o libgraf1_h.o modgraf1.o libgraf2_h.o \
-modgraf2.o
+#GOBJS = nullgks1.o nullgks2.o libgraf1_h.o modgraf1.o libgraf2_h.o \
+#modgraf2.o
 
 # Python
 
@@ -239,19 +239,20 @@ all : mbeps1 mbbeps1 mdbeps1
 python : mbeps1.py mbbeps1.py mdbeps1.py
 
 mbeps1 : mbeps1.o $(ESOBJS) $(GOBJS) dtimer.o
-	$(MPFC) $(OPTS90) $(LOPTS) $(LGOPTS) -o mbeps1 \
-    mbeps1.o $(ESOBJS) $(ESMODS) omplib.o $(ESHOBJS) $(GOBJS) msimul1.o dtimer.o
+	$(MPFC) $(OPTS90) $(LOPTS) -o mbeps1 \
+    mbeps1.o $(ESOBJS) $(ESMODS) omplib.o $(ESHOBJS) $(GOBJS) msimul1.o \
+    $(LGOPTS) dtimer.o
 
 mbbeps1 : mbbeps1.o $(ESOBJS) $(EMOBJS) $(GOBJS) dtimer.o
-	$(MPFC) $(OPTS90) $(LOPTS) $(LGOPTS) -o mbbeps1 \
+	$(MPFC) $(OPTS90) $(LOPTS) -o mbbeps1 \
     mbbeps1.o $(ESOBJS) $(EMOBJS) $(ESMODS) $(EMMODS) omplib.o \
-    $(ESHOBJS) $(EMHOBJS) $(GOBJS) msimul1.o mbsimul1.o dtimer.o
+    $(ESHOBJS) $(EMHOBJS) $(GOBJS) msimul1.o mbsimul1.o $(LGOPTS) dtimer.o
 
 mdbeps1 : mdbeps1.o $(ESOBJS) $(EMOBJS) $(EDOBJS) $(GOBJS) dtimer.o
-	$(MPFC) $(OPTS90) $(LOPTS) $(LGOPTS) -o mdbeps1 \
+	$(MPFC) $(OPTS90) $(LOPTS) -o mdbeps1 \
     mdbeps1.o $(ESOBJS) $(EMOBJS) $(EDOBJS) $(ESMODS) $(EMMODS) $(EDMODS) \
     omplib.o $(ESHOBJS) $(EMHOBJS) $(EDHOBJS) $(GOBJS) msimul1.o mbsimul1.o \
-    mdsimul1.o dtimer.o
+    mdsimul1.o $(LGOPTS) dtimer.o
 
 # Python
 
@@ -391,8 +392,11 @@ plot10.o : gks1/plot10.f
 
 libplt10.o : gks1/libplt10.f
 	$(MPFC) $(OPTS90) -o libplt10.o -c gks1/libplt10.f
-	
-libygl.o : gks1/libygl.f
+
+gks1/Ygl-4.2/libYgl.a :
+	make -C gks1/Ygl-4.2
+
+libygl.o : gks1/libygl.f gks1/Ygl-4.2/libYgl.a
 	$(MPFC) $(OPTS90) -o libygl.o -c gks1/libygl.f
 
 libpsp.o : gks1/libpsp.f
@@ -489,7 +493,7 @@ pymplot10.o : gks1/plot10.f
 pymlibplt10.o : gks1/libplt10.f
 	$(MPFC) $(PYOPTS90) -o pymlibplt10.o -c gks1/libplt10.f
 
-pymlibygl.o : gks1/libygl.f
+pymlibygl.o : gks1/libygl.f gks1/Ygl-4.2/libYgl.a
 	$(MPFC) $(PYOPTS90) -o pymlibygl.o -c gks1/libygl.f
 
 pymlibpsp.o : gks1/libpsp.f
@@ -520,7 +524,7 @@ cpmdbeps1 :
 	cp mdbeps1 ../
 
 clean :
-	rm -f *.o *.mod *.pyf
+	rm -f *.o *.mod *.pyf gks1/Ygl-4.2/*.o
 
 clobber: clean
-	rm -f mbeps1 mbbeps1 mdbeps1 *.so
+	rm -f mbeps1 mbbeps1 mdbeps1 *.so gks1/Ygl-4.2/*.a

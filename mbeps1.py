@@ -18,6 +18,8 @@ in1.readnml1(iuin)
 # override input data
 in1.idcode = 1
 in1.ndim = 1
+if (in1.nts > 0):
+   in1.nsxv = min(in1.nsxv,1); in1.nsvv = 0
 
 # import electrostatic module after namelist has been read
 import s1
@@ -135,6 +137,7 @@ if (in1.treverse==1):
 # pkwdi = power spectrum for ion density
 # wk = maximum frequency as a function of k for potential
 # wkdi = maximum frequency as a function of k for ion density
+# fmse/fmsi = electron/ion fluid moments
 # fv/fvi = global electron/ion velocity distribution functions
 # fvm/fvmi = electron/ion vdrift, vth, entropy for global distribution
 # fvtm/fvtmi = time history of electron/ion vdrift, vth, and entropy
@@ -267,7 +270,17 @@ for ntime in xrange(nstart,nloop):
          if (irc[0]==1): break
          irc[0] = 0
 
-# velocity diagnostic:
+# fluid moments diagnostic
+   if (in1.ntfm > 0):
+      it = int(ntime/in1.ntfm)
+      if (ntime==in1.ntfm*it):
+# updates fmse
+         s1.efluidms_diag1(s1.fmse)
+         if (in1.movion==1):
+# updates fmsi
+            s1.ifluidms_diag1(s1.fmsi)
+
+# velocity diagnostic
    if (in1.ntv > 0):
       it = int(ntime/in1.ntv)
       if (ntime==in1.ntv*it):

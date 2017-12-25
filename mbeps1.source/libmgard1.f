@@ -9,8 +9,9 @@
 !          interpolation
 ! AGUARD1L accumulate periodic scalar field with linear interpolation
 ! ACGUARD1L accumulate periodic vector field with linear interpolation
+! AMCGUARD1L accumulate periodic tensor field with linear interpolation
 ! copyright 2016, regents of the university of california
-! update: july 23, 2016
+! update: december 6, 2017
 !-----------------------------------------------------------------------
       subroutine DGUARD1L(fx,nx,nxe)
 ! replicate extended periodic scalar field fx
@@ -29,7 +30,7 @@
 ! replicate extended periodic vector field byz
 ! linear interpolation
 ! nx = system length in x direction
-! nxe = first dimension of field arrays, must be >= nx+1
+! nxe = second dimension of field arrays, must be >= nx+1
       implicit none
       real byz
       integer nx, nxe
@@ -47,7 +48,7 @@
 ! replicate extended periodic vector field fxyz
 ! linear interpolation
 ! nx = system length in x direction
-! nxe = first dimension of field arrays, must be >= nx+1
+! nxe = second dimension of field arrays, must be >= nx+1
       implicit none
       real fxyz
       integer nx, nxe
@@ -80,7 +81,7 @@
 ! accumulate extended periodic vector field cu
 ! linear interpolation
 ! nx = system length in x direction
-! nxe = first dimension of field arrays, must be >= nx+1
+! nxe = second dimension of field arrays, must be >= nx+1
       implicit none
       real cu
       integer nx, nxe
@@ -91,6 +92,26 @@
       do 10 i = 1, 2
       cu(i,1) = cu(i,1) + cu(i,nx+1)
       cu(i,nx+1) = 0.0
+   10 continue
+      return
+      end
+!-----------------------------------------------------------------------
+      subroutine AMCGUARD1L(amu,nx,ndim,nxe)
+! accumulate extended periodic tensor field amu
+! linear interpolation
+! nx = system length in x direction
+! ndim = first dimension of field arrays
+! nxe = second dimension of field arrays, must be >= nx+1
+      implicit none
+      real amu
+      integer nx, ndim, nxe
+      dimension amu(ndim,nxe)
+! local data
+      integer i
+! accumulate edges of extended field
+      do 10 i = 1, ndim
+      amu(i,1) = amu(i,1) + amu(i,nx+1)
+      amu(i,nx+1) = 0.0
    10 continue
       return
       end

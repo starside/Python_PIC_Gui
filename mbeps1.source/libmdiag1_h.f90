@@ -112,6 +112,130 @@
       end interface
 !
       interface
+         subroutine PROFX13L(ppart,fms,kpic,nppmx,idimp,npro,mx,nprd,nxv&
+     &,mx1)
+         implicit none
+         integer, intent(in) :: nppmx, idimp, npro, mx
+         integer, intent(in) :: nprd, nxv, mx1
+         real, dimension(idimp,nppmx,mx1), intent(in) :: ppart
+         real, dimension(nprd,nxv), intent(inout) :: fms
+         integer, dimension(mx1), intent(in) :: kpic
+         end subroutine
+      end interface
+!
+      interface
+         subroutine RPROFX13L(ppart,fms,kpic,ci,nppmx,idimp,npro,mx,nprd&
+     &,nxv,mx1)
+         implicit none
+         integer, intent(in) :: nppmx, idimp, npro, mx
+         integer, intent(in) :: nprd, nxv, mx1
+         real, intent(in) :: ci
+         real, dimension(idimp,nppmx,mx1), intent(in) :: ppart
+         real, dimension(nprd,nxv), intent(inout) :: fms
+         integer, dimension(mx1), intent(in) :: kpic
+         end subroutine
+      end interface
+!
+      interface
+         subroutine PROFX1L(ppart,fms,kpic,nppmx,idimp,npro,mx,nprd,nxv,&
+     &mx1)
+         implicit none
+         integer, intent(in) :: nppmx, idimp, npro, mx
+         integer, intent(in) :: nprd, nxv, mx1
+         real, dimension(idimp,nppmx,mx1), intent(in) :: ppart
+         real, dimension(nprd,nxv), intent(inout) :: fms
+         integer, dimension(mx1), intent(in) :: kpic
+         end subroutine
+      end interface
+!
+      interface
+         subroutine RPROFX1L(ppart,fms,kpic,ci,nppmx,idimp,npro,mx,nprd,&
+     &nxv,mx1)
+         implicit none
+         integer, intent(in) :: nppmx, idimp, npro, mx
+         integer, intent(in) :: nprd, nxv, mx1
+         real, intent(in) :: ci
+         real, dimension(idimp,nppmx,mx1), intent(in) :: ppart
+         real, dimension(nprd,nxv), intent(inout) :: fms
+         integer, dimension(mx1), intent(in) :: kpic
+         end subroutine
+      end interface
+!
+      interface
+         subroutine GPROFX1L(ppart,fx,fms,kpic,qbm,dt,idimp,nppmx,npro, &
+     &nx,mx,nprd,nxv,mx1)
+         implicit none
+         integer, intent(in) :: idimp, nppmx, npro, nx, mx
+         integer, intent(in) :: nprd, nxv, mx1
+         real, intent(in) :: qbm, dt
+         real, dimension(idimp,nppmx,mx1), intent(in) :: ppart
+         real, dimension(nxv), intent(in) :: fx
+         real, dimension(nprd,nxv), intent(inout) :: fms
+         integer, dimension(mx1), intent(in) :: kpic
+         end subroutine
+      end interface
+!
+      interface
+         subroutine GRPROFX1L(ppart,fx,fms,kpic,qbm,dt,ci,idimp,nppmx,  &
+     &npro,nx,mx,nprd,nxv,mx1)
+         implicit none
+         integer, intent(in) :: idimp, nppmx, npro, nx, mx
+         integer, intent(in) :: nprd, nxv, mx1
+         real, intent(in) :: qbm, dt, ci
+         real, dimension(idimp,nppmx,mx1), intent(in) :: ppart
+         real, dimension(nxv), intent(in) :: fx
+         real, dimension(nprd,nxv), intent(inout) :: fms
+         integer, dimension(mx1), intent(in) :: kpic
+         end subroutine
+      end interface
+!
+      interface
+         subroutine GBPROFX13L(ppart,fxyz,byz,fms,kpic,omx,qbm,dt,idimp,&
+     &nppmx,npro,nx,mx,nprd,nxv,mx1)
+         implicit none
+         integer, intent(in) :: idimp, nppmx, npro, nx, mx
+         integer, intent(in) :: nprd, nxv, mx1
+         real, intent(in) :: omx, qbm, dt
+         real, dimension(idimp,nppmx,mx1), intent(in) :: ppart
+         real, dimension(3,nxv), intent(in) :: fxyz
+         real, dimension(2,nxv), intent(in) :: byz
+         real, dimension(nprd,nxv), intent(inout) :: fms
+         integer, dimension(mx1), intent(in) :: kpic
+         end subroutine
+      end interface
+!
+      interface
+         subroutine GRBPROFX13L(ppart,fxyz,byz,fms,kpic,omx,qbm,dt,ci,  &
+     &idimp,nppmx,npro,nx,mx,nprd,nxv,mx1)
+         implicit none
+         integer, intent(in) :: idimp, nppmx, npro, nx, mx
+         integer, intent(in) :: nprd, nxv, mx1
+         real, intent(in) :: omx, qbm, dt, ci
+         real, dimension(idimp,nppmx,mx1), intent(in) :: ppart
+         real, dimension(3,nxv), intent(in) :: fxyz
+         real, dimension(2,nxv), intent(in) :: byz
+         real, dimension(nprd,nxv), intent(inout) :: fms
+         integer, dimension(mx1), intent(in) :: kpic
+         end subroutine
+      end interface
+!
+      interface
+         subroutine FLUIDQS13(fms,npro,nx,nprd,nxv)
+         implicit none
+         integer, intent(in) :: npro, nx, nprd, nxv
+         real, dimension(nprd,nxv), intent(inout) :: fms
+         end subroutine
+      end interface
+!
+      interface
+         subroutine FLUIDQS1(fms,npro,nx,nprd,nxv)
+         implicit none
+         integer, intent(in) :: npro, nx, nprd, nxv
+         real, dimension(nprd,nxv), intent(inout) :: fms
+         end subroutine
+      end interface
+!
+      interface
          subroutine STPTRAJ1(ppart,kpic,iprobt,nst,vtx,vtsx,dvtx,idimp, &
      &nppmx,mx1,np,nprobt)
          implicit none

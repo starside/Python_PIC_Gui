@@ -53,6 +53,12 @@ init_bfield_diag13: initialize magnetic field diagnostic
 bfield_diag13: magnetic field diagnostic
 del_bfield_diag13: delete magnetic field diagnostic
 
+init_efluidms_diag13: initialize electron fluid moments diagnostic
+efluidms_diag13: electron fluid moments diagnostic
+
+init_ifluidms_diag13: initialize ion fluid moments diagnostic
+ifluidms_diag13: ion fluid moments diagnostic
+
 init_evelocity_diag13: initialize electron velocity diagnostic
 evelocity_diag13: electron velocity diagnostic
 
@@ -80,7 +86,7 @@ dread_restart13: read in restart diagnostic file for electromagnetic
 
 written by Viktor K. Decyk and Joshua Kelly, UCLA
 copyright 1999-2016, regents of the university of california
-update: january 12, 2017
+update: december 9, 2017
 """
 import math
 import numpy
@@ -121,6 +127,8 @@ iuje = 21; iua = 13; iuet = 14; iub = 15; iuar = 16
 iuji = 22
 
 # declare and initialize timing data
+itime = numpy.empty((4),numpy.int32)
+dtime = numpy.empty((1),double_type)
 tguard = numpy.zeros((1),float_type)
 tfield = numpy.zeros((1),float_type)
 tdjpost = numpy.zeros((1),float_type)
@@ -216,9 +224,15 @@ def init_electrons13():
                       in1.npx,nx,ipbc,in1.ndprof,irc)
       if (irc[0] != 0): exit(1)
 # initialize particle velocities
-      minit1.wmvdistr1h(s1.part,1,in1.vtx,in1.vty,in1.vtz,in1.vx0,
-                        in1.vy0,in1.vz0,in1.ci,in1.npx,in1.nvdist,
-                        in1.relativity,irc)
+# special cases
+      if (in1.nvdist==3):
+         minit1.mvbdistr1h(s1.part,1,in1.vtx,in1.vtz,in1.vx0,in1.vz0,
+                           in1.omx,in1.omy,in1.omz,in1.npx,irc)
+# general cases
+      else:
+         minit1.wmvdistr1h(s1.part,1,in1.vtx,in1.vty,in1.vtz,in1.vx0,
+                           in1.vy0,in1.vz0,in1.ci,in1.npx,in1.nvdist,
+                           in1.relativity,irc)
       if (irc[0] != 0): exit(1)
 # beam electrons
    if (in1.npxb > 0):
@@ -228,9 +242,15 @@ def init_electrons13():
                       in1.npxb,nx,ipbc,in1.ndprof,irc)
       if (irc[0] != 0): exit(1)
 # initialize particle velocities
-      minit1.wmvdistr1h(s1.part,it,in1.vtdx,in1.vtdy,in1.vtdz,in1.vdx,
-                        in1.vdy,in1.vdz,in1.ci,in1.npxb,in1.nvdist,
-                        in1.relativity,irc)
+# special cases
+      if (in1.nvdist==3):
+         minit1.mvbdistr1h(s1.part,it,in1.vtdx,in1.vtdz,in1.vdx,in1.vdz,
+                           in1.omx,in1.omy,in1.omz,in1.npxb,irc)
+# general cases
+      else:
+         minit1.wmvdistr1h(s1.part,it,in1.vtdx,in1.vtdy,in1.vtdz,
+                           in1.vdx,in1.vdy,in1.vdz,in1.ci,in1.npxb,
+                           in1.nvdist,in1.relativity,irc)
       if (irc[0] != 0): exit(1)
 
 # mark electron beam particles
@@ -355,18 +375,30 @@ def init_ions13():
       minit1.mfdistr1(s1.part,in1.ampdxi,in1.scaledxi,in1.shiftdxi,1,
                       in1.npxi,nx,ipbc,in1.ndprofi,irc)
 # initialize particle velocities
-      minit1.wmvdistr1h(s1.part,1,vtxi,vtyi,vtzi,in1.vxi0,in1.vyi0,
-                        in1.vzi0,in1.ci,in1.npxi,in1.nvdist,
-                        in1.relativity,irc)
+# special cases
+      if (in1.nvdist==3):
+         minit1.mvbdistr1h(s1.part,1,vtxi,vtzi,in1.vxi0,in1.vzi0,
+                           in1.omx,in1.omy,in1.omz,in1.npxi,irc)
+# general cases
+      else:
+         minit1.wmvdistr1h(s1.part,1,vtxi,vtyi,vtzi,in1.vxi0,in1.vyi0,
+                           in1.vzi0,in1.ci,in1.npxi,in1.nvdist,
+                           in1.relativity,irc)
 # beam ions
    if (in1.npxbi > 0):
 # calculates initial particle co-ordinates with various density profiles
       minit1.mfdistr1(s1.part,in1.ampdxi,in1.scaledxi,in1.shiftdxi,it,
                       in1.npxbi,nx,ipbc,in1.ndprofi,irc)
 # initialize particle velocities
-      minit1.wmvdistr1h(s1.part,it,vtdxi,vtdyi,vtdzi,in1.vdxi,in1.vdyi,
-                        in1.vdzi,in1.ci,in1.npxbi,in1.nvdist,
-                        in1.relativity,irc)
+# special cases
+      if (in1.nvdist==3):
+         minit1.mvbdistr1h(s1.part,it,vtdxi,vtdzi,in1.vdxi,in1.vdzi,
+                           in1.omx,in1.omy,in1.omz,in1.npxbi,irc)
+# general cases
+      else:
+         minit1.wmvdistr1h(s1.part,it,vtdxi,vtdyi,vtdzi,in1.vdxi,
+                           in1.vdyi,in1.vdzi,in1.ci,in1.npxbi,
+                           in1.nvdist,in1.relativity,irc)
 
 # mark ion beam particles
    if ((in1.nts > 0) and (in1.ntsc > 0)):
@@ -701,9 +733,12 @@ def icurrent_diag13(vfield,vpkwdi,vwkdi,ntime):
       global itji
       itji += 1
       ts = in1.dt*float(ntime)
+# performs frequency analysis of accumulated complex vector time series
+# zero out mode 0
+      curit[:,0] = numpy.complex(0.0,0.0)
       mdiag1.mivcspect1(curit,s1.wmi,vpkwji,vpksji,ts,in1.t0,tdiag,mtji,
                         s1.iwi,in1.modesxji,nx,-1)
-# performs frequency analysis of accumulated complex time series
+# find frequency with maximum power for each mode
       vwkji[0,:,0] = s1.wmi[numpy.argmax(vpkwji[0,:,:,0],axis=1)]
       vwkji[1,:,0] = s1.wmi[numpy.argmax(vpkwji[1,:,:,0],axis=1)]
       vwkji[0,:,1] = s1.wmi[numpy.argmax(vpkwji[0,:,:,1],axis=1)]
@@ -774,7 +809,7 @@ def vrpotential_diag13(vfield,vpkwr,vwkr,ntime):
 # write diagnostic output: updates narrec
    mdiag1.dafwritevc1(vpotr,tdiag,iuar,in1.narrec,in1.modesxar)
 # transform radiative vector potential to real space: updates vfield
-   if ((in1.ndp==1) or (in1.ndp==3)):
+   if ((in1.ndar==1) or (in1.ndar==3)):
       mfft1.mfft1crn(vfieldc,vfield,s1.mixup,s1.sct,s1.tfft,in1.indx)
       mgard1.mcguard1(vfield,tguard,nx)
 # radiative vector potential spectral analysis
@@ -782,9 +817,10 @@ def vrpotential_diag13(vfield,vpkwr,vwkr,ntime):
       global itar
       itar += 1
       ts = in1.dt*float(ntime)
+# performs frequency analysis of accumulated complex vector time series
       mdiag1.mivcspect1(vpotr,wmr,vpkwr,vpksr,ts,in1.t0,tdiag,mtar,iwr,
                         in1.modesxar,nx,1)
-# performs frequency analysis of accumulated complex vector time series
+# find frequency with maximum power for each mode
       vwkr[0,:,0] = wmr[numpy.argmax(vpkwr[0,:,:,0],axis=1)]
       vwkr[1,:,0] = wmr[numpy.argmax(vpkwr[1,:,:,0],axis=1)]
       vwkr[0,:,1] = wmr[numpy.argmax(vpkwr[0,:,:,1],axis=1)]
@@ -793,11 +829,11 @@ def vrpotential_diag13(vfield,vpkwr,vwkr,ntime):
 #-----------------------------------------------------------------------
 def del_vrpotential_diag13():
    """ delete radiative vector potential diagnostic """
-   global vpotr
+   global vpotr, oldcu
    if (in1.narrec > 0):
       in1.closeff(iuar)
       in1.narrec -= 1
-   del vpotr
+   del vpotr, oldcu
 # spectral analysis
    if ((in1.ndar==2) or (in1.ndar==3)):
       global vpkwr, vpksr, vwkr
@@ -857,9 +893,10 @@ def vpotential_diag13(vfield,vpkwi,vwk,ntime):
       global ita
       ita += 1
       ts = in1.dt*float(ntime)
+# performs frequency analysis of accumulated complex vector time series
       mdiag1.mivcspect1(vpott,wmr,vpkw,vpks,ts,in1.t0,tdiag,mta,iwr,
                         in1.modesxa,nx,1)
-# performs frequency analysis of accumulated complex vector time series
+# find frequency with maximum power for each mode
       vwk[0,:,0] = wmr[numpy.argmax(vpkw[0,:,:,0],axis=1)]
       vwk[1,:,0] = wmr[numpy.argmax(vpkw[1,:,:,0],axis=1)]
       vwk[0,:,1] = wmr[numpy.argmax(vpkw[0,:,:,1],axis=1)]
@@ -930,9 +967,10 @@ def etfield_diag13(vfield,vpkwet,vwket,ntime):
       global itet
       itet += 1
       ts = in1.dt*float(ntime)
+# performs frequency analysis of accumulated complex vector time series
       mdiag1.mivcspect1(ett,wmr,vpkwet,vpkset,ts,in1.t0,tdiag,mtet,iwr,
                         in1.modesxet,nx,0)
-# performs frequency analysis of accumulated complex vector time series
+# find frequency with maximum power for each mode
       vwket[0,:,0] = wmr[numpy.argmax(vpkwet[0,:,:,0],axis=1)]
       vwket[1,:,0] = wmr[numpy.argmax(vpkwet[1,:,:,0],axis=1)]
       vwket[0,:,1] = wmr[numpy.argmax(vpkwet[0,:,:,1],axis=1)]
@@ -989,6 +1027,77 @@ def del_bfield_diag13():
       in1.nbrec -= 1
    del bt
    in1.ceng = affp
+
+#-----------------------------------------------------------------------
+def init_efluidms_diag13():
+   """ initialize electron fluid moments diagnostic """
+   global fmse
+   # calculate first dimension of fluid arrays
+   if (in1.npro==1):
+      in1.nprd = 1
+   elif (in1.npro==2):
+      in1.nprd = 4
+   elif (in1.npro==3):
+      in1.nprd = 10
+   elif (in1.npro==4):
+      in1.nprd = 14
+   if ((in1.ndfm==1) or (in1.ndfm==3)):
+# fmse = electron fluid moments
+      s1.fmse = numpy.empty((in1.nprd,nxe),float_type,'F')
+# open file for real data: updates nferec and possibly iufe
+      ffename = "fmer1." + s1.cdrun
+      in1.ffename[:] = ffename
+      if (in1.nferec==0):
+         mdiag1.dafopenv1(s1.fmse,nx,s1.iufe,in1.nferec,ffename)
+
+#-----------------------------------------------------------------------
+def efluidms_diag13(fmse):
+   """
+   electron fluid moments diagnostic
+   input/output:
+   fmse = electron fluid moments
+   """
+# calculate electron fluid moments
+   if ((in1.ndfm==1) or (in1.ndfm==3)):
+      s1.dtimer(dtime,itime,-1)
+      fmse.fill(0.0)
+      s1.dtimer(dtime,itime,1)
+      tdiag[0] += float(dtime)
+      mdiag1.wmprofx13(s1.ppart,fmse,s1.kpic,in1.ci,tdiag,in1.npro,
+                       in1.mx,in1.relativity)
+# add guard cells with OpenMP: updates fmse
+      mgard1.mamcguard1(fmse,tdiag,nx)
+# calculates fluid quantities from fluid moments: updates fmse
+      mdiag1.mfluidqs13(fmse,tdiag,in1.npro,nx)
+# write real space diagnostic output: updates nferec
+      mdiag1.dafwritev1(fmse,tdiag,s1.iufe,in1.nferec,nx)
+
+#-----------------------------------------------------------------------
+def init_ifluidms_diag13():
+   """ initialize ion fluid moments diagnostic """
+   s1.init_ifluidms_diag1()
+
+#-----------------------------------------------------------------------
+def ifluidms_diag13(fmsi):
+   """
+   ion fluid moments diagnostic
+   input/output:
+   fmsi = ion fluid moments
+   """
+   if ((in1.ndfm==2) or (in1.ndfm==3)):
+      s1.dtimer(dtime,itime,-1)
+      fmsi.fill(0.0)
+      s1.dtimer(dtime,itime,1)
+      tdiag[0] += float(dtime)
+      mdiag1.wmprofx13(s1.pparti,fmsi,s1.kipic,in1.ci,tdiag,in1.npro,
+                       in1.mx,in1.relativity)
+# add guard cells with OpenMP: updates fmsi
+      mgard1.mamcguard1(fmsi,tdiag,nx)
+# calculates fluid quantities from fluid moments: updates fmsi
+      mdiag1.mfluidqs13(fmsi,tdiag,in1.npro,nx)
+      fmsi[:,:]  = in1.rmass*fmsi
+# write real space diagnostic output: updates nfirec
+      mdiag1.dafwritev1(fmsi,tdiag,s1.iufi,in1.nfirec,nx)
 
 #-----------------------------------------------------------------------
 def init_evelocity_diag13():
@@ -1228,6 +1337,13 @@ def close_diags13(iudm):
 # longitudinal efield diagnostic
    if (in1.ntel > 0):
       s1.del_elfield_diag1()
+# fluid moments diagnostic
+   if (in1.ntfm > 0) :
+# electrons
+      s1.del_efluidms_diag1()
+# ions
+      if (in1.movion==1):
+         s1.del_ifluidms_diag1()
 # electron current diagnostic
    if (in1.ntje > 0):
       del_ecurrent_diag13()
@@ -1338,6 +1454,14 @@ def initialize_diagnostics13(ntime):
 # initialize magnetic field diagnostic
    if (in1.ntb > 0):
       init_bfield_diag13()
+
+# initialize fluid moments diagnostic
+   if (in1.ntfm > 0):
+# electrons: allocates fmse
+      init_efluidms_diag13()
+# ions: allocates fmsi
+      if (in1.movion==1):
+         init_ifluidms_diag13()
 
 # initialize velocity diagnostic
    if (in1.ntv > 0):

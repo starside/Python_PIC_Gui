@@ -124,6 +124,16 @@
       end interface
 !
       interface
+         subroutine VBDISTR1H(part,vtr,vtz,vdr,vdz,omx,omy,omz,jstart,  &
+     &npx,idimp,nop)
+         implicit none
+         integer, intent(in) :: jstart, npx, idimp, nop
+         real, intent(in) :: vtr, vtz, vdr, vdz, omx, omy, omz
+         real, dimension(idimp,nop), intent(inout) :: part
+         end subroutine
+      end interface
+!
+      interface
          subroutine DBLKP1L(part,kpic,nppmx,idimp,np,nop,mx,mx1,irc)
          implicit none
          integer, intent(in) :: idimp, np, nop, mx, mx1

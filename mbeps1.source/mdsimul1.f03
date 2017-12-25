@@ -19,6 +19,12 @@
 ! init_dspectrum13: allocate scratch arrays for darwin vector fields
 ! del_dspectrum13: delete scratch arrays for darwin vector fields
 !
+! init_edcurrent_diag13: initialize darwin electron current density
+!                        diagnostic
+! edcurrent_diag13: darwin electron current density diagnostic
+! del_edcurrent_diag13: delete darwin electron current density
+!                       diagnostic
+!
 ! init_vdpotential_diag13: initialize darwin vector potential diagnostic
 ! vdpotential_diag13: darwin vector potential diagnostic
 ! del_vdpotential_diag13: delete darwin vector potential diagnostic
@@ -30,6 +36,10 @@
 ! init_dbfield_diag13: initialize darwin magnetic field diagnostic
 ! dbfield_diag13: darwin magnetic field diagnostic
 ! del_dbfield_diag13: delete darwin magnetic field diagnostic
+!
+! edfluidms_diag13: darwin electron fluid moments diagnostic
+!
+! idfluidms_diag13: darwin ion fluid moments diagnostic
 !
 ! print_dtimings13: print darwin timing summaries
 !
@@ -49,7 +59,7 @@
 !
 ! written by Viktor K. Decyk, UCLA
 ! copyright 1999-2016, regents of the university of california
-! update: february 1, 2017
+! update: december 9, 2017
       module fd1
       use f1
       use fb1
@@ -75,6 +85,8 @@
 ! private diagnostic arrays
 ! scratch array for vector field
       complex, dimension(:,:), allocatable :: vfieldc
+! oldcue = previous current density
+      real, dimension(:,:), allocatable :: oldcue
 ! vpott = store selected fourier modes for vector potential
       complex, dimension(:,:), allocatable :: vpott
 ! vpks = accumulated complex spectrum for vector potential
@@ -117,24 +129,6 @@
       deallocate(dcu,cus,amu,ffe)
       call del_fields13()
       end subroutine
-!
-!-----------------------------------------------------------------------
-!     subroutine calc_shift13(iuot)
-! calculate shift constant for iteration: updates q2m0
-!     implicit none
-! iuot = output file descriptor
-!     integer, intent(in) :: iuot
-! find maximum and minimum initial electron density
-!     qe = 0.0
-!     call mpost1(ppart,qe,kpic,qme,tdpost,mx)
-!     call maguard1(qe,tguard,nx)
-!     call mfwpminx1(qe,qbme,wpmax,wpmin,nx)
-!     wpm = 0.5*(wpmax + wpmin)*affp
-! accelerate convergence: update wpm
-!     if (wpm <= 10.0) wpm = 0.75*wpm
-!     write (iuot,*) 'wpm = ', wpm
-!     q2m0 = wpm/affp
-!     end subroutine
 !
 !-----------------------------------------------------------------------
       subroutine calc_shift13(iuot)
@@ -328,6 +322,52 @@
       end subroutine
 !
 !-----------------------------------------------------------------------
+      subroutine init_edcurrent_diag13()
+! initialize darwin electron current density diagnostic
+      implicit none
+      fjename = 'curek1.'//cdrun
+      modesxje = min(modesxje,nxh+1)
+      allocate(oldcue(2,nxe))
+      allocate(curet(2,modesxje))
+! open file: updates njerec and possibly iuje
+      if (njerec==0) then
+         call dafopenvc1(curet,iuje,njerec,trim(fjename))
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine edcurrent_diag13(vfield)
+! darwin electron current density diagnostic
+      implicit none
+! vfield = scratch array for vector field
+      real, dimension(:,:), intent(inout) :: vfield
+      vfield = oldcue
+! transform electron current density to fourier space: updates vfield
+      isign = -1
+      call mfft1rn(vfield,isign,mixup,sct,tfft,indx)
+! calculate smoothed electron current in fourier space: updates vfieldc
+      call msmooth13(vfield,vfieldc,ffc,tfield,nx)
+! store selected fourier modes: updates curet
+      call mrdvmodes1(vfieldc,curet,tfield,nx,modesxje)
+! write diagnostic output: updates nderec
+      call dafwritevc1(curet,tdiag,iuje,njerec,modesxje)
+! transform smoothed electron current to real space: updates vfield
+      call mfft1crn(vfieldc,vfield,mixup,sct,tfft,indx)
+      call mcguard1(vfield,tguard,nx)
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine del_edcurrent_diag13()
+! delete darwin electron current density diagnostic
+      implicit none
+      if (njerec > 0) then
+         close(unit=iuje)
+         njerec = njerec - 1
+      endif
+      deallocate(curet,oldcue)
+      end subroutine
+!
+!-----------------------------------------------------------------------
       subroutine init_vdpotential_diag13()
 ! initialize darwin vector potential diagnostic
       implicit none
@@ -372,9 +412,10 @@
       if ((nda==2).or.(nda==3)) then
          ita = ita + 1
          ts = dt*real(ntime)
+! performs frequency analysis of accumulated complex vector time series
          call mivcspect1(vpott,wm,vpkw,vpks,ts,t0,tdiag,mta,iw,modesxa, &
      &nx,1)
-! performs frequency analysis of accumulated complex vector time series
+! find frequency with maximum power for each mode
          vwk(1,:,1) = wm(maxloc(vpkw(1,:,:,1),dim=2))
          vwk(2,:,1) = wm(maxloc(vpkw(2,:,:,1),dim=2))
          vwk(1,:,2) = wm(maxloc(vpkw(1,:,:,2),dim=2))
@@ -443,9 +484,10 @@
       if ((ndet==2).or.(ndet==3)) then
          itet = itet + 1
          ts = dt*real(ntime)
+! performs frequency analysis of accumulated complex vector time series
          call mivcspect1(ett,wm,vpkwet,vpkset,ts,t0,tdiag,mtet,iw,      &
      &modesxet,nx,0)
-! performs frequency analysis of accumulated complex vector time series
+! find frequency with maximum power for each mode
          vwket(1,:,1) = wm(maxloc(vpkwet(1,:,:,1),dim=2))
          vwket(2,:,1) = wm(maxloc(vpkwet(2,:,:,1),dim=2))
          vwket(1,:,2) = wm(maxloc(vpkwet(1,:,:,2),dim=2))
@@ -507,6 +549,53 @@
       endif
       deallocate(bt)
       ceng = affp
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine edfluidms_diag13(fmse)
+! darwin electron fluid moments diagnostic
+      implicit none
+! fmse = electron fluid moments
+      real, dimension(:,:), intent(inout) :: fmse
+! calculate electron fluid moments
+      if ((ndfm==1).or.(ndfm==3)) then
+         call dtimer(dtime,itime,-1)
+         fmse = 0.0
+         call dtimer(dtime,itime,1)
+         tdiag = tdiag + real(dtime)
+         call wmgbprofx1(ppart,fxyze,byze,fmse,kpic,omx,qbme,dt,ci,tdiag&
+     &,npro,nx,mx,relativity)
+! add guard cells with OpenMP: updates fmse
+         call mamcguard1(fmse,tdiag,nx)
+! calculates fluid quantities from fluid moments: updates fmse
+         call mfluidqs13(fmse,tdiag,npro,nx)
+! write real space diagnostic output: updates nferec
+         call dafwritev1(fmse,tdiag,iufe,nferec,nx)
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine idfluidms_diag13(fmsi)
+! darwin ion fluid moments diagnostic
+      implicit none
+! fmsi = ion fluid moments
+      real, dimension(:,:), intent(inout) :: fmsi
+! calculate ion fluid moments
+      if ((ndfm==2).or.(ndfm==3)) then
+         call dtimer(dtime,itime,-1)
+         fmsi = 0.0
+         call dtimer(dtime,itime,1)
+         tdiag = tdiag + real(dtime)
+         call wmgbprofx1(pparti,fxyze,byze,fmsi,kipic,omx,qbmi,dt,ci,   &
+     &tdiag,npro,nx,mx,relativity)
+! add guard cells with OpenMP: updates fmsi
+         call mamcguard1(fmsi,tdiag,nx)
+! calculates fluid quantities from fluid moments: updates fmsi
+         call mfluidqs13(fmsi,tdiag,npro,nx)
+         fmsi = rmass*fmsi
+! write real space diagnostic output: updates nfirec
+         call dafwritev1(fmsi,tdiag,iufi,nfirec,nx)
+      endif
       end subroutine
 !
 !-----------------------------------------------------------------------
@@ -598,8 +687,15 @@
       if (ntp > 0) call del_potential_diag1()
 ! longitudinal efield diagnostic
       if (ntel > 0) call del_elfield_diag1()
-! electron current diagnostic
-      if (ntje > 0) call del_ecurrent_diag13()
+! darwin electron current diagnostic
+      if (ntje > 0) call del_edcurrent_diag13()
+! fluid moments diagnostic
+      if (ntfm > 0) then
+! electrons
+         call del_efluidms_diag1()
+! ions
+         if (movion==1) call del_ifluidms_diag1()
+      endif
 ! vector potential diagnostic
       if (nta > 0) then
          call del_vdpotential_diag13()
@@ -631,9 +727,9 @@
       endif
       if (ntw > 0) call del_energy_diag13()
       if (ntv > 0) then
-         call del_evelocity_diag13()
+         call del_evelocity_diag1()
          if (movion==1) then
-            call del_ivelocity_diag13()
+            call del_ivelocity_diag1()
          endif
       endif
       if (ntt > 0) call del_traj_diag1()
@@ -684,9 +780,9 @@
          call init_elfield_diag1()
       endif
 !
-! initialize electron current density diagnostic
+! initialize darwin electron current density diagnostic
       if (ntje > 0) then
-         call init_ecurrent_diag13()
+         call init_edcurrent_diag13()
       endif
 !
 ! initialize ion current density diagnostic: allocates vpkwji, vwkji
@@ -710,6 +806,14 @@
 ! initialize darwin magnetic field diagnostic
       if (ntb > 0) then
          call init_dbfield_diag13()
+      endif
+!
+! initialize fluid moments diagnostic
+      if (ntfm > 0) then
+! electrons: allocates fmse
+         call init_efluidms_diag13()
+! ions: allocates fmsi
+         if (movion==1) call init_ifluidms_diag13()
       endif
 !
 ! initialize velocity diagnostic
@@ -811,12 +915,30 @@
 ! with OpenMP: updates cue, dcu, amu
       call wmgdcjpost1(ppart,fxyze,byze,cue,dcu,amu,kpic,omx,qme,qbme,dt&
      &,ci,tdcjpost,nx,mx,relativity)
+! add guard cells for current, acceleration density, and momentum flux:
+! updates cue, dcu, amu
+      call macguard1(cue,tguard,nx)
+      call macguard1(dcu,tguard,nx)
+      call macguard1(amu,tguard,nx)
+!
+! save electron current for electron current diagnostic later
+      if (k==ndc) then
+         if (ntje > 0) then
+            it = ntime/ntje
+            if (ntime==ntje*it) oldcue = cue
+         endif
+      endif
 !
 ! deposit ion current and acceleration density and momentum flux
 ! with OpenMP: updates cui, dcui, amui
       if (movion==1) then
          call wmgdcjpost1(pparti,fxyze,byze,cui,dcui,amui,kipic,omx,qmi,&
      &qbmi,dt,ci,tdcjpost,nx,mx,relativity)
+! add guard cells for current, acceleration density, and momentum flux:
+! updates cui, dcui, amui
+         call macguard1(cui,tguard,nx)
+         call macguard1(dcui,tguard,nx)
+         call macguard1(amui,tguard,nx)
 ! add electron and ion densities: updates cue, dcu, amu
          call maddcuei1(cue,cui,tfield,nxe)
          call maddcuei1(dcu,dcui,tfield,nxe)
@@ -825,12 +947,6 @@
 !
 ! add scaled electric field: updates dcu
       call mascfguard1(dcu,cus,q2m0,tdcjpost,nx)
-!
-! add guard cells for current, acceleration density, and momentum flux:
-! updates cue, dcu, amu
-      call macguard1(cue,tguard,nx)
-      call macguard1(dcu,tguard,nx)
-      call macguard1(amu,tguard,nx)
 !
 ! transform current to fourier space: update cue
       isign = -1

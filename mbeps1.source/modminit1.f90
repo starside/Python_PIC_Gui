@@ -33,16 +33,18 @@
 ! mwdistr1h calculates initial particle velocities with waterbag 
 !           velocity distribution with drift for 1-2/2d code
 !           calls WDISTR1H
+! mvbdistr1h calculates initial particle velocities in 1-2/2d for
+!            magnetized plasma with maxwellian velocity with drift in
+!            Bparallel direction and ring distribution in Bperp
+!            calls VBDISTR1H
 ! mdblkp1 finds the maximum number of particles in each tile
 !         calls PPDBLKP2L
 ! wmvdistr1 generic procedure to initialize particle velocities in 1d
 !           calls mvdistr1, mvrdistr1  or mwdistr1
-! wmvdistr1h generic procedure to initialize particle velocities in 1-2/2d
-!            calls mvdistr1h, mvrdistr1h or mwdistr1h
 ! fprecision determines if default reals are actually doubles
 ! written by viktor k. decyk, ucla
 ! copyright 2016, regents of the university of california
-! update: january 5, 2017
+! update: december 1, 2017
 !
       use libminit1_h
       implicit none
@@ -374,6 +376,34 @@
      &)
       else
          write (*,*) 'mwdistr1h overflow: nt, nop =', nt, nop
+         irc = 1
+      endif
+      end subroutine
+!
+!-----------------------------------------------------------------------
+      subroutine mvbdistr1h(part,nstart,vtr,vtz,vdr,vdz,omx,omy,omz,npx,&
+     &irc)
+! calculates initial particle velocities in 1-2/2d
+! for magnetized plasma with maxwellian velocity with drift in Bparallel
+! direction and ring distribution in Bperp
+! irc = (0,1) = (no,yes) error condition exists
+      implicit none
+      integer, intent(in) :: nstart, npx
+      integer, intent(inout) :: irc
+      real, intent(in) :: vtr, vtz, vdr, vdz, omx, omy, omz
+      real, dimension(:,:), intent(inout) :: part
+! local data
+      integer :: idimp, nop, nt
+      irc = 0
+! extract dimensions
+      idimp = size(part,1); nop = size(part,2)
+      nt = nstart + npx - 1
+! call low level procedure
+      if (nt <= nop) then
+         call VBDISTR1H(part,vtr,vtz,vdr,vdz,omx,omy,omz,nstart,npx,    &
+     &idimp,nop)
+      else
+         write (*,*) 'mvbdistr1h overflow: nt, nop =', nt, nop
          irc = 1
       endif
       end subroutine

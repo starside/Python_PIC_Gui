@@ -15,7 +15,7 @@
 ! ASCFGUARD1L add scaled vector field to extended periodic field
 ! written by Viktor K. Decyk, UCLA
 ! copyright 2016, regents of the university of california
-! update: february 1, 2017
+! update: december 6, 2017
 !-----------------------------------------------------------------------
       subroutine FWPMINMX1(qe,qbme,wpmax,wpmin,nx,nxe)
 ! calculates maximum and minimum plasma frequency.  assumes guard cells
@@ -116,9 +116,9 @@ c local data
 ! where n = nearest grid point and dx = x-n
 ! similarly for fy(x), fz(x), by(x), bz(x)
 ! ppart(1,n,m) = position x of particle n in tile m at t
-! ppart(2,n,m) = velocity vx of particle n in tile mat t - dt/2
-! ppart(3,n,m) = velocity vy of particle n in tile mat t - dt/2
-! ppart(4,n,m) = velocity vz of particle n in tile mat t - dt/2
+! ppart(2,n,m) = velocity vx of particle n in tile m at t - dt/2
+! ppart(3,n,m) = velocity vy of particle n in tile m at t - dt/2
+! ppart(4,n,m) = velocity vz of particle n in tile m at t - dt/2
 ! fxyz(1,j) = x component of force/charge at grid (j)
 ! fxyz(2,j) = y component of force/charge at grid (j)
 ! fxyz(3,j) = z component of force/charge at grid (j)
@@ -351,9 +351,9 @@ c local data
 ! where n = nearest grid point and dx = x-n
 ! similarly for fy(x), fz(x), by(x), bz(x)
 ! ppart(1,n,m) = position x of particle n in tile m at t
-! ppart(2,n,m) = velocity vx of particle n in tile mat t - dt/2
-! ppart(3,n,m) = velocity vy of particle n in tile mat t - dt/2
-! ppart(4,n,m) = velocity vz of particle n in tile mat t - dt/2
+! ppart(2,n,m) = velocity vx of particle n in tile m at t - dt/2
+! ppart(3,n,m) = velocity vy of particle n in tile m at t - dt/2
+! ppart(4,n,m) = velocity vz of particle n in tile m at t - dt/2
 ! fxyz(1,j) = x component of force/charge at grid (j)
 ! fxyz(2,j) = y component of force/charge at grid (j)
 ! fxyz(3,j) = z component of force/charge at grid (j)
@@ -605,9 +605,9 @@ c local data
 ! where n = nearest grid point and dx = x-n
 ! similarly for fy(x), fz(x), by(x), bz(x)
 ! ppart(1,n,m) = position x of particle n in tile m at t
-! ppart(2,n,m) = momentum px of particle n in tile mat t - dt/2
-! ppart(3,n,m) = momentum py of particle n in tile mat t - dt/2
-! ppart(4,n,m) = momentum pz of particle n in tile mat t - dt/2
+! ppart(2,n,m) = momentum px of particle n in tile m at t - dt/2
+! ppart(3,n,m) = momentum py of particle n in tile m at t - dt/2
+! ppart(4,n,m) = momentum pz of particle n in tile m at t - dt/2
 ! fxyz(1,j) = x component of force/charge at grid (j)
 ! fxyz(2,j) = y component of force/charge at grid (j)
 ! fxyz(3,j) = z component of force/charge at grid (j)
@@ -858,9 +858,9 @@ c local data
 ! where n = nearest grid point and dx = x-n
 ! similarly for fy(x), fz(x), by(x), bz(x)
 ! ppart(1,n,m) = position x of particle n in tile m at t
-! ppart(2,n,m) = momentum px of particle n in tile mat t - dt/2
-! ppart(3,n,m) = momentum py of particle n in tile mat t - dt/2
-! ppart(4,n,m) = momentum pz of particle n in tile mat t - dt/2
+! ppart(2,n,m) = momentum px of particle n in tile m at t - dt/2
+! ppart(3,n,m) = momentum py of particle n in tile m at t - dt/2
+! ppart(4,n,m) = momentum pz of particle n in tile m at t - dt/2
 ! fxyz(1,j) = x component of force/charge at grid (j)
 ! fxyz(2,j) = y component of force/charge at grid (j)
 ! fxyz(3,j) = z component of force/charge at grid (j)

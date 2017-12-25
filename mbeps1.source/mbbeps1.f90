@@ -150,6 +150,7 @@
 ! pkwdi = power spectrum for ion density
 ! wk = maximum frequency as a function of k for potential
 ! wkdi = maximum frequency as a function of k for ion density
+! fmse/fmsi = electron/ion fluid moments
 ! fv/fvi = global electron/ion velocity distribution functions
 ! fvm/fvmi = electron/ion vdrift, vth, entropy for global distribution
 ! fvtm/fvtmi = time history of electron/ion vdrift, vth, and entropy
@@ -211,6 +212,19 @@
       if (ntar > 0) then
          it = ntime/ntar
          if (ntime==ntar*it) oldcu = cue
+      endif
+!
+! fluid moments diagnostic
+      if (ntfm > 0) then
+         it = ntime/ntfm
+         if (ntime==ntfm*it) then
+! updates fmse
+            call efluidms_diag13(fmse)
+            if (movion==1) then
+! updates fmsi
+               call ifluidms_diag13(fmsi)
+            endif
+         endif
       endif
 !
 ! deposit electron current with OpenMP: updates ppart, kpic, and cue

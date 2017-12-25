@@ -8,7 +8,7 @@
 ! writnml1 writes final diagnostic metafile to unit iudm
 ! written by viktor k. decyk, ucla
 ! copyright 2011, regents of the university of california
-! update: October 11, 2017
+! update: December 6, 2017
 !
       implicit none
 !
@@ -33,7 +33,10 @@
 ! ndim = number of velocity dimensions = 1 or 3
       integer :: ndim = 3
 ! nvdist = velocity distribution type
-! nvdist = (1,2) = (maxwellian/juttner,waterbag) distribution
+! nvdist = (1,2,3) = (maxwellian/juttner,waterbag,ring) distribution
+! for nvdist=2, maximum velocity in x/y/z is (vtx/vty/vtz)*sqrt(3)
+! for nvdist=3, x component of thermal velocity (vtx) and drift (vdx)
+! are used to set radial thermal velocity (vtr)  and ring radius (vdr)
       integer :: nvdist = 1
 ! treverse = (0,1) = (no,yes) reverse simulation at end back to start
       integer :: treverse = 0
@@ -159,6 +162,17 @@
 ! nmv = number of segments in v for velocity distribution
       integer :: ntv = 0, ndv = 3, nmv = 40
 !
+! Fluid Moments Diagnostic Parameter:
+! ntfm = number of time steps between fluid moments diagnostic
+! ndfm = (0,1,2,3) = display (nothing,electrons,ions,both)
+! npro = (1,2,3,4) = (density,momentum,momentum flux,energy flux)
+! if npro = n is selected, all profiles less than n are also calculated
+      integer :: ntfm = 0, ndfm = 1, npro = 2
+! nferec = current record number for electron fluid moments writes
+! nfirec = current record number for ion fluid moments writes
+!          (0 for beginnning of file, -1 to disable writes)
+      integer :: nferec = -1, nfirec = -1
+!
 ! Phase-Space Diagnostic
 ! nts = number of time steps between phase space diagnostic
 ! nds = (0,1,2,3) = display (nothing,electrons,ions,both)
@@ -213,8 +227,9 @@
      &nextrand, mzf, ndprof, ampdx, scaledx, shiftdx, amodex, freq,     &
      &trmp, toff, el0, er0, ntw, ndw, ntde, modesxde, nderec, ntp, ndp, &
      &modesxp, nprec, ntel, modesxel, nelrec, wmin, wmax, dw, ntv, ndv, &
-     &nmv, nts, nds, nsxv, nsvv, ntsc, ntt, nst, nprobt, vtsx, dvtx,    &
-     &movion, emf, nustrt, ntr, idrun0, nplot, nvp, monitor
+     &nmv, ntfm, ndfm, npro, nferec, nfirec, nts, nds, nsxv, nsvv, ntsc,&
+     &ntt, nst, nprobt, vtsx, dvtx, movion, emf, nustrt, ntr, idrun0,   &
+     &nplot, nvp, monitor
 !
 ! Electromagnetic Namelist
 ! External Magnetic Field Parameters:
@@ -401,6 +416,15 @@
       namelist /vpotr1d/ idrun, indx, ntar, modesxar, ndim, omx, omy,   &
      &omz, ci, narrec, t0, tend, dt, ceng, farname
 !
+! Namelist output for fluid moments diagnostic
+! nprd = dimension of fluid moment arrays fmse and fmsi
+      integer :: nprd = 0
+! ffename/ffiname = file name for electron/ion fluid moments diagnostic
+      character(len=32) :: ffename = 'fmer1.0', ffiname = 'fmir1.0'
+! define namelist
+      namelist /fm1d/ idrun, indx, ntfm, npro, ndim, nprd, nferec,      &
+     &nfirec, t0, tend, dt, ffename, ffiname
+!
 ! Namelist output for ion density diagnostic
 ! fdname = file name for ion density diagnostic
       character(len=32) :: fdiname = 'denik1.0'
@@ -504,6 +528,10 @@
 ! radiative vector potential diagnostic
       if (ntar > 0) then
          write (iudm,vpotr1d)
+      endif
+! fluid moments diagnostic
+      if (ntfm > 0) then
+         write (iudm,fm1d)
       endif
       if (movion==1) then
 ! write out ion input parameters
