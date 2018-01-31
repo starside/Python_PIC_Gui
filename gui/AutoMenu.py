@@ -5,61 +5,70 @@ import math
 class Test:
     def __init__(self):
         self.m_MiMyField = "Johsd"
-        self.m_EmmyIsCute = "True"
+        self.m_IsCute = "True"
         self.m_E = "True"
         self.m_Fsdf = "True"
-        self.m_Esdsd = "True"
+        self.m_Esdsd = 1.0
 
         self.m_myField = 1
         self.c_MMyField = 1
 
+# A string widget
+class StringWidget:
+    def __init__(self, label, panel, key, obj):
+        self.label = wx.StaticText(panel, -1, label+"(string)")
+        self.data = wx.TextCtrl(panel, -1)
+        self.data.SetValue(str(getattr(obj, key)))
+        self.key = key
+        self.obj = obj
+
+    def OnEvent(self, event):
+        setattr(self.obj, self.key, event.GetString())
+
+    def OnLostFocus(self, event):
+        pass
+
 # A Floating point widget
-class FloatWidget:
-    def __init__(self, property, label, panel, key, obj):
-        self.property = property
-        print("Floating Point"+str(property)+label)
+class FloatWidget(StringWidget):
+    def __init__(self, label, panel, key, obj):
+        StringWidget.__init__(self, label, panel, key, obj)
+
+    def OnEvent(self, event):
+        try:
+            numval = float(event.GetString().strip())
+            setattr(self.obj, self.key, numval)
+        except ValueError:
+            pass
+
+    def OnLostFocus(self, event):
+        self.data.SetValue(str(getattr(self.obj, self.key)))
 
 # A integer widget
 class IntWidget:
-    def __init__(self, property, label, panel, key, obj):
-        self.property = property
+    def __init__(self, label, panel, key, obj):
         self.label = wx.StaticText(panel, -1, label+"(int)")
         self.data = wx.TextCtrl(panel, -1)
-        self.data.SetValue(self.property)
+        self.data.SetValue(getattr(obj, key))
         self.key = key
         self.obj = obj
 
     def OnEvent(self, event):
         setattr(self.obj, self.key, event.GetString())
 
-    def LostFocus(self, event):
-        pass
+    def OnLostFocus(self, event):
+        self.data.SetValue(str(getattr(self.obj, self.key)))
 
-# A string widget
-class StringWidget:
-    def __init__(self, property, label, panel, key, obj):
-        self.property = property
-        self.label = wx.StaticText(panel, -1, label+"(string)")
-        self.data = wx.TextCtrl(panel, -1)
-        self.data.SetValue(self.property)
-        self.key = key
-        self.obj = obj
 
-    def OnEvent(self, event):
-        setattr(self.obj, self.key, event.GetString())
-
-    def LostFocus(self, event):
-        pass
 
 def autoGenerateMenu(obj, panel):
-    def verifyPropertyFormat(property, label, panel, key, obj):
-        cond = type(property) 
+    def verifyPropertyFormat(label, panel, key, obj):
+        cond = type(getattr(obj, key)) 
         if cond is float:
-            return FloatWidget(property, label, panel, key, obj)
+            return FloatWidget(label, panel, key, obj)
         elif cond is int:
-            return IntWidget(property, label, panel, key, obj)
+            return IntWidget(label, panel, key, obj)
         elif cond is str:
-            return StringWidget(property, label, panel, key, obj)
+            return StringWidget(label, panel, key, obj)
         return None # No matching widget found
 
 
@@ -74,8 +83,7 @@ def autoGenerateMenu(obj, panel):
             s = re.compile(r'([A-Z][a-z0-9]*)') #Split based on capitalization
             words = [x for x in s.split(propName) if len(x) > 0] # Remove empty strings
             label = " ".join(words) #Convert name to label
-            property = getattr(obj, key) #read property from object
-            field = verifyPropertyFormat(property, label, panel, key, obj)
+            field = verifyPropertyFormat(label, panel, key, obj)
             if field is not None:
                 properties.append(field)
     return properties
@@ -125,10 +133,18 @@ class MainApp(wx.App):
             right.Add((0,7))
             right.Add(c.data)
             c.data.Bind(wx.EVT_TEXT, c.OnEvent)
-            c.data.Bind(wx.EVT_KILL_FOCUS, c.LostFocus)
+            c.data.Bind(wx.EVT_KILL_FOCUS, c.OnLostFocus)
 
+        # Add Lower Padding
+        lowerPadding = 10
+        left.Add((0,lowerPadding))
+        right.Add((0,lowerPadding))
+
+        # Fit panel and frames to controls
         panel.SetSizer(vbox)
         panel.Layout()
+        panel.Fit()
+        self.frame.Fit()
 
 
 if __name__ == "__main__":
