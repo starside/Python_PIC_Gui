@@ -6,17 +6,17 @@ class Test:
     def __init__(self):
         self.m_MiMyField = "Johsd"
         self.m_IsCute = "True"
-        self.m_E = "True"
+        self.m_E = 1
         self.m_Fsdf = "True"
         self.m_Esdsd = 1.0
 
         self.m_myField = 1
-        self.c_MMyField = 1
+        self.c_MayField = 1
 
 # A string widget
-class StringWidget:
+class ControlWidget:
     def __init__(self, label, panel, key, obj):
-        self.label = wx.StaticText(panel, -1, label+"(string)")
+        self.label = wx.StaticText(panel, -1, label)
         self.data = wx.TextCtrl(panel, -1)
         self.data.SetValue(str(getattr(obj, key)))
         self.key = key
@@ -26,12 +26,16 @@ class StringWidget:
         setattr(self.obj, self.key, event.GetString())
 
     def OnLostFocus(self, event):
-        pass
+        self.data.SetValue(str(getattr(self.obj, self.key)))
+
+class StringWidget(ControlWidget):
+	def __init__(self, label, panel, key, obj):
+		ControlWidget.__init__(self, label+" (string)", panel, key, obj)
 
 # A Floating point widget
-class FloatWidget(StringWidget):
+class FloatWidget(ControlWidget):
     def __init__(self, label, panel, key, obj):
-        StringWidget.__init__(self, label, panel, key, obj)
+        ControlWidget.__init__(self, label+" (float)", panel, key, obj)
 
     def OnEvent(self, event):
         try:
@@ -40,25 +44,17 @@ class FloatWidget(StringWidget):
         except ValueError:
             pass
 
-    def OnLostFocus(self, event):
-        self.data.SetValue(str(getattr(self.obj, self.key)))
-
 # A integer widget
-class IntWidget:
+class IntWidget(ControlWidget):
     def __init__(self, label, panel, key, obj):
-        self.label = wx.StaticText(panel, -1, label+"(int)")
-        self.data = wx.TextCtrl(panel, -1)
-        self.data.SetValue(getattr(obj, key))
-        self.key = key
-        self.obj = obj
+        ControlWidget.__init__(self, label+" (int)", panel, key, obj)
 
     def OnEvent(self, event):
-        setattr(self.obj, self.key, event.GetString())
-
-    def OnLostFocus(self, event):
-        self.data.SetValue(str(getattr(self.obj, self.key)))
-
-
+        try:
+            numval = int(event.GetString().strip())
+            setattr(self.obj, self.key, numval)
+        except ValueError:
+            pass
 
 def autoGenerateMenu(obj, panel):
     def verifyPropertyFormat(label, panel, key, obj):
