@@ -64,6 +64,9 @@ class KeyList:
         self.getParameterValues()
         self.setParameters()
 
+class ExperimentalControlPanel(wx.Frame):
+    def __init__(self, object, parent):
+        """ object is a reference to the object to tweak """
 
 # Subclass to make new control panels
 class BaseControlPanel(wx.Frame, KeyList):
@@ -153,6 +156,7 @@ class DrawOptions():
             axes.set_xscale('linear')
 
     def makeControlPanel(self, parentWindow):  # Default options
+        print(self)
         return DefaultControlPanel(parentWindow)
 
     def drawTime(self, fig, axes, extra=""):
@@ -616,6 +620,7 @@ class DrawEnergy(DrawOptions):
         axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
 
     def makeControlPanel(self, parentWindow):  # Default options
+        print(parentWindow)
         return DrawEnergyControlPanel(parentWindow, self._PV, self.labels)
 
 

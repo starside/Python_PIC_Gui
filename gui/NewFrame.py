@@ -4,7 +4,7 @@ from collections import deque
 import sys
 
 from defaults import *
-from Dumb import *
+from GraphContainer import *
 
 
 # I need an event to remove listeners when the window gets closed!
@@ -56,7 +56,7 @@ class NewFrame(wx.Frame, DefaultsCommLink):
             toDie.Destroy()
 
     def _AddDisplay(self):
-        toLive = Dumb(self, self.stf.dispatchers)
+        toLive = GraphContainer(self, self.stf.dispatchers)
         return toLive
 
     def RequestDisplays(self, num):

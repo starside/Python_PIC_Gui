@@ -71,10 +71,6 @@ class RecordPanel(wx.Frame):
         svname = self.saveName.GetValue()
         recval = self.cbox1.GetValue()
         overwrite = self.cbox2.GetValue()
-        """if not self.addActiveWritingFile(svname) and recval:
-            wx.MessageBox('Another video is currently recording to file '+svname + ".  Not recording.", 'Cannot Record', wx.OK | wx.ICON_INFORMATION)
-        elif recval and self.fileExists(svname) and not overwrite:
-            True"""
         if recval and self.fileExists(svname) and not overwrite:  # check if we can overwrite
             wx.MessageBox('File ' + svname + " already exists.  Enable overwrite.", 'Cannot Record',
                           wx.OK | wx.ICON_INFORMATION)
@@ -189,8 +185,6 @@ class LeftPanel(wx.Panel):
         self.y_max = 10
         self.mycanvas = FigureCanvas(self, -1, self.figure)
         self.mycanvas.SetSize((100, 100))
-        # self.axes.plot(t,s)
-        # self.axes.imshow(mpimg.imread('gui/default.png'), interpolation='nearest', aspect='auto')
         self.mycanvas.mpl_connect('button_press_event', self.onclick)
         self.mycanvas.mpl_connect('motion_notify_event', self.onmotion)
         self.toolbar = wx.BoxSizer(orient=wx.HORIZONTAL)
@@ -236,7 +230,7 @@ class LeftPanel(wx.Panel):
                 imdata = self.mycanvas.tostring_argb()
                 self.moviePipe.stdin.write(imdata)
 
-    def OnChangeGraph(self, event):
+    """def OnChangeGraph(self, event):
         try:
             self.currentEvent.data
             try:
@@ -246,7 +240,7 @@ class LeftPanel(wx.Panel):
             except:
                 True
         except:
-            True
+            True """
 
     def DrawPlot(self):
     	if not hasattr(self.currentEvent, "data"): # Check if there is a data field set
