@@ -14,6 +14,7 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 
+import AutoMenu
 from Events import *
 from lib import *
 
@@ -65,8 +66,58 @@ class KeyList:
         self.setParameters()
 
 class ExperimentalControlPanel(wx.Frame):
-    def __init__(self, object, parent):
-        """ object is a reference to the object to tweak """
+    def __init__(self, obj, parent):
+        wx.Frame.__init__(self, parent, style=wx.FRAME_TOOL_WINDOW | wx.STAY_ON_TOP | wx.SYSTEM_MENU | wx.CLOSE_BOX)
+        self.obj = obj
+        self.InitUI()
+        self.Show(True)
+
+    def InitUI(self):
+        panel = wx.Panel(self)
+
+        vbox = wx.BoxSizer(wx.HORIZONTAL)
+
+        left = wx.BoxSizer(wx.VERTICAL)
+        right = wx.BoxSizer(wx.VERTICAL)
+
+        vbox.Add(left, 1, flag=wx.EXPAND)
+        vbox.Add(right, 1, flag=wx.EXPAND)
+
+        controls = AutoMenu.autoGenerateMenu(self.obj, panel)
+
+        deltaTop = 0
+        for c in controls:
+            # Calculate label padding
+            _, labelY = c.label.GetClientSize()
+            _, dataY = c.data.GetClientSize()
+            padding = (dataY - labelY)/2.0
+            topPad = math.floor(padding) + deltaTop
+            bottomPad = math.ceil(padding)
+            # Add default spacing
+            left.Add((0,7))
+            # Add top padding plus accumulated offset
+            left.Add((0,topPad))
+            left.Add(c.label, flag=wx.ALIGN_RIGHT)
+            left.Add((0, bottomPad))
+            # Update error offset for top padding
+            deltaTop = dataY - (topPad + labelY + bottomPad - deltaTop)
+
+            # Build the right column, add the field
+            right.Add((0,7))
+            right.Add(c.data)
+            c.data.Bind(wx.EVT_TEXT, c.OnEvent)
+            c.data.Bind(wx.EVT_KILL_FOCUS, c.OnLostFocus)
+
+        # Add Lower Padding
+        lowerPadding = 10
+        left.Add((0,lowerPadding))
+        right.Add((0,lowerPadding))
+
+        # Fit panel and frames to controls
+        panel.SetSizer(vbox)
+        panel.Layout()
+        panel.Fit()
+        self.Fit()
 
 # Subclass to make new control panels
 class BaseControlPanel(wx.Frame, KeyList):
@@ -156,7 +207,6 @@ class DrawOptions():
             axes.set_xscale('linear')
 
     def makeControlPanel(self, parentWindow):  # Default options
-        print(self)
         return DefaultControlPanel(parentWindow)
 
     def drawTime(self, fig, axes, extra=""):
@@ -284,6 +334,7 @@ class DrawSimple(DrawOptions, KeyList):
         self.title = title
 
     def drawPlot(self, fig, axes):
+        print(self._PV)
         if 'ylimits' not in self._PV:    #Set default limits on y axis
             self._PV['ylimits'] = (0, 0)
         self.syncParameters()
@@ -307,6 +358,10 @@ class DrawSimple(DrawOptions, KeyList):
         axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
         # self.drawTime(fig, axes, self.text )
         # well defined axis here
+
+    def makeControlPanel(self, parentWindow):  # Default options
+        print("CONT Panel")
+        return ExperimentalControlPanel(self, parentWindow)
 
 
 class DrawScaler(DrawOptions, KeyList):
@@ -364,7 +419,7 @@ class DrawVelocity(DrawOptions, KeyList):
         extText = ""
         dimlabels = ["x","y","z"]
         if self.fvm != None:
-            for i, dim in enumerate(self.fvm): # Iterate through dimensions
+            for i,dim in enumerate(self.fvm): # Iterate through dimensions
                 extText += dimlabels[i]+": VD=" + str(dim[0])
                 extText += "   VTH=" + str(dim[1]) + "\n"
         axes.set_xlabel(r"Velocity"
@@ -569,6 +624,7 @@ class DrawEnergy(DrawOptions):
         self.title = title
 
     def drawPlot(self, fig, axes):
+        print(self._PV)
         # Create the data model for communication with options,
         # if it does not exist in _PV
         if "EnergyTypes" not in self._PV:
@@ -620,7 +676,6 @@ class DrawEnergy(DrawOptions):
         axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
 
     def makeControlPanel(self, parentWindow):  # Default options
-        print(parentWindow)
         return DrawEnergyControlPanel(parentWindow, self._PV, self.labels)
 
 

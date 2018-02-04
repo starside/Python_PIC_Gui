@@ -302,11 +302,11 @@ class LeftPanel(wx.Panel):
 
     def OnOptions(self, event):  # Open options menu
         if self.newCP == None:  # Only allow one options window at a time
-            try:
-                self.newCP = self.currentEvent.data.makeControlPanel(self)
-                self.newCP.Move(event.EventObject.GetScreenPosition() )
-            except AttributeError:
-                True
+            #try:
+            self.newCP = self.currentEvent.data.makeControlPanel(self)
+            self.newCP.Move(event.EventObject.GetScreenPosition() )
+            #except AttributeError:
+            #    True
 
     def OnCloseCP(self, event):
         self.newCP.Hide()
