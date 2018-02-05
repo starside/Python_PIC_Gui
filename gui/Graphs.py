@@ -1,3 +1,4 @@
+import math
 import copy
 import wx
 import collections
@@ -65,12 +66,53 @@ class KeyList:
         self.getParameterValues()
         self.setParameters()
 
-class ExperimentalControlPanel(wx.Frame):
-    def __init__(self, obj, parent):
+# Subclass to make new control panels
+class ExperimentalBaseControlPanel(wx.Frame):
+    def __init__(self, obj, parent):  # remember to delete self at some point
+        """Create the MainFrame."""
         wx.Frame.__init__(self, parent, style=wx.FRAME_TOOL_WINDOW | wx.STAY_ON_TOP | wx.SYSTEM_MENU | wx.CLOSE_BOX)
+        self.stf = parent
+        self.SetPosition((200, 200))
+        self.panel = wx.Panel(self, -1, wx.DefaultPosition, wx.DefaultSize)
+        self.Bind(wx.EVT_CLOSE, self.OnQuit)
+        self.obj = obj
+
+    def OnQuit(self, event):
+        wx.PostEvent(self.stf, CloseOptionsEvent())
+
+    def broadcastRedraw(self):
+        """ Tells the GUI to refresh the graph in question """
+        wx.PostEvent(self.stf, RefreshGraphEvent())
+
+    def loadPersistent(self, key, default):
+        """ Loads key from persistent memory in the GraphContainer.
+            returns default if it cannot be loaded """
+        if key in self.obj._PV:
+            return self.obj._PV[key]
+        return default
+
+    def setPersistent(self, key, value):
+        self.obj._PV[key] = value
+
+    def getPersistentContainer(self):
+        return self.obj._PV
+
+class ExperimentalControlPanel(ExperimentalBaseControlPanel):
+    def __init__(self, obj, parent):
+        ExperimentalBaseControlPanel.__init__(self, obj, parent)
         self.obj = obj
         self.InitUI()
         self.Show(True)
+
+    def UpdateVar(self, key, value):
+        """ Set both the persistent value of a variable, and the
+            local object's variable """
+        setattr(self.obj, key, value) # Set draing object's value
+        self.setPersistent(key, value) # Set the persistent value
+        self.broadcastRedraw() # Dynamically update values
+
+    def OnChangePlots(self):
+        self.OnQuit(self)
 
     def InitUI(self):
         panel = wx.Panel(self)
@@ -83,7 +125,22 @@ class ExperimentalControlPanel(wx.Frame):
         vbox.Add(left, 1, flag=wx.EXPAND)
         vbox.Add(right, 1, flag=wx.EXPAND)
 
-        controls = AutoMenu.autoGenerateMenu(self.obj, panel)
+        # Locate dynamic controls
+        # Pass in UpdateVar to let the generated controls know how to update
+        # the relevant variables
+        controls = AutoMenu.autoGenerateMenu(self.obj, panel, self.UpdateVar)
+
+        # Load values from persistent values.  If persistent variables are not
+        # there, create them
+        for control in controls:
+            # read local value from the object
+            local_value = getattr(self.obj, control.key)
+            # Load persistent value if possible.  Otherwise use local_value
+            new_value = self.loadPersistent(control.key, local_value)
+            # Set value in object to new_value
+            self.UpdateVar(control.key, new_value)
+            # Update the control's view
+            control.Update()
 
         deltaTop = 0
         for c in controls:
@@ -331,7 +388,7 @@ class DrawSimple(DrawOptions, KeyList):
             self.xdata = xdata
         self.text = text
         self.plottype = self.nl[0]
-        self.title = title
+        self.m_Title = title
 
     def drawPlot(self, fig, axes):
         print(self._PV)
@@ -353,14 +410,13 @@ class DrawSimple(DrawOptions, KeyList):
         if leg is not None:
             leg.get_frame().set_alpha(0.2)
         axes.annotate(self.text, xy=(0.0, 1.05), xycoords='axes fraction')
-        if self.title is None:
-            self.title = self.plottype
-        axes.set_title(self.title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
+        if self.m_Title is None:
+            self.m_Title = self.plottype
+        axes.set_title(self.m_Title, horizontalalignment='center', verticalalignment='top', transform=axes.transAxes, fontsize="smaller")
         # self.drawTime(fig, axes, self.text )
         # well defined axis here
 
     def makeControlPanel(self, parentWindow):  # Default options
-        print("CONT Panel")
         return ExperimentalControlPanel(self, parentWindow)
 
 
@@ -418,10 +474,13 @@ class DrawVelocity(DrawOptions, KeyList):
         #Display x axis label with moment info
         extText = ""
         dimlabels = ["x","y","z"]
-        if self.fvm != None:
+        if self.fvm is not None:
             for i,dim in enumerate(self.fvm): # Iterate through dimensions
-                extText += dimlabels[i]+": VD=" + str(dim[0])
-                extText += "   VTH=" + str(dim[1]) + "\n"
+                try:
+                    extText += dimlabels[i]+": VD=" + str(dim[0])
+                    extText += "   VTH=" + str(dim[1]) + "\n"
+                except IndexError:
+                    sys.stderr.write("fv must be at least an n by 2 matrix")
         axes.set_xlabel(r"Velocity"
            "\n" + extText)
         self.drawTime(fig, axes, "")

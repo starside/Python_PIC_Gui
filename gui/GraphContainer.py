@@ -44,13 +44,21 @@ class GraphContainer(LeftPanel):
     def PopupHandler(self, event):
         self.resetGraph()
         self.persistentVars = dict() # Reset persistent variable container
+        wasRemoved = False
         for g in self.centralDispatcher: #Remove self from central dispatch.  Clean up the old cruft
-            g.RemoveListener(self)
+            wasRemoved = wasRemoved or g.RemoveListener(self)
+        if wasRemoved:
+            self.GraphChanged()
         self.centralDispatcher[event.GetId() - 1].AddListener(self) # Add self to central dispatch
         re = self.centralDispatcher[event.GetId() - 1].getRecent()
         if re != None:
             self.currentEvent = re
             self.DrawPlot()
+
+    def GraphChanged(self):
+        if hasattr(self,"newCP") and self.newCP is not None:
+            if hasattr(self.newCP, "OnChangePlots"):
+                self.newCP.OnChangePlots()
 
     def setGraphByName(self, name):  # set the graph to display by name
         self.movieFileName = "moviename.mp4"

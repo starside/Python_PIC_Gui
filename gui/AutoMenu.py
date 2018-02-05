@@ -4,56 +4,67 @@ import math
 
 # A string widget
 class ControlWidget:
-    def __init__(self, label, panel, key, obj):
+    def __init__(self, label, panel, key, obj, updateHandler):
         self.label = wx.StaticText(panel, -1, label)
         self.data = wx.TextCtrl(panel, -1)
         self.data.SetValue(str(getattr(obj, key)))
         self.key = key
         self.obj = obj
+        self.updateHandler = updateHandler
 
     def OnEvent(self, event):
         setattr(self.obj, self.key, event.GetString())
 
     def OnLostFocus(self, event):
+        self.data.SetValue(str(getattr(self.obj, self.key)))        
+
+    def Update(self):
         self.data.SetValue(str(getattr(self.obj, self.key)))
 
 class StringWidget(ControlWidget):
-    def __init__(self, label, panel, key, obj):
-        ControlWidget.__init__(self, label+" (string)", panel, key, obj)
+    def __init__(self, label, panel, key, obj, updateHandler):
+        ControlWidget.__init__(self, label+" (string)", panel, key, obj, updateHandler)
+
+    def OnEvent(self, event):
+        val = str(event.GetString())
+        setattr(self.obj, self.key, val)
+        self.updateHandler(self.key, val)
 
 # A Floating point widget
 class FloatWidget(ControlWidget):
-    def __init__(self, label, panel, key, obj):
-        ControlWidget.__init__(self, label+" (float)", panel, key, obj)
+    def __init__(self, label, panel, key, obj, updateHandler):
+        ControlWidget.__init__(self, label+" (float)", panel, key, obj, updateHandler)
 
     def OnEvent(self, event):
         try:
             numval = float(event.GetString().strip())
             setattr(self.obj, self.key, numval)
+            self.updateHandler(self.key, numval)
         except ValueError:
             pass
 
 # A integer widget
 class IntWidget(ControlWidget):
-    def __init__(self, label, panel, key, obj):
-        ControlWidget.__init__(self, label+" (int)", panel, key, obj)
+    def __init__(self, label, panel, key, obj, updateHandler):
+        ControlWidget.__init__(self, label+" (int)", panel, key, obj, updateHandler)
 
     def OnEvent(self, event):
         try:
             numval = int(event.GetString().strip())
             setattr(self.obj, self.key, numval)
+            self.updateHandler(self.key, numval)
         except ValueError:
             pass
 
-def autoGenerateMenu(obj, panel):
-    def verifyPropertyFormat(label, panel, key, obj):
+def autoGenerateMenu(obj, panel, updateHandler):
+    def verifyPropertyFormat(label, panel, key, obj, updateHandler):
         cond = type(getattr(obj, key)) 
         if cond is float:
-            return FloatWidget(label, panel, key, obj)
+            return FloatWidget(label, panel, key, obj, updateHandler)
         elif cond is int:
-            return IntWidget(label, panel, key, obj)
+            return IntWidget(label, panel, key, obj, updateHandler)
         elif cond is str:
-            return StringWidget(label, panel, key, obj)
+            return StringWidget(label, panel, key, obj, updateHandler)
         return None # No matching widget found
 
 
@@ -68,7 +79,7 @@ def autoGenerateMenu(obj, panel):
             s = re.compile(r'([A-Z][a-z0-9]*)') #Split based on capitalization
             words = [x for x in s.split(propName) if len(x) > 0] # Remove empty strings
             label = " ".join(words) #Convert name to label
-            field = verifyPropertyFormat(label, panel, key, obj)
+            field = verifyPropertyFormat(label, panel, key, obj, updateHandler)
             if field is not None:
                 properties.append(field)
     return properties

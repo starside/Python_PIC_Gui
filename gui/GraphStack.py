@@ -30,6 +30,8 @@ class GraphStack:
             self.listenerQ.remove(rem)
             if hasattr(self.callback, "GraphStackChanged"):
                 self.callback.GraphStackChanged(self.countListeners(), self.name)
+            return True
+        return False
 
     def broadcast(self, event):
         for l in self.listenerQ:  # dispatch result signal to all listener objects

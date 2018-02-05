@@ -248,6 +248,12 @@ class LeftPanel(wx.Panel):
     	# Check if persistent vars _PV exists in data
         if not hasattr(self.currentEvent.data, "_PV"):
             self.currentEvent.data._PV = self.persistentVars # Create is if not
+        else: # Copy persistent variables to object being draw
+            for key in self.persistentVars.iterkeys():
+                if hasattr(self.currentEvent.data, key): #Check if key is in object
+                    # Copy persistent value to object
+                    setattr(self.currentEvent.data, key, self.persistentVars[key])
+
         self.resetGraph()	# Reset the graph
         try:
             self.currentEvent.data.setParams(self.arbGraphParameters)  # pass paramters to plot
