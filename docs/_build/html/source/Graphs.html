@@ -250,6 +250,11 @@ axes.add_artist(_at)</p>
 <code class="descname">drawPlot</code><span class="sig-paren">(</span><em>fig</em>, <em>axes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#DrawSimple.drawPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.DrawSimple.drawPlot" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="method">
+<dt id="Graphs.DrawSimple.makeControlPanel">
+<code class="descname">makeControlPanel</code><span class="sig-paren">(</span><em>parentWindow</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#DrawSimple.makeControlPanel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.DrawSimple.makeControlPanel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="class">
@@ -287,6 +292,63 @@ axes.add_artist(_at)</p>
 <dt id="Graphs.DrawVelocity.drawPlot">
 <code class="descname">drawPlot</code><span class="sig-paren">(</span><em>fig</em>, <em>axes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#DrawVelocity.drawPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.DrawVelocity.drawPlot" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Graphs.ExperimentalBaseControlPanel">
+<em class="property">class </em><code class="descclassname">Graphs.</code><code class="descname">ExperimentalBaseControlPanel</code><span class="sig-paren">(</span><em>obj</em>, <em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#ExperimentalBaseControlPanel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.ExperimentalBaseControlPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wx._core.Frame</span></code></p>
+<dl class="method">
+<dt id="Graphs.ExperimentalBaseControlPanel.OnQuit">
+<code class="descname">OnQuit</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#ExperimentalBaseControlPanel.OnQuit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.ExperimentalBaseControlPanel.OnQuit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Graphs.ExperimentalBaseControlPanel.broadcastRedraw">
+<code class="descname">broadcastRedraw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#ExperimentalBaseControlPanel.broadcastRedraw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.ExperimentalBaseControlPanel.broadcastRedraw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tells the GUI to refresh the graph in question</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Graphs.ExperimentalBaseControlPanel.getPersistentContainer">
+<code class="descname">getPersistentContainer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#ExperimentalBaseControlPanel.getPersistentContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.ExperimentalBaseControlPanel.getPersistentContainer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Graphs.ExperimentalBaseControlPanel.loadPersistent">
+<code class="descname">loadPersistent</code><span class="sig-paren">(</span><em>key</em>, <em>default</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#ExperimentalBaseControlPanel.loadPersistent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.ExperimentalBaseControlPanel.loadPersistent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads key from persistent memory in the GraphContainer.
+returns default if it cannot be loaded</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Graphs.ExperimentalBaseControlPanel.setPersistent">
+<code class="descname">setPersistent</code><span class="sig-paren">(</span><em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#ExperimentalBaseControlPanel.setPersistent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.ExperimentalBaseControlPanel.setPersistent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="Graphs.ExperimentalControlPanel">
+<em class="property">class </em><code class="descclassname">Graphs.</code><code class="descname">ExperimentalControlPanel</code><span class="sig-paren">(</span><em>obj</em>, <em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#ExperimentalControlPanel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.ExperimentalControlPanel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#Graphs.ExperimentalBaseControlPanel" title="Graphs.ExperimentalBaseControlPanel"><code class="xref py py-class docutils literal"><span class="pre">Graphs.ExperimentalBaseControlPanel</span></code></a></p>
+<dl class="method">
+<dt id="Graphs.ExperimentalControlPanel.InitUI">
+<code class="descname">InitUI</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#ExperimentalControlPanel.InitUI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.ExperimentalControlPanel.InitUI" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Graphs.ExperimentalControlPanel.OnChangePlots">
+<code class="descname">OnChangePlots</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#ExperimentalControlPanel.OnChangePlots"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.ExperimentalControlPanel.OnChangePlots" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="Graphs.ExperimentalControlPanel.UpdateVar">
+<code class="descname">UpdateVar</code><span class="sig-paren">(</span><em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/Graphs.html#ExperimentalControlPanel.UpdateVar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Graphs.ExperimentalControlPanel.UpdateVar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set both the persistent value of a variable, and the
+local object’s variable</p>
+</dd></dl>
 
 </dd></dl>
 

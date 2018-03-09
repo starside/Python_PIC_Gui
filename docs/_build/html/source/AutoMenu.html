@@ -42,35 +42,61 @@
   <div class="section" id="module-AutoMenu">
 <span id="automenu-module"></span><h1>AutoMenu module<a class="headerlink" href="#module-AutoMenu" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="AutoMenu.FloatWidget">
-<em class="property">class </em><code class="descclassname">AutoMenu.</code><code class="descname">FloatWidget</code><span class="sig-paren">(</span><em>property</em>, <em>label</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#FloatWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.FloatWidget" title="Permalink to this definition">¶</a></dt>
+<dt id="AutoMenu.ControlWidget">
+<em class="property">class </em><code class="descclassname">AutoMenu.</code><code class="descname">ControlWidget</code><span class="sig-paren">(</span><em>label</em>, <em>panel</em>, <em>key</em>, <em>obj</em>, <em>updateHandler</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#ControlWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.ControlWidget" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="AutoMenu.ControlWidget.OnEvent">
+<code class="descname">OnEvent</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#ControlWidget.OnEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.ControlWidget.OnEvent" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="method">
+<dt id="AutoMenu.ControlWidget.OnLostFocus">
+<code class="descname">OnLostFocus</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#ControlWidget.OnLostFocus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.ControlWidget.OnLostFocus" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="AutoMenu.ControlWidget.Update">
+<code class="descname">Update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#ControlWidget.Update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.ControlWidget.Update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="AutoMenu.FloatWidget">
+<em class="property">class </em><code class="descclassname">AutoMenu.</code><code class="descname">FloatWidget</code><span class="sig-paren">(</span><em>label</em>, <em>panel</em>, <em>key</em>, <em>obj</em>, <em>updateHandler</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#FloatWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.FloatWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#AutoMenu.ControlWidget" title="AutoMenu.ControlWidget"><code class="xref py py-class docutils literal"><span class="pre">AutoMenu.ControlWidget</span></code></a></p>
+<dl class="method">
+<dt id="AutoMenu.FloatWidget.OnEvent">
+<code class="descname">OnEvent</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#FloatWidget.OnEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.FloatWidget.OnEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
 
 <dl class="class">
 <dt id="AutoMenu.IntWidget">
-<em class="property">class </em><code class="descclassname">AutoMenu.</code><code class="descname">IntWidget</code><span class="sig-paren">(</span><em>property</em>, <em>label</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#IntWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.IntWidget" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">AutoMenu.</code><code class="descname">IntWidget</code><span class="sig-paren">(</span><em>label</em>, <em>panel</em>, <em>key</em>, <em>obj</em>, <em>updateHandler</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#IntWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.IntWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#AutoMenu.ControlWidget" title="AutoMenu.ControlWidget"><code class="xref py py-class docutils literal"><span class="pre">AutoMenu.ControlWidget</span></code></a></p>
+<dl class="method">
+<dt id="AutoMenu.IntWidget.OnEvent">
+<code class="descname">OnEvent</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#IntWidget.OnEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.IntWidget.OnEvent" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="class">
-<dt id="AutoMenu.MainApp">
-<em class="property">class </em><code class="descclassname">AutoMenu.</code><code class="descname">MainApp</code><span class="sig-paren">(</span><em>arg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#MainApp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.MainApp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">wx.core.App</span></code></p>
-<p>Class Main App.</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="AutoMenu.StringWidget">
-<em class="property">class </em><code class="descclassname">AutoMenu.</code><code class="descname">StringWidget</code><span class="sig-paren">(</span><em>property</em>, <em>label</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#StringWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.StringWidget" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">AutoMenu.</code><code class="descname">StringWidget</code><span class="sig-paren">(</span><em>label</em>, <em>panel</em>, <em>key</em>, <em>obj</em>, <em>updateHandler</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#StringWidget"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.StringWidget" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#AutoMenu.ControlWidget" title="AutoMenu.ControlWidget"><code class="xref py py-class docutils literal"><span class="pre">AutoMenu.ControlWidget</span></code></a></p>
+<dl class="method">
+<dt id="AutoMenu.StringWidget.OnEvent">
+<code class="descname">OnEvent</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#StringWidget.OnEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.StringWidget.OnEvent" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="class">
-<dt id="AutoMenu.Test">
-<em class="property">class </em><code class="descclassname">AutoMenu.</code><code class="descname">Test</code><a class="reference internal" href="../_modules/AutoMenu.html#Test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.Test" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+</dd></dl>
 
 <dl class="function">
 <dt id="AutoMenu.autoGenerateMenu">
-<code class="descclassname">AutoMenu.</code><code class="descname">autoGenerateMenu</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#autoGenerateMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.autoGenerateMenu" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">AutoMenu.</code><code class="descname">autoGenerateMenu</code><span class="sig-paren">(</span><em>obj</em>, <em>panel</em>, <em>updateHandler</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/AutoMenu.html#autoGenerateMenu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#AutoMenu.autoGenerateMenu" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

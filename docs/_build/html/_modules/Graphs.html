@@ -40,7 +40,8 @@
           <div class="body" role="main">
             
   <h1>Source code for Graphs</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">copy</span>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">wx</span>
 <span class="kn">import</span> <span class="nn">collections</span>
 <span class="kn">import</span> <span class="nn">functools</span>
@@ -56,6 +57,7 @@
 <span class="kn">from</span> <span class="nn">matplotlib.backends.backend_wx</span> <span class="k">import</span> <span class="n">NavigationToolbar2Wx</span>
 <span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid.anchored_artists</span> <span class="k">import</span> <span class="n">AnchoredText</span>
 
+<span class="kn">import</span> <span class="nn">AutoMenu</span>
 <span class="kn">from</span> <span class="nn">Events</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">lib</span> <span class="k">import</span> <span class="o">*</span>
 
@@ -106,6 +108,115 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">getParameterValues</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">setParameters</span><span class="p">()</span></div></div>
 
+<span class="c1"># Subclass to make new control panels</span>
+<div class="viewcode-block" id="ExperimentalBaseControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.ExperimentalBaseControlPanel">[docs]</a><span class="k">class</span> <span class="nc">ExperimentalBaseControlPanel</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>  <span class="c1"># remember to delete self at some point</span>
+        <span class="sd">&quot;&quot;&quot;Create the MainFrame.&quot;&quot;&quot;</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">FRAME_TOOL_WINDOW</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">STAY_ON_TOP</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">SYSTEM_MENU</span> <span class="o">|</span> <span class="n">wx</span><span class="o">.</span><span class="n">CLOSE_BOX</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stf</span> <span class="o">=</span> <span class="n">parent</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SetPosition</span><span class="p">((</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">panel</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Panel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">DefaultPosition</span><span class="p">,</span> <span class="n">wx</span><span class="o">.</span><span class="n">DefaultSize</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_CLOSE</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">OnQuit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span>
+
+<div class="viewcode-block" id="ExperimentalBaseControlPanel.OnQuit"><a class="viewcode-back" href="../source/Graphs.html#Graphs.ExperimentalBaseControlPanel.OnQuit">[docs]</a>    <span class="k">def</span> <span class="nf">OnQuit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="p">,</span> <span class="n">CloseOptionsEvent</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ExperimentalBaseControlPanel.broadcastRedraw"><a class="viewcode-back" href="../source/Graphs.html#Graphs.ExperimentalBaseControlPanel.broadcastRedraw">[docs]</a>    <span class="k">def</span> <span class="nf">broadcastRedraw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Tells the GUI to refresh the graph in question &quot;&quot;&quot;</span>
+        <span class="n">wx</span><span class="o">.</span><span class="n">PostEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stf</span><span class="p">,</span> <span class="n">RefreshGraphEvent</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="ExperimentalBaseControlPanel.loadPersistent"><a class="viewcode-back" href="../source/Graphs.html#Graphs.ExperimentalBaseControlPanel.loadPersistent">[docs]</a>    <span class="k">def</span> <span class="nf">loadPersistent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Loads key from persistent memory in the GraphContainer.</span>
+<span class="sd">            returns default if it cannot be loaded &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">_PV</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">default</span></div>
+
+<div class="viewcode-block" id="ExperimentalBaseControlPanel.setPersistent"><a class="viewcode-back" href="../source/Graphs.html#Graphs.ExperimentalBaseControlPanel.setPersistent">[docs]</a>    <span class="k">def</span> <span class="nf">setPersistent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="ExperimentalBaseControlPanel.getPersistentContainer"><a class="viewcode-back" href="../source/Graphs.html#Graphs.ExperimentalBaseControlPanel.getPersistentContainer">[docs]</a>    <span class="k">def</span> <span class="nf">getPersistentContainer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="o">.</span><span class="n">_PV</span></div></div>
+
+<div class="viewcode-block" id="ExperimentalControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.ExperimentalControlPanel">[docs]</a><span class="k">class</span> <span class="nc">ExperimentalControlPanel</span><span class="p">(</span><span class="n">ExperimentalBaseControlPanel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">parent</span><span class="p">):</span>
+        <span class="n">ExperimentalBaseControlPanel</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">InitUI</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Show</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ExperimentalControlPanel.UpdateVar"><a class="viewcode-back" href="../source/Graphs.html#Graphs.ExperimentalControlPanel.UpdateVar">[docs]</a>    <span class="k">def</span> <span class="nf">UpdateVar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set both the persistent value of a variable, and the</span>
+<span class="sd">            local object&#39;s variable &quot;&quot;&quot;</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="c1"># Set draing object&#39;s value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setPersistent</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="c1"># Set the persistent value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">broadcastRedraw</span><span class="p">()</span> <span class="c1"># Dynamically update values</span></div>
+
+<div class="viewcode-block" id="ExperimentalControlPanel.OnChangePlots"><a class="viewcode-back" href="../source/Graphs.html#Graphs.ExperimentalControlPanel.OnChangePlots">[docs]</a>    <span class="k">def</span> <span class="nf">OnChangePlots</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">OnQuit</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExperimentalControlPanel.InitUI"><a class="viewcode-back" href="../source/Graphs.html#Graphs.ExperimentalControlPanel.InitUI">[docs]</a>    <span class="k">def</span> <span class="nf">InitUI</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">panel</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">Panel</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">vbox</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">HORIZONTAL</span><span class="p">)</span>
+
+        <span class="n">left</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">wx</span><span class="o">.</span><span class="n">BoxSizer</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">VERTICAL</span><span class="p">)</span>
+
+        <span class="n">vbox</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">)</span>
+        <span class="n">vbox</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">EXPAND</span><span class="p">)</span>
+
+        <span class="c1"># Locate dynamic controls</span>
+        <span class="c1"># Pass in UpdateVar to let the generated controls know how to update</span>
+        <span class="c1"># the relevant variables</span>
+        <span class="n">controls</span> <span class="o">=</span> <span class="n">AutoMenu</span><span class="o">.</span><span class="n">autoGenerateMenu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="p">,</span> <span class="n">panel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">UpdateVar</span><span class="p">)</span>
+
+        <span class="c1"># Load values from persistent values.  If persistent variables are not</span>
+        <span class="c1"># there, create them</span>
+        <span class="k">for</span> <span class="n">control</span> <span class="ow">in</span> <span class="n">controls</span><span class="p">:</span>
+            <span class="c1"># read local value from the object</span>
+            <span class="n">local_value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obj</span><span class="p">,</span> <span class="n">control</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+            <span class="c1"># Load persistent value if possible.  Otherwise use local_value</span>
+            <span class="n">new_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loadPersistent</span><span class="p">(</span><span class="n">control</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">local_value</span><span class="p">)</span>
+            <span class="c1"># Set value in object to new_value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">UpdateVar</span><span class="p">(</span><span class="n">control</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">new_value</span><span class="p">)</span>
+            <span class="c1"># Update the control&#39;s view</span>
+            <span class="n">control</span><span class="o">.</span><span class="n">Update</span><span class="p">()</span>
+
+        <span class="n">deltaTop</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">controls</span><span class="p">:</span>
+            <span class="c1"># Calculate label padding</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">labelY</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">GetClientSize</span><span class="p">()</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">dataY</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">GetClientSize</span><span class="p">()</span>
+            <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">dataY</span> <span class="o">-</span> <span class="n">labelY</span><span class="p">)</span><span class="o">/</span><span class="mf">2.0</span>
+            <span class="n">topPad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span> <span class="o">+</span> <span class="n">deltaTop</span>
+            <span class="n">bottomPad</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span>
+            <span class="c1"># Add default spacing</span>
+            <span class="n">left</span><span class="o">.</span><span class="n">Add</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">7</span><span class="p">))</span>
+            <span class="c1"># Add top padding plus accumulated offset</span>
+            <span class="n">left</span><span class="o">.</span><span class="n">Add</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="n">topPad</span><span class="p">))</span>
+            <span class="n">left</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">flag</span><span class="o">=</span><span class="n">wx</span><span class="o">.</span><span class="n">ALIGN_RIGHT</span><span class="p">)</span>
+            <span class="n">left</span><span class="o">.</span><span class="n">Add</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">bottomPad</span><span class="p">))</span>
+            <span class="c1"># Update error offset for top padding</span>
+            <span class="n">deltaTop</span> <span class="o">=</span> <span class="n">dataY</span> <span class="o">-</span> <span class="p">(</span><span class="n">topPad</span> <span class="o">+</span> <span class="n">labelY</span> <span class="o">+</span> <span class="n">bottomPad</span> <span class="o">-</span> <span class="n">deltaTop</span><span class="p">)</span>
+
+            <span class="c1"># Build the right column, add the field</span>
+            <span class="n">right</span><span class="o">.</span><span class="n">Add</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">7</span><span class="p">))</span>
+            <span class="n">right</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_TEXT</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">OnEvent</span><span class="p">)</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">EVT_KILL_FOCUS</span><span class="p">,</span> <span class="n">c</span><span class="o">.</span><span class="n">OnLostFocus</span><span class="p">)</span>
+
+        <span class="c1"># Add Lower Padding</span>
+        <span class="n">lowerPadding</span> <span class="o">=</span> <span class="mi">10</span>
+        <span class="n">left</span><span class="o">.</span><span class="n">Add</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="n">lowerPadding</span><span class="p">))</span>
+        <span class="n">right</span><span class="o">.</span><span class="n">Add</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="n">lowerPadding</span><span class="p">))</span>
+
+        <span class="c1"># Fit panel and frames to controls</span>
+        <span class="n">panel</span><span class="o">.</span><span class="n">SetSizer</span><span class="p">(</span><span class="n">vbox</span><span class="p">)</span>
+        <span class="n">panel</span><span class="o">.</span><span class="n">Layout</span><span class="p">()</span>
+        <span class="n">panel</span><span class="o">.</span><span class="n">Fit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Fit</span><span class="p">()</span></div></div>
 
 <span class="c1"># Subclass to make new control panels</span>
 <div class="viewcode-block" id="BaseControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.BaseControlPanel">[docs]</a><span class="k">class</span> <span class="nc">BaseControlPanel</span><span class="p">(</span><span class="n">wx</span><span class="o">.</span><span class="n">Frame</span><span class="p">,</span> <span class="n">KeyList</span><span class="p">):</span>
@@ -319,9 +430,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">xdata</span> <span class="o">=</span> <span class="n">xdata</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="n">text</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_Title</span> <span class="o">=</span> <span class="n">title</span>
 
 <div class="viewcode-block" id="DrawSimple.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawSimple.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">)</span>
         <span class="k">if</span> <span class="s1">&#39;ylimits&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">:</span>    <span class="c1">#Set default limits on y axis</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">[</span><span class="s1">&#39;ylimits&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">syncParameters</span><span class="p">()</span>
@@ -340,11 +452,14 @@
         <span class="k">if</span> <span class="n">leg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">leg</span><span class="o">.</span><span class="n">get_frame</span><span class="p">()</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
         <span class="n">axes</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">text</span><span class="p">,</span> <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">),</span> <span class="n">xycoords</span><span class="o">=</span><span class="s1">&#39;axes fraction&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span>
-        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;smaller&quot;</span><span class="p">)</span></div></div>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_Title</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">m_Title</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plottype</span>
+        <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_Title</span><span class="p">,</span> <span class="n">horizontalalignment</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">verticalalignment</span><span class="o">=</span><span class="s1">&#39;top&#39;</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">axes</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="s2">&quot;smaller&quot;</span><span class="p">)</span></div>
         <span class="c1"># self.drawTime(fig, axes, self.text )</span>
         <span class="c1"># well defined axis here</span>
+
+<div class="viewcode-block" id="DrawSimple.makeControlPanel"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawSimple.makeControlPanel">[docs]</a>    <span class="k">def</span> <span class="nf">makeControlPanel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parentWindow</span><span class="p">):</span>  <span class="c1"># Default options</span>
+        <span class="k">return</span> <span class="n">ExperimentalControlPanel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parentWindow</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="DrawScaler"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawScaler">[docs]</a><span class="k">class</span> <span class="nc">DrawScaler</span><span class="p">(</span><span class="n">DrawOptions</span><span class="p">,</span> <span class="n">KeyList</span><span class="p">):</span>
@@ -401,10 +516,13 @@
         <span class="c1">#Display x axis label with moment info</span>
         <span class="n">extText</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="n">dimlabels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span><span class="s2">&quot;y&quot;</span><span class="p">,</span><span class="s2">&quot;z&quot;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fvm</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dim</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fvm</span><span class="p">):</span> <span class="c1"># Iterate through dimensions</span>
-                <span class="n">extText</span> <span class="o">+=</span> <span class="n">dimlabels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;: VD=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-                <span class="n">extText</span> <span class="o">+=</span> <span class="s2">&quot;   VTH=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fvm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">dim</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fvm</span><span class="p">):</span> <span class="c1"># Iterate through dimensions</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">extText</span> <span class="o">+=</span> <span class="n">dimlabels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">+</span><span class="s2">&quot;: VD=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="n">extText</span> <span class="o">+=</span> <span class="s2">&quot;   VTH=&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;fv must be at least an n by 2 matrix&quot;</span><span class="p">)</span>
         <span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Velocity&quot;</span>
            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">extText</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">drawTime</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
@@ -607,6 +725,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
 
 <div class="viewcode-block" id="DrawEnergy.drawPlot"><a class="viewcode-back" href="../source/Graphs.html#Graphs.DrawEnergy.drawPlot">[docs]</a>    <span class="k">def</span> <span class="nf">drawPlot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">)</span>
         <span class="c1"># Create the data model for communication with options,</span>
         <span class="c1"># if it does not exist in _PV</span>
         <span class="k">if</span> <span class="s2">&quot;EnergyTypes&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PV</span><span class="p">:</span>
