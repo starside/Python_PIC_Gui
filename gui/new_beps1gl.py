@@ -39,7 +39,7 @@ programDefaults = DefaultLoader("foo.default")
 class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
     """Class MainFrame."""
 
-    def __init__(self, parent, id, loader, pipemode=None, que=None, timedir=None, events=None, outq=None):
+    def __init__(self, parent, id, loader, pipemode=None, que=None, events=None, outq=None):
         """Create the MainFrame."""
         wx.Frame.__init__(self, parent, id, 'Control Panel',
                           style=wx.DEFAULT_FRAME_STYLE)
@@ -61,8 +61,8 @@ class MainFrame(wx.Frame, Dispatcher, DefaultsCommLink):
         self.pEvents = events  # Communicate with parent process, various GUI events
         self.outq = outq
         self.pipemode = pipemode
-        self.commKill = (pipemode, que, timedir, events, outq)
-        self.worker = PipeSimulation(self, pipemode, que, timedir, outq)
+        self.commKill = (pipemode, que, None, events, outq)
+        self.worker = PipeSimulation(self, pipemode, que)
         EVT_RESULT(self, self.OnResultPre)  # Link up events
         EVT_CONTROL(self, self.OnControl)
         EVT_NEWTIME(self, self.OnNewTime)  # link up sim time
@@ -140,15 +140,14 @@ class MainApp(wx.App):
     def __init__(self, arg, pipemode=None, que=None, timedir=None, events=None, outq=None):
         self.pipemode = pipemode
         self.que = que
-        self.timeDir = timedir
         self.pEvents = events
         self.outq = outq
         wx.App.__init__(self, arg)
 
     def OnInit(self):
         """Init Main App."""
-        self.frame = MainFrame(None, -1, programDefaults, pipemode=self.pipemode, que=self.que, timedir=self.timeDir,
-                               events=self.pEvents, outq=self.outq)
+        self.frame = MainFrame(None, -1, programDefaults, pipemode=self.pipemode, que=self.que, \
+                                       events=self.pEvents, outq=self.outq)
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
         return True

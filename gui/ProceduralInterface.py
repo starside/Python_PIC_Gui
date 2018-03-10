@@ -7,6 +7,7 @@ import time
 from threading import Thread
 from multiprocessing import Process, Pipe, Queue, Lock, Value, Manager
 import cPickle
+from collections import namedtuple
 
 import Graphs
 import GraphStack
@@ -71,14 +72,16 @@ class DispItem:
 
 
 # Try the high level interface
-def initGui(q, que, td, events, outqueue):
+def initGui(q, que, events, outqueue):
     if wx.GetApp() == None:
-        app = new_beps1gl.MainApp(0, q, que, td, events=events, outq=outqueue)
+        app = new_beps1gl.MainApp(0, q, que, events=events, outq=outqueue)
         app.MainLoop()
         return app
     else:
         print "Cannot create multiple wxApp contexts"
         return False
+
+Connection = namedtuple("Connection", "child_conn, que, events, async")
 
 ##PlasmaContext is the interface the sim process uses to talk to the GUI.
 class PlasmaContext():
@@ -95,17 +98,12 @@ class PlasmaContext():
             an example of useage. 
     """
     def __init__(self, obj, *args):
-        assert(len(args) == 6)
+        assert(len(args) == 4)
         self.simObj = obj
         self.defaultGraphs = []
         self.norun = False
         #read in comm channels
-        self.async = args[5]  # synch or async mode
-        self.que = args[2]
-        self.events = args[4]
-        self.timeDir = args[3] 
-        self.parent_conn = args[1]
-        self.child_conn = args[0]
+        self.conn = Connection(*args) # This is a bundle of connections to the simulation process
         
         self.curTime = 0
         self.graphEnabled = True
@@ -135,14 +133,14 @@ class PlasmaContext():
         async = manager.dict()  # synch or async mode
         que = Queue()
         events = Queue()
-        timeDir = None 
         child_conn = Queue()
+        conn = Connection(child_conn, que, events, async)
         #run the simulation code in child process
-        p = Process(target=func, args=(child_conn, child_conn, que, timeDir, events, async))
+        p = Process(target=func, args=conn)
         #p.daemon = True
         p.start()
         #run gui in parent process
-        initGui(child_conn, que, timeDir, events, async)
+        initGui(child_conn, que, events, async)
 
     def _sendEarly(self, obj):
         """
@@ -182,16 +180,16 @@ class PlasmaContext():
             except:
                 True
             iv = cPickle.dumps(obj)
-            self.que.put(iv)
-            self.child_conn.get() # Wait for response.  This will block until response recieved
+            self.conn.que.put(iv)
+            self.conn.child_conn.get() # Wait for response.  This will block until response recieved
 
-    def _sendplotasync(self, obj):
+    def _sendmessageasync(self, obj):
         """
         Sends a plot, asynchronously.  It will not wait for a response before returning.
         """
         if self.norun:
             return
-        self.que.put(cPickle.dumps(obj))
+        self.conn.que.put(cPickle.dumps(obj))
 
     def graphBeforeEndOfFF(self, plottype, interval):
         """
@@ -225,7 +223,7 @@ class PlasmaContext():
         to = OpenFrame()
         to.layout = layout
         to.defaults = defaults
-        self.que.put(cPickle.dumps(to))
+        self.conn.que.put(cPickle.dumps(to))
 
     def newDynamicVariable(self, varname):
         """
@@ -243,7 +241,7 @@ class PlasmaContext():
             return
         to = NewDynamicVariable()
         to.varname = varname
-        self.que.put(cPickle.dumps(to))
+        self.conn.que.put(cPickle.dumps(to))
 
     def runOnce(self):
         #This really should directly press the step button
@@ -269,7 +267,7 @@ class PlasmaContext():
 
         while readQ:
             try:
-                to = self.events.get(not pause)
+                to = self.conn.events.get(not pause)
                 que.append(to)
             except:
                 readQ = False
@@ -285,9 +283,9 @@ class PlasmaContext():
                 cb(obj, to)
 
     def exit(self):
-        self.child_conn.close()
-        self.que.close()
-        self.que.join_thread()
+        self.conn.child_conn.close()
+        self.conn.que.close()
+        self.conn.que.join_thread()
         self.p.join()
 
     # 
@@ -305,7 +303,7 @@ class PlasmaContext():
             return
         if name != None:
             try:
-                if self.async[name] == 0:
+                if self.conn.async[name] == 0:
                     return False
             except:  # Key does not exist.  Not drawing
                 return False
@@ -327,7 +325,7 @@ class PlasmaContext():
         self.dt = dt
         obj = SetFrameTime(time)
         obj._tackOnTime = self.curTime  # Just sloppily glue the time on the object
-        self.que.put(cPickle.dumps(obj))
+        self.conn.que.put(cPickle.dumps(obj))
 
     def pause(self):
         """
@@ -335,7 +333,7 @@ class PlasmaContext():
         """
         if self.norun:
             return
-        self._sendplotasync("PAUSE")
+        self._sendmessageasync("PAUSE")
 
     def fastForward(self):
         """
@@ -540,7 +538,7 @@ class PlasmaContext():
         if self.norun:
             return
         ptr = ClearGraphStack()
-        self.que.put(cPickle.dumps(ptr))
+        self.conn.que.put(cPickle.dumps(ptr))
 
     def updateSimInfo(self, data):
         """
@@ -551,7 +549,7 @@ class PlasmaContext():
         if self.norun:
             return
         ptr = SimData(data)
-        self.que.put(cPickle.dumps(ptr))
+        self.conn.que.put(cPickle.dumps(ptr))
 
     def addGraph(self, codename, desc, autoadd=True, priority=100):
         """ 
@@ -580,10 +578,10 @@ class PlasmaContext():
         ptr.desc = desc
         if autoadd:
             self.defaultGraphs.append(DispItem(codename, priority))
-        self.que.put(cPickle.dumps(ptr))
+        self.conn.que.put(cPickle.dumps(ptr))
 
     def RunNow(self, state):
         if self.norun:
             return
         ptr = RunNow(state)
-        self.que.put(cPickle.dumps(ptr))
+        self.conn.que.put(cPickle.dumps(ptr))

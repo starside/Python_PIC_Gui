@@ -11,7 +11,7 @@ import Queue as QE
 
 
 class PipeSimulation():
-    def __init__(self, notify_window, pipe, que, timedir, outq):
+    def __init__(self, notify_window, pipe, que):
         """Init Worker Thread Class."""
         # threading.Thread.__init__(self)
         # self.unproc = []
@@ -19,8 +19,6 @@ class PipeSimulation():
         self._want_abort = False
         self.pipe = pipe
         self.que = que
-        self.outq = outq
-        self.timeDir = timedir
         self._pollrate = 1.0 / 30.0  # times per second to poll for input.  Set to 0 for no delay
         self.myq = []
         self.guiq = []  # GUI CONTROL QUEUE
