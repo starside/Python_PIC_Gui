@@ -81,7 +81,7 @@ def initGui(q, que, events, outqueue):
         print "Cannot create multiple wxApp contexts"
         return False
 
-Connection = namedtuple("Connection", "child_conn, que, events, async")
+Connection = namedtuple("Connection", "gui_conn, que, events, async")
 
 ##PlasmaContext is the interface the sim process uses to talk to the GUI.
 class PlasmaContext():
@@ -128,19 +128,32 @@ class PlasmaContext():
             interface object.
 
         """
-        #create bidirectional comm channels
         manager = Manager()
-        async = manager.dict()  # synch or async mode
+        # async is a multiprocess dictionary used to keep track of which plots are being
+        # displayed, this way the simulation process does not need to generate graphs for
+        # invisible plots
+        async = manager.dict()  # sync or async mode
+        # que is the primary means of sending plot data to the GUI thread, typically using
+        # _sendplot
         que = Queue()
+        # events queue is used to signal events from the GUI to the sim process.  It is
+        # Not bidirectional.  The events are generated in getEvents.
         events = Queue()
-        child_conn = Queue()
-        conn = Connection(child_conn, que, events, async)
-        #run the simulation code in child process
+        # gui_conn queue is used to recieve messages from the gui.  Currently it is only
+        # used to keep the simulation in sync with the GUI.  After a plot is sent using
+        # _sendplot to the gui, _sendplot will pause the simulation process and wait for
+        # any response on gui_conn before proceeding.  This is perhaps a heavy handed way to
+        # keep the display and simulation in sync
+        gui_conn = Queue()
+        # Wrap the connection elements in to a namedtuple to send to the new process
+        # A named tuple is used for code clarity
+        conn = Connection(gui_conn, que, events, async)
+        # run the simulation code in child process
         p = Process(target=func, args=conn)
         #p.daemon = True
         p.start()
         #run gui in parent process
-        initGui(child_conn, que, events, async)
+        initGui(gui_conn, que, events, async)
 
     def _sendEarly(self, obj):
         """
@@ -181,7 +194,7 @@ class PlasmaContext():
                 True
             iv = cPickle.dumps(obj)
             self.conn.que.put(iv)
-            self.conn.child_conn.get() # Wait for response.  This will block until response recieved
+            self.conn.gui_conn.get() # Wait for response.  This will block until response recieved
 
     def _sendmessageasync(self, obj):
         """
@@ -283,7 +296,7 @@ class PlasmaContext():
                 cb(obj, to)
 
     def exit(self):
-        self.conn.child_conn.close()
+        self.conn.gui_conn.close()
         self.conn.que.close()
         self.conn.que.join_thread()
         self.p.join()
