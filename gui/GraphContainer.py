@@ -12,13 +12,16 @@ class GraphContainer(LeftPanel):
         # wx.Panel.__init__(self, parent, -1, wx.DefaultPosition, wx.DefaultSize, style=wx.SUNKEN_BORDER)
         LeftPanel.__init__(self, parent)
         self._mouseDownFlag = 0
-        self.context.UIElement().Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+        self.bindHandlers()
         self.SetMinSize(wx.Size(100, 100))
+
+    def bindHandlers(self):
+        self.context.UIElement().Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
 
     def OnRightDown(self, event):
         menu = wx.Menu()
         md = {"root": menu}
-        if self.isFrozen():  # If we are currently recording video, do not allow chaning of movies
+        if self.isFrozen():  # If we are currently recording video, do not allow changing of movies
             ti = menu.Append(1, "Stop recording before changing graph type.")
             ti.Enable(False)
         else:  # Allow graph to change
@@ -41,7 +44,7 @@ class GraphContainer(LeftPanel):
         menu.Destroy()
 
     def PopupHandler(self, event):
-        self.context.resetGraph()
+        self.ResetPlot()
         self.persistentVars = dict() # Reset persistent variable container
         wasRemoved = False
         for g in self.centralDispatcher: #Remove self from central dispatch.  Clean up the old cruft

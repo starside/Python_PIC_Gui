@@ -1,10 +1,7 @@
 import wx
 import wx.stc as stc
 import numpy as NP
-import matplotlib.image as mpimg
-import matplotlib
 from distutils import spawn
-import matplotlib.cm as cm
 
 from subprocess import Popen, PIPE
 import copy
@@ -109,11 +106,7 @@ class LeftPanel(wx.Panel):
     def __init__(self, parent):
         self.mainframe = parent
         wx.Panel.__init__(self, parent, -1, wx.DefaultPosition, wx.DefaultSize)
-        vsizer1 = wx.BoxSizer(orient=wx.VERTICAL)
         self.createGraph()
-        vsizer1.Add(self.context.UIElement(), proportion=1, flag=wx.EXPAND | wx.ALL, border=0)
-        vsizer1.Add(self.toolbar, flag=wx.EXPAND | wx.ALL, border=0)
-        self.SetSizerAndFit(vsizer1)
         self.slopeStack = []
         self.slopeMousePointer = None
         self.measuring = False
@@ -168,32 +161,38 @@ class LeftPanel(wx.Panel):
     def getRecordStatus(self):
         return self.recordVideo, self.movieFileName, self.overwrite
 
-
-    def createGraph(self):
-        self.context = Contexts.context_table['default'](self, self.onclick, self.onmotion)
+    def initializeContext(self, context):
+        vsizer1 = wx.BoxSizer(orient=wx.VERTICAL)
+        self.context = Contexts.context_table[context](self, self.onclick, self.onmotion)
         # Set up GUI elements
         self.toolbar = wx.BoxSizer(orient=wx.HORIZONTAL)
         #temporarily disable toolbar
         #self.navMenu = MyCustomToolbar(self.mycanvas)
         #self.toolbar.Add(self.navMenu)
+        self.toolbar.Add(self.slopeButton)
+        self.toolbar.Add(self.graphOptionsButton)
+        self.toolbar.Add(self.recButton)
+        vsizer1.Add(self.context.UIElement(), proportion=1, flag=wx.EXPAND | wx.ALL, border=0)
+        vsizer1.Add(self.toolbar, flag=wx.EXPAND | wx.ALL, border=0)
+        self.SetSizerAndFit(vsizer1)
+
+    def loadWidgets(self):
         slopebitmap = wx.Bitmap("./gui/slope.png", wx.BITMAP_TYPE_ANY)
         self.slopeButton = wx.BitmapButton(self, wx.ID_ANY, bitmap=slopebitmap,
                                            size=(42, 42))  # create slope measurement button
-        self.toolbar.Add(self.slopeButton)
-
         opts = wx.Bitmap("./gui/options.png", wx.BITMAP_TYPE_ANY)
         self.graphOptionsButton = wx.BitmapButton(self, id=wx.ID_ANY, bitmap=opts, size=(42, 42))
-        self.toolbar.Add(self.graphOptionsButton)
-
         self.RecOnBmp = wx.Bitmap("./gui/rec.png", wx.BITMAP_TYPE_ANY)
         self.RecOffBmp = wx.Bitmap("./gui/recoff.png", wx.BITMAP_TYPE_ANY)
         self.recButton = wx.BitmapButton(self, id=wx.ID_ANY, bitmap=self.RecOffBmp,
                                          size=(self.RecOffBmp.GetWidth() + 10, self.RecOnBmp.GetHeight() + 10))
-        self.toolbar.Add(self.recButton)
         self.recButton.Bind(wx.EVT_BUTTON, self.OnRecord)
-
         self.graphOptionsButton.Bind(wx.EVT_BUTTON, self.OnOptions)
         self.slopeButton.Bind(wx.EVT_BUTTON, self.OnMeasureButton)
+
+    def createGraph(self):
+        self.loadWidgets()
+        self.initializeContext('default')
 
     def OnResult(self, event):
         """Show Result status."""
@@ -248,7 +247,7 @@ class LeftPanel(wx.Panel):
         if not isinstance(self.context,  context_type):
             self.context = context_type(self, self.onclick, self.onmotion)
         # A valid context should be in place
-        self.context.resetGraph()	# Reset the graph
+        self.ResetPlot()	# Reset the graph
         try:
             self.currentEvent.data.setParams(self.arbGraphParameters)  # pass paramters to plot
         except AttributeError:
@@ -260,12 +259,15 @@ class LeftPanel(wx.Panel):
             self.context.PlotLine(self.slopeStack[0], self.slopeMousePointer)
 
     def DrawWaitingPlot(self):
-        self.context.resetGraph()
+        self.ResetPlot()
         if not hasattr(self, 'staticImage'):
             self.staticImage = NP.random.random((50,50))
         wg = Graphs.DrawSimpleImage("Waiting for data...", self.staticImage, "Waiting for data...", extent=None)
         self.context.plotObject(wg)
         self.context.drawContext()
+
+    def ResetPlot(self):
+        self.context.resetGraph()
 
     def OnMeasureButton(self, event):
         if not hasattr(self.currentEvent, 'data') or self.currentEvent.data is None:
