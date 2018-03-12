@@ -5,12 +5,7 @@ import matplotlib.image as mpimg
 import matplotlib
 from distutils import spawn
 import matplotlib.cm as cm
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.colors import LogNorm
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
-from matplotlib.backends.backend_wx import NavigationToolbar2Wx
-from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
+
 from subprocess import Popen, PIPE
 import copy
 # import Image
@@ -18,6 +13,7 @@ import os, sys
 
 from Events import *
 import Graphs
+import Contexts
 
 
 # class for the frame handling
@@ -98,7 +94,7 @@ class RecordPanel(wx.Frame):
         return os.path.isfile(fname)
 
 
-class MyCustomToolbar(NavigationToolbar2Wx):
+"""class MyCustomToolbar(NavigationToolbar2Wx):
     def __init__(self, plotCanvas):
         # create the default toolbar
         NavigationToolbar2Wx.__init__(self, plotCanvas)
@@ -106,6 +102,7 @@ class MyCustomToolbar(NavigationToolbar2Wx):
         self.DeleteToolByPos(1)
         self.DeleteToolByPos(1)
         self.DeleteToolByPos(5)
+"""
 
 
 class LeftPanel(wx.Panel):
@@ -114,7 +111,7 @@ class LeftPanel(wx.Panel):
         wx.Panel.__init__(self, parent, -1, wx.DefaultPosition, wx.DefaultSize)
         vsizer1 = wx.BoxSizer(orient=wx.VERTICAL)
         self.createGraph()
-        vsizer1.Add(self.mycanvas, proportion=1, flag=wx.EXPAND | wx.ALL, border=0)
+        vsizer1.Add(self.context.UIElement(), proportion=1, flag=wx.EXPAND | wx.ALL, border=0)
         vsizer1.Add(self.toolbar, flag=wx.EXPAND | wx.ALL, border=0)
         self.SetSizerAndFit(vsizer1)
         self.slopeStack = []
@@ -146,9 +143,8 @@ class LeftPanel(wx.Panel):
         self.movieFileName = fname
         self.overwrite = overwrite
         if (not self.recordVideo) and record:  # If record was off and changed to on
-            # self.movieWriter.setup(self.figure, self.movieFileName, self.dpi)
             fps = 15
-            self.recordingSize = self.mycanvas.GetSize()
+            self.recordingSize = self.context.UIElement().GetSize()
             print self.recordingSize
             self.moviePipe = Popen(
                 ['ffmpeg', '-f', 'rawvideo','-pix_fmt','argb','-s:v',str(self.recordingSize[0])+'x' +
@@ -172,24 +168,14 @@ class LeftPanel(wx.Panel):
     def getRecordStatus(self):
         return self.recordVideo, self.movieFileName, self.overwrite
 
-    def resetGraph(self):
-        self.figure.delaxes(self.axes)
-        self.figure.clf()
-        self.axes = self.figure.add_subplot(111)
 
     def createGraph(self):
-        self.figure = matplotlib.figure.Figure()
-        self.axes = self.figure.add_subplot(111)
-        t = NP.arange(0.0, 10, 1.0)
-        s = [0, 1, 0, 1, 0, 2, 1, 2, 1, 0]
-        self.y_max = 10
-        self.mycanvas = FigureCanvas(self, -1, self.figure)
-        self.mycanvas.SetSize((100, 100))
-        self.mycanvas.mpl_connect('button_press_event', self.onclick)
-        self.mycanvas.mpl_connect('motion_notify_event', self.onmotion)
+        self.context = Contexts.context_table['default'](self, self.onclick, self.onmotion)
+        # Set up GUI elements
         self.toolbar = wx.BoxSizer(orient=wx.HORIZONTAL)
-        self.navMenu = MyCustomToolbar(self.mycanvas)
-        self.toolbar.Add(self.navMenu)
+        #temporarily disable toolbar
+        #self.navMenu = MyCustomToolbar(self.mycanvas)
+        #self.toolbar.Add(self.navMenu)
         slopebitmap = wx.Bitmap("./gui/slope.png", wx.BITMAP_TYPE_ANY)
         self.slopeButton = wx.BitmapButton(self, wx.ID_ANY, bitmap=slopebitmap,
                                            size=(42, 42))  # create slope measurement button
@@ -215,8 +201,6 @@ class LeftPanel(wx.Panel):
             # Thread aborted (using our convention of None return)
             self.status.SetLabel('Computation aborted')
         else:
-            # self.figure = matplotlib.figure.Figure()
-            # self.axes = self.figure.add_subplot(111)
             self.currentEvent = event # Copy because event is a C++ object that gets deleted
             self.currentEvent.data._PV = self.persistentVars  # Gives the plot a simple dictionary to save persistent vars
             try:
@@ -226,8 +210,8 @@ class LeftPanel(wx.Panel):
             # Save movie frame
             if self.recordVideo:
                 #print "Writing " + str(self.currentEvent.data.simTime)
-                self.movieDim = self.mycanvas.get_width_height()
-                imdata = self.mycanvas.tostring_argb()
+                self.movieDim = self.context.getCanvasSize()
+                imdata = self.context.getARGB() # Get data byte string
                 self.moviePipe.stdin.write(imdata)
 
     """def OnChangeGraph(self, event):
@@ -253,40 +237,35 @@ class LeftPanel(wx.Panel):
                 if hasattr(self.currentEvent.data, key): #Check if key is in object
                     # Copy persistent value to object
                     setattr(self.currentEvent.data, key, self.persistentVars[key])
-
-        self.resetGraph()	# Reset the graph
+        # Setup a drawing context of the correct type, determined by the plot to draw
+        if hasattr(self.currentEvent.data, "context_type"): # Determine which context to use
+            context_type_name = self.currentEvent.data.context_type # gets a string
+            context_type = Contexts.context_table[context_type_name] # Gets a class
+        else:
+            context_type = Contexts.context_table['default'] # return default class
+        # Check if self.context is an instance of context_type.  
+        # If not, create a new context
+        if not isinstance(self.context,  context_type):
+            self.context = context_type(self, self.onclick, self.onmotion)
+        # A valid context should be in place
+        self.context.resetGraph()	# Reset the graph
         try:
             self.currentEvent.data.setParams(self.arbGraphParameters)  # pass paramters to plot
         except AttributeError:
             True
-        rax = self.currentEvent.data.drawPlot(self.figure, self.axes)
-        if rax != None:  # This allows the graph to reconfigure its own axes, instead of allowing the panel to handle it
-            self.axes = rax
-        #self.axes.set_title(self.currentEvent.data.plottype, horizontalalignment='center', verticalalignment='top',
-        #                    transform=self.axes.transAxes, fontsize="smaller")
+        self.context.plotObject(self.currentEvent.data)
+        self.context.drawContext()
 
-        self.mycanvas.draw()
         if self.measuring and self.slopeMousePointer is not None:
-            self.PlotLine(self.slopeStack[0], self.slopeMousePointer)
+            self.context.PlotLine(self.slopeStack[0], self.slopeMousePointer)
 
     def DrawWaitingPlot(self):
-        self.resetGraph()
+        self.context.resetGraph()
         if not hasattr(self, 'staticImage'):
             self.staticImage = NP.random.random((50,50))
         wg = Graphs.DrawSimpleImage("Waiting for data...", self.staticImage, "Waiting for data...", extent=None)
-        rax = wg.drawPlot(self.figure, self.axes)
-        if rax != None:  # This allows the graph to reconfigure its own axes, instead of allowing the panel to handle it
-            self.axes = rax
-        self.mycanvas.draw()
-
-
-
-    # self.slopeStack = []
-    # self.measuring = False
-
-    def PlotLine(self, x1, x2):
-        self.axes.plot([x1[0], x2[0]], [x1[1], x2[1]])
-        self.mycanvas.draw()
+        self.context.plotObject(wg)
+        self.context.drawContext()
 
     def OnMeasureButton(self, event):
         if not hasattr(self.currentEvent, 'data') or self.currentEvent.data is None:
@@ -325,8 +304,6 @@ class LeftPanel(wx.Panel):
             x1 = self.slopeStack[0]
             x2 = NP.array([event.xdata, event.ydata])
             self.slopeMousePointer = x2
-            # self.PlotLine(x1, x2)
-            # self.slopeStack.append(x1)
             self.measuring = True
             self.DrawPlot()
 
@@ -342,7 +319,7 @@ class LeftPanel(wx.Panel):
             x2 = self.slopeStack[1]
             mv = x2 - x1
             m = mv[1] / mv[0]
-            self.PlotLine(x1, x2)
+            self.context.PlotLine(x1, x2)
             self.mainframe.status.SetStatusText("The slope is " + str(m))
             self.slopeStack = []
             self.measuring = False

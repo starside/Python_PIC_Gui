@@ -12,8 +12,7 @@ class GraphContainer(LeftPanel):
         # wx.Panel.__init__(self, parent, -1, wx.DefaultPosition, wx.DefaultSize, style=wx.SUNKEN_BORDER)
         LeftPanel.__init__(self, parent)
         self._mouseDownFlag = 0
-        self.mycanvas.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
-        self.Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
+        self.context.UIElement().Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
         self.SetMinSize(wx.Size(100, 100))
 
     def OnRightDown(self, event):
@@ -42,7 +41,7 @@ class GraphContainer(LeftPanel):
         menu.Destroy()
 
     def PopupHandler(self, event):
-        self.resetGraph()
+        self.context.resetGraph()
         self.persistentVars = dict() # Reset persistent variable container
         wasRemoved = False
         for g in self.centralDispatcher: #Remove self from central dispatch.  Clean up the old cruft
