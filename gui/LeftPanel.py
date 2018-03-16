@@ -163,7 +163,7 @@ class LeftPanel(wx.Panel):
 
     def initializeContext(self, context):
         vsizer1 = wx.BoxSizer(orient=wx.VERTICAL)
-        self.context = Contexts.context_table[context](self, self.onclick, self.onmotion)
+        self.context = Contexts.context_table[context](self, self.onclick, self.onmotion, self.OnRightDown)
         # Set up GUI elements
         self.toolbar = wx.BoxSizer(orient=wx.HORIZONTAL)
         #temporarily disable toolbar
@@ -239,14 +239,21 @@ class LeftPanel(wx.Panel):
         # Setup a drawing context of the correct type, determined by the plot to draw
         if hasattr(self.currentEvent.data, "context_type"): # Determine which context to use
             context_type_name = self.currentEvent.data.context_type # gets a string
-            context_type = Contexts.context_table[context_type_name] # Gets a class
-        else:
-            context_type = Contexts.context_table['default'] # return default class
+	else:
+            context_type_name = 'default' # return default class
+        context_type = Contexts.context_table[context_type_name] 
         # Check if self.context is an instance of context_type.  
         # If not, create a new context
-        if not isinstance(self.context,  context_type):
-            self.context = context_type(self, self.onclick, self.onmotion)
-        # A valid context should be in place
+        
+	# Temporarily comment out the if statement
+	if not isinstance(self.context,  context_type):
+       		self.initializeContext(context_type_name)
+        newcontext = context_type(self, self.onclick, self.onmotion, self.OnRightDown)
+	self.GetSizer().Replace(self.context.UIElement(), newcontext.UIElement())
+	del self.context
+	self.context = newcontext
+	self.Layout()
+	# A valid context should be in place
         self.ResetPlot()	# Reset the graph
         try:
             self.currentEvent.data.setParams(self.arbGraphParameters)  # pass paramters to plot

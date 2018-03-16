@@ -39,6 +39,7 @@ class NewFrame(wx.Frame, DefaultsCommLink):
                     "The layout you specified " + layout + " is not defined in NewFrame.py.  Expect a method name starting with OnLayout\n")
                 exit(0)
 
+	self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Bind(wx.EVT_ACTIVATE, self.OnFocus)
         self.Bind(wx.EVT_MOVE, self.OnMove)
         self.mainframe.activeFrame = self
@@ -106,6 +107,11 @@ class NewFrame(wx.Frame, DefaultsCommLink):
     def enableLayoutMenu(self, state):
         for lo in self.layoutItems:
             lo.Enable(state)
+
+    def OnClose(self, event):
+        self.PruneDisplays(0)
+	self.Destroy()
+	# Need to signal parent to delete this object
 
     def OnLayoutMenuShow(self, event):
         freezeLayout = False

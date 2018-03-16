@@ -12,11 +12,8 @@ class GraphContainer(LeftPanel):
         # wx.Panel.__init__(self, parent, -1, wx.DefaultPosition, wx.DefaultSize, style=wx.SUNKEN_BORDER)
         LeftPanel.__init__(self, parent)
         self._mouseDownFlag = 0
-        self.bindHandlers()
         self.SetMinSize(wx.Size(100, 100))
 
-    def bindHandlers(self):
-        self.context.UIElement().Bind(wx.EVT_RIGHT_DOWN, self.OnRightDown)
 
     def OnRightDown(self, event):
         menu = wx.Menu()
