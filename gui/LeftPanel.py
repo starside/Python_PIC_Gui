@@ -244,15 +244,12 @@ class LeftPanel(wx.Panel):
         context_type = Contexts.context_table[context_type_name] 
         # Check if self.context is an instance of context_type.  
         # If not, create a new context
-        
-	# Temporarily comment out the if statement
 	if not isinstance(self.context,  context_type):
-       		self.initializeContext(context_type_name)
-        newcontext = context_type(self, self.onclick, self.onmotion, self.OnRightDown)
-	self.GetSizer().Replace(self.context.UIElement(), newcontext.UIElement())
-	del self.context
-	self.context = newcontext
-	self.Layout()
+                newcontext = context_type(self, self.onclick, self.onmotion, self.OnRightDown)
+	        self.GetSizer().Replace(self.context.UIElement(), newcontext.UIElement())
+	        del self.context
+	        self.context = newcontext
+	        self.Layout()
 	# A valid context should be in place
         self.ResetPlot()	# Reset the graph
         try:

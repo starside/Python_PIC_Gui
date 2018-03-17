@@ -2,14 +2,22 @@ import wx
 import wx.stc as stc
 from collections import deque
 import sys
+import weakref
 
 from defaults import *
 from GraphContainer import *
+import pdb
 
+class NewFrame:
+    def __init__(self, parent, loader, dispatch, layout=None, defaults=[]):
+        self.frame = NewFrameWx(parent, loader, dispatch, layout, defaults, container=self)
+
+    def __del__(self):
+        self.frame.Destroy()
 
 # I need an event to remove listeners when the window gets closed!
-class NewFrame(wx.Frame, DefaultsCommLink):
-    def __init__(self, parent, loader, dispatch, layout=None, defaults=[]):
+class NewFrameWx(wx.Frame, DefaultsCommLink, object):
+    def __init__(self, parent, loader, dispatch, layout=None, defaults=[], container=None):
         """Create the MainFrame."""
         wx.Frame.__init__(self, parent, -1, 'PIC Interface.  J. Kelly & V. Decyk', style=wx.DEFAULT_FRAME_STYLE)
         self.loader = loader
@@ -20,6 +28,7 @@ class NewFrame(wx.Frame, DefaultsCommLink):
         self.stf = dispatch
         self.Bind(wx.EVT_CLOSE, self.OnQuit)
         self.mainframe = parent
+        self.containerObj = weakref.ref(container) # Used to signal which frame to delete
 
         self.SetPosition((200, 200))
         if layout == None:
@@ -39,7 +48,6 @@ class NewFrame(wx.Frame, DefaultsCommLink):
                     "The layout you specified " + layout + " is not defined in NewFrame.py.  Expect a method name starting with OnLayout\n")
                 exit(0)
 
-	self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.Bind(wx.EVT_ACTIVATE, self.OnFocus)
         self.Bind(wx.EVT_MOVE, self.OnMove)
         self.mainframe.activeFrame = self
@@ -51,6 +59,7 @@ class NewFrame(wx.Frame, DefaultsCommLink):
     def PruneDisplays(self, num):  # Prune displays down to number num
         while len(self.displayAreas) > num:
             toDie = self.displayAreas.pop()
+            del toDie.context # delete the drawing context
             toDie.Hide()
             for d in self.stf.dispatchers:
                 d.RemoveListener(toDie)
@@ -108,11 +117,6 @@ class NewFrame(wx.Frame, DefaultsCommLink):
         for lo in self.layoutItems:
             lo.Enable(state)
 
-    def OnClose(self, event):
-        self.PruneDisplays(0)
-	self.Destroy()
-	# Need to signal parent to delete this object
-
     def OnLayoutMenuShow(self, event):
         freezeLayout = False
         for d in self.displayAreas:
@@ -137,13 +141,7 @@ class NewFrame(wx.Frame, DefaultsCommLink):
             self.mainframe.Move(wx.Point(x + w + border, y))
 
     def OnQuit(self, event):
-        if self.mainframe is not None:  # remove self from windowList
-            try:
-                self.mainframe.windowList.remove(self)
-            except ValueError:
-                print "Could not remove frame from window list.  This should never happen!"
-                exit(0)
-
+        wx.PostEvent(self.mainframe.rpanel, CloseFrameEvent(self.containerObj())) 
         self.PruneDisplays(0)
         self.Hide()
 
@@ -245,3 +243,7 @@ class NewFrame(wx.Frame, DefaultsCommLink):
             if self.sizeLocked <= 0:
                 self.SetMinSize(self.oldSize[0])
                 self.SetMaxSize(self.oldSize[1])
+
+    """def __del__(self):
+        super.__del__()
+        print("framedel")"""

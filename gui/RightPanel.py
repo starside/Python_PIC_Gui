@@ -86,7 +86,7 @@ class RightPanel(wx.Panel):
         self.fsm.setState('1')                                  #Set the initial state
         #self.fsm.runState(self.fsm.currentState)                #Execute state
         wx.CallAfter(self.fsm.runState, self.fsm.currentState)
-
+        EVT_FRAMECLOSE(self, self.OnFrameClose)
         EVT_RUNSTEP(self, self.OnRunStep)
         wx.PostEvent(self, RunStepEvent())
 
@@ -131,6 +131,10 @@ class RightPanel(wx.Panel):
             self.runconText = "Run Continuously"
 
         self.Fit()
+
+    def OnFrameClose(self, event):
+        self.mainframe.windowList.remove(event.frame)
+        del event.frame
 
     def OnRunMode(self, event):
         trans = None

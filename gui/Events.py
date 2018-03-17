@@ -13,9 +13,12 @@ EVT_NEW_TIMESTEP_ID = wx.NewId()
 EVT_RUNSTEP_ID = wx.NewId()
 EVT_RUNNOW_ID = wx.NewId()
 EVT_CLEARGRAPHSTACK_ID = wx.NewId()
-
+EVT_FRAMECLOSE_ID = wx.NewId()
 
 # Step 2, create a new function to connect the event ID to a callback func
+def EVT_FRAMECLOSE(win, func):
+    win.Connect(-1, -1, EVT_FRAMECLOSE_ID, func)
+
 def EVT_REFRESHGRAPH(win, func):
     """Define Result Event."""
     win.Connect(-1, -1, EVT_REFRESHGRAPH_ID, func)
@@ -55,6 +58,12 @@ def EVT_CLEARGRAPHSTACK(win, func):
 
 
 # Define An Event class
+class CloseFrameEvent(wx.PyEvent):
+    def __init__(self, frame):
+        wx.PyEvent.__init__(self)
+        self.SetEventType(EVT_FRAMECLOSE_ID)
+        self.frame = frame
+
 class RunStepEvent(wx.PyEvent):
     def __init__(self):
         wx.PyEvent.__init__(self)
