@@ -16,7 +16,7 @@ class PipeSimulation():
         self._want_abort = False
         self.pipe = pipe
         self.que = que
-        self._pollrate = 1.0 / 30.0  # times per second to poll for input.  Set to 0 for no delay
+        self._pollrate = 1.0 / 100.0  # times per second to poll for input.  Set to 0 for no delay
         self.myq = []
         self.guiq = []  # GUI CONTROL QUEUE
         self.runCounter = -1
@@ -25,6 +25,9 @@ class PipeSimulation():
 
         # self.start()
 
+    def sendNop(self):
+        pass #self.que.put("NOP")
+
     def initFortran(self):
         self.iAmRunning = False
         self.fC = 0
@@ -32,7 +35,7 @@ class PipeSimulation():
 
     def run(self):
         while self.step() == 0:
-            True
+            pass
 
     def sigPath(self, temp_obj):
         if temp_obj.signame == "OPENFRAME":
@@ -71,6 +74,8 @@ class PipeSimulation():
             self.iAmRunning = True
             EVT_RUNSTEP(self._notify_window.rpanel,
                         self._notify_window.OnExitPhase2)  # Redirect running loop to an exit callback
+        elif temp_obj == "NOP":
+            pass  
 
     def dataPath(self, temp_obj):
         try:
@@ -95,10 +100,10 @@ class PipeSimulation():
                 self.guiq.append(rdo)
             else:
                 self.myq.append(rdo)
-        if len(self.myq) == 0 and len(self.guiq) == 0:
-            return 1  # Nothing to do
+        #if len(self.myq) == 0 and len(self.guiq) == 0:
+        #    return 1  # Nothing to do
 
-            # Read control q.  The que is always responsive
+        # Read control q.  The que is always responsive
         if len(self.guiq) > 0:
             temp_obj = self.guiq[0]
             if hasattr(temp_obj, 'signame'):  # Check to see if object is a graph of a signal
@@ -106,12 +111,11 @@ class PipeSimulation():
                 self.guiq.remove(temp_obj)
             else:
                 self.controlPath(temp_obj)
-                time.sleep(1.0 / 30.0)
+                time.sleep(self._pollrate)
                 if self.iAmRunning:  # The will cause getEvents to block unless iAmRunning is True
                     self.pipe.put("GoR")
                     self.guiq.remove(temp_obj)
-
-                    # Read queue myq.  This que can be paused
+        # Read queue myq.  This que can be paused
         if len(self.myq) > 0:
             temp_obj = self.myq[0]
             self.myq.remove(temp_obj)

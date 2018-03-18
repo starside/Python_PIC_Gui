@@ -3,7 +3,7 @@ import wx.stc as stc
 from InputEditor import *
 from NewFrame import *
 from Events import *
-
+from threading import Thread
 
 class RightPanel(wx.Panel):
     def __init__(self, parent, sim):
@@ -217,6 +217,7 @@ class RightPanel(wx.Panel):
     def OnStart(self, event):
         self.simframe.worker.iAmRunning = True  # start the sim
         self.simframe.worker.runCounter = 1  # the number of times to run
+        self.simframe.worker.sendNop()
 
     def OnStartLong(self, event):
         """
@@ -226,6 +227,7 @@ class RightPanel(wx.Panel):
         """
         self.simframe.worker.iAmRunning = True
         self.OnFFChange(None)
+        self.simframe.worker.sendNop()
 
     def OnPause(self, event):
         """
@@ -234,6 +236,7 @@ class RightPanel(wx.Panel):
         :return:
         """
         self.simframe.worker.iAmRunning = False
+        self.simframe.worker.sendNop()
 
     def OnRunChunk(self,event):
         cv = self.displayTime
@@ -252,6 +255,7 @@ class RightPanel(wx.Panel):
         self.OnFFChange(None)
         self.ffpoint.SetValue(str(cv))
         self.simframe.worker.iAmRunning = True
+        self.simframe.worker.sendNop()
         #self.RunLongButton.SetValue(self.simframe.worker.iAmRunning)
 
 
@@ -327,6 +331,12 @@ class RightPanel(wx.Panel):
 
         #Run a time step
         wx.Yield()
+        """if not hasattr(self, "_wt"):
+                self._wt = Thread(target=self.simframe.worker.run)
+                self._wt.start()
+        if self._wt.is_alive() == False:
+                self._wt.join()
+                del self._wt"""
         self.simframe.worker.run()
         wx.PostEvent(self, RunStepEvent())
 
