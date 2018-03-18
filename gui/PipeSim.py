@@ -16,7 +16,7 @@ class PipeSimulation():
         self._want_abort = False
         self.pipe = pipe
         self.que = que
-        self._pollrate = 1.0 / 100.0  # times per second to poll for input.  Set to 0 for no delay
+        self._pollrate = 1.0 / 300.0  # times per second to poll for input.  Set to 0 for no delay
         self.myq = []
         self.guiq = []  # GUI CONTROL QUEUE
         self.runCounter = -1

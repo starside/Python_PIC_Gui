@@ -361,6 +361,10 @@ class DrawElectronDensity(DrawOptions, KeyList):
 
         # well defined axis here
 
+class AutoMenuBase():
+    """ Base class to include the AutoMenu in your graphs.  Inherit it """
+    def makeControlPanel(self, parentWindow):  # Default options
+        return ExperimentalControlPanel(self, parentWindow)
 
 """
 This plot draws a simple line plot

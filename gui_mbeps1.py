@@ -220,7 +220,7 @@ def main(*args):
     Initialize default windows
     """
     initialize_menus(pc)
-    #debug PopMenus(pc, in1)
+    PopMenus(pc, in1)
     # sends data the GUI may want to know about the simulation
     pc.updateSimInfo({"tend": in1.tend})    #End time of the simulation
     # * * * start main iteration loop * * *

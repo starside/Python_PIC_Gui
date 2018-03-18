@@ -187,6 +187,7 @@ class NewFrameWx(wx.Frame, DefaultsCommLink, object):
         self._GoodSize()
 
     def ToggleNav(self, event):
+        return # debug, temporary
         for d in self.displayAreas:
             toggle = True
             if d.toolbar.IsShown(d.navMenu):
