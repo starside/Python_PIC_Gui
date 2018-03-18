@@ -391,7 +391,6 @@ class DrawSimple(DrawOptions, KeyList):
         self.m_Title = title
 
     def drawPlot(self, fig, axes):
-        print(self._PV)
         if 'ylimits' not in self._PV:    #Set default limits on y axis
             self._PV['ylimits'] = (0, 0)
         self.syncParameters()

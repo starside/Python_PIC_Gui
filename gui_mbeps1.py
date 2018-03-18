@@ -14,6 +14,8 @@ from dtimer import *
 from PopMenus import *
 from types import *  # This is required for the rightType function
 
+#debug
+from line_profiler import LineProfiler
 
 # read namelist
 iuin = 8
@@ -225,6 +227,8 @@ def main(*args):
     PopMenus(pc, in1)
     # sends data the GUI may want to know about the simulation
     pc.updateSimInfo({"tend": in1.tend})    #End time of the simulation
+    #debug
+    prof = LineProfiler(pc._sendplot)
     #
     # * * * start main iteration loop * * *
     for ntime in xrange(nstart, nloop):
@@ -328,7 +332,9 @@ def main(*args):
                 s1.potential_diag1(s1.sfield, s1.pkw, s1.wk, ntime)
                 if ((in1.ndp == 1) or (in1.ndp == 3)):
                     # display potential
+                    prof.enable()
                     graf2.dscaler1(s1.sfield, ' POTENTIAL', ntime*in1.dt, 999, 0, nx, irc, title='Potential vs X', early=in1.ntp)
+                    prof.disable()
                     if (irc[0] == 1):
                         break
                     irc[0] = 0
@@ -465,15 +471,14 @@ def main(*args):
                 s1.dwrite_restart1(s1.iur)
                 dtimer(dtime, itime, 1)
                 s1.tfield[0] += float(dtime)
-
-
-        
+        prof.dump_stats("pood2")
 
     ntime = ntime + 1
     # loop time
     dtimer(dtime, ltime, 1)
     tloop = tloop + float(dtime)
-
+    
+    #debug
     # * * * end main iteration loop * * *
 
     print >> iuot

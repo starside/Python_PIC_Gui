@@ -5,8 +5,9 @@ import os
 import sys
 import time
 from threading import Thread
-from multiprocessing import Process, Pipe, Queue, Lock, Value, Manager
-import cPickle
+from multiprocessing import Process, Queue, Lock, Value, Manager
+#debug import cPickle
+import jPickle as cPickle
 from collections import namedtuple
 
 import Graphs
@@ -177,7 +178,7 @@ class PlasmaContext():
         except:
             return False
         return False
-
+ 
     def _sendplot(self, obj):
         """Low level method to send an object to the GUI processes via pipe.
            It also serializes the object using cPickle
@@ -195,6 +196,7 @@ class PlasmaContext():
             iv = cPickle.dumps(obj)
             self.conn.que.put(iv)
             self.conn.gui_conn.get() # Wait for response.  This will block until response recieved
+        
 
     def _sendmessageasync(self, obj):
         """

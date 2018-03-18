@@ -1,6 +1,7 @@
 from lib import *
 import numpy as NP
-import cPickle
+#debug import cPickle
+import jPickle as cPickle
 import time
 
 from Graphs import *
@@ -90,7 +91,7 @@ class PipeSimulation():
         # see if we need to read data from queue
         if len(self.myq) == 0 and len(self.guiq) == 0:
             try:
-                rdo = cPickle.loads(self.que.get())
+               rdo = cPickle.loads(self.que.get())
             except:
                 wx.Yield()
                 return 1

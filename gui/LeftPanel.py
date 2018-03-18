@@ -192,7 +192,7 @@ class LeftPanel(wx.Panel):
 
     def createGraph(self):
         self.loadWidgets()
-        self.initializeContext('default')
+        self.initializeContext('null')
 
     def OnResult(self, event):
         """Show Result status."""
@@ -225,6 +225,13 @@ class LeftPanel(wx.Panel):
         except:
             True """
 
+    def replaceContext(self, newcontext):
+        """ Takes a newly instantiated context, and sets the context to it """
+        self.GetSizer().Replace(self.context.UIElement(), newcontext.UIElement())
+        del self.context
+        self.context = newcontext
+        self.Layout()
+
     def DrawPlot(self):
     	if not hasattr(self.currentEvent, "data"): # Check if there is a data field set
     		return # If does not exist, return and wait for data
@@ -244,12 +251,9 @@ class LeftPanel(wx.Panel):
         context_type = Contexts.context_table[context_type_name] 
         # Check if self.context is an instance of context_type.  
         # If not, create a new context
-	if not isinstance(self.context,  context_type):
-                newcontext = context_type(self, self.onclick, self.onmotion, self.OnRightDown)
-	        self.GetSizer().Replace(self.context.UIElement(), newcontext.UIElement())
-	        del self.context
-	        self.context = newcontext
-	        self.Layout()
+        if not isinstance(self.context,  context_type):
+            newcontext = context_type(self, self.onclick, self.onmotion, self.OnRightDown)
+            self.replaceContext(newcontext)
 	# A valid context should be in place
         self.ResetPlot()	# Reset the graph
         try:
