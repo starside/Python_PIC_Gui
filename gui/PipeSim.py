@@ -7,10 +7,6 @@ import time
 from Graphs import *
 from Events import *
 
-from multiprocessing import Queue
-import Queue as QE
-
-
 class PipeSimulation():
     def __init__(self, notify_window, pipe, que):
         """Init Worker Thread Class."""

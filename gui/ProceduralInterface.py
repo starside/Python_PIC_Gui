@@ -5,7 +5,7 @@ import os
 import sys
 import time
 from threading import Thread
-from multiprocessing import Process, Queue, Lock, Value, Manager
+from Queue import Queue
 #debug import cPickle
 import jPickle as cPickle
 from collections import namedtuple
@@ -129,11 +129,10 @@ class PlasmaContext():
             interface object.
 
         """
-        manager = Manager()
         # async is a multiprocess dictionary used to keep track of which plots are being
         # displayed, this way the simulation process does not need to generate graphs for
         # invisible plots
-        async = manager.dict()  # sync or async mode
+        async = dict()  # sync or async mode
         # que is the primary means of sending plot data to the GUI thread, typically using
         # _sendplot
         que = Queue()
@@ -150,7 +149,7 @@ class PlasmaContext():
         # A named tuple is used for code clarity
         conn = Connection(gui_conn, que, events, async)
         # run the simulation code in child process
-        p = Process(target=func, args=conn)
+        p = Thread(target=func, args=conn)
         #p.daemon = True
         p.start()
         #run gui in parent process
