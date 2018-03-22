@@ -1,6 +1,7 @@
 """ Graphical contexts """
 from collections import namedtuple
 import wx
+from wx import glcanvas
 
 class Context:
     def __init__(self, home):
@@ -236,7 +237,111 @@ class MathGlContext(Context):
     def __del__(self):
         print("del")
 
+class MathGlContextGL(Context):
+    def __init__(self, home, onclick, onmotion, onrightclick):
+        """ Load modules """
+        import mathgl
+        self.__lmgl = mathgl
+        import OpenGL.GL as gl
+        self.__gl = gl
+        # Init OpenGL
+        attribList = (glcanvas.WX_GL_RGBA, # RGBA
+                      glcanvas.WX_GL_DOUBLEBUFFER, # Double Buffered
+                      glcanvas.WX_GL_DEPTH_SIZE, 24) # 24 bit
+        self.glc = glcanvas.GLCanvas(home, attribList=attribList)
+        self.ui = self.glc
+        self.context = glcanvas.GLContext(self.glc)
+        # Setup mouse callbacks
+        self.ui.Show(True)
+        self.glc.Show(True)
+        self.registerMouseCallbacks(onclick, onmotion, onrightclick)
+	self.UIElement().Bind(wx.EVT_RIGHT_DOWN, onrightclick)
+        self.UIElement().Bind(wx.EVT_PAINT, self._OnPaint)
+        self.UIElement().Bind(wx.EVT_SIZE, self._OnResize)
+    
+    def GlReshape(self, width, height):
+        gl = self.__gl
+        gl.glViewport(0, 0, width, height)
+        gl.glMatrixMode(gl.GL_PROJECTION)
+        gl.glLoadIdentity()
+        gl.glOrtho(-0.5, 0.5, -0.5, 0.5, -1, 1)
+        gl.glMatrixMode(gl.GL_MODELVIEW)
+        gl.glLoadIdentity()
+
+    def _OnResize(self, event):
+        if self.ui.IsShownOnScreen():
+            self.ui.Show()
+            self.glc.SetCurrent(self.context)
+            w, h = self.resetGraph()
+            self.GlReshape(w, h)
+        event.Skip()
+
+    def _OnPaint(self, event):
+        self.glc.SetCurrent(self.context)
+        self.drawContext()
+        if event:
+            event.Skip()
+
+
+    def onClick(self, event):
+        if self.click_handler is None:
+            return
+        self.click_handler(event)
+
+    def onMotion(self, event):
+        if self.motion_handler is None:
+            return
+        self.motion_handler(event)
+
+    def registerMouseCallbacks(self, click, motion, rightclick):
+        self.click_handler = click
+        self.motion_handler = motion
+        self.rightclick_handler = rightclick
+
+    def SwapBuffers(self):
+        self.glc.SwapBuffers()
+
+    def contextType(self):
+        return "mathglGL"
+
+    def resetGraph(self):
+        size = self.ui.GetClientSize() # Get initial size
+        self.size = size
+        self.graph = self.__lmgl.mglGraph(1, size.width, size.height) # Create initial plot
+        return size
+
+    def plotObject(self, obj):
+        self.obj = obj
+        self._OnPaint(None)
+    
+    def drawContext(self):
+        if self.obj:
+                self.resetGraph()
+                self.graph.Clf()
+                self.obj.drawPlot(self.graph)
+                self.graph.Finish()
+                self.SwapBuffers()
+
+    def UIElement(self):
+        return self.ui
+
+    def getCanvasSize(self):
+        s = self.UIElement().GetSize()
+        return (s.width, s.height)
+
+    def getARGB(self):
+        #return self.mycanvas.tostring_argb()
+        pass
+
+    def PlotLine(self, x1, x2):
+        #self.axes.plot([x1[0], x2[0]], [x1[1], x2[1]])
+        #self.mycanvas.draw()
+        pass
+
+    def __del__(self):
+        pass
+
 #List of all availible contexts
 context_table = {'default':MatplotLibContext, 'matplotlib':MatplotLibContext, 'null':NullContext, \
-                'mathgl':MathGlContext}
+                'mathgl':MathGlContext, 'mathglGL':MathGlContextGL}
 

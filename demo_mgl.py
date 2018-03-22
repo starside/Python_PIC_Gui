@@ -5,6 +5,7 @@
 import sys
 import math
 import numpy
+import time
 from types import *  # This is required for the rightType function
 from mathgl import *
 """
@@ -32,7 +33,7 @@ class DrawSineMpl(Graphs.AutoMenuBase):
 
 class DrawSine(Graphs.AutoMenuBase):
     def __init__(self, xax, yax):
-        self.context_type = "mathgl"
+        self.context_type = "mathglGL"
         self.xax = xax
         self.yax = yax
         self.m_Title = "Sine Curve Mathgl"
@@ -75,7 +76,18 @@ def main(*args):
     # * * * start main iteration loop * * *
     nstart = 0
     nloop = 10000
+    avetime = 0
+    timesteps = 0
+    ts = time.clock()
     for ntime in xrange(nstart, nloop):
+        te = time.clock()
+        avetime += te - ts
+        ts = te
+        timesteps += 1.0
+        print avetime/timesteps
+        if timesteps == 10:
+            avetime = 0
+            timesteps =0 
         print "ntime = ", ntime
         curtime = ntime * in1.dt
         if ntime == nstart:

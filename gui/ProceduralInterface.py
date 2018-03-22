@@ -105,7 +105,8 @@ class PlasmaContext():
         self.norun = False
         #read in comm channels
         self.conn = Connection(*args) # This is a bundle of connections to the simulation process
-        
+        self.sentObjs = 0
+
         self.curTime = 0
         self.graphEnabled = True
         self.callbacks = dict()
@@ -177,8 +178,8 @@ class PlasmaContext():
         except:
             return False
         return False
- 
-    def _sendplot(self, obj):
+    
+    def _sendplot(self, obj, block=False):
         """Low level method to send an object to the GUI processes via pipe.
            It also serializes the object using cPickle
 
@@ -194,8 +195,11 @@ class PlasmaContext():
                 True
             iv = cPickle.dumps(obj)
             self.conn.que.put(iv)
-            self.conn.gui_conn.get() # Wait for response.  This will block until response recieved
-        
+            self.sentObjs += 1
+            if block:
+                for i in range(self.sentObjs):
+                    self.conn.gui_conn.get() # Wait for response.  This will block until response recieved
+                self.sentObjs = 0
 
     def _sendmessageasync(self, obj):
         """
@@ -277,8 +281,7 @@ class PlasmaContext():
         readQ = True
 
         if pause:
-            self._sendplot("RUNCONTROL")  # This simply makes sure the run once button runs only 1 timestep
-
+            self._sendplot("RUNCONTROL", block=True)  # This simply makes sure the run once button runs only 1 timestep
         while readQ:
             try:
                 to = self.conn.events.get(not pause)
@@ -290,7 +293,7 @@ class PlasmaContext():
         for q in que:
             if self.callbacks.has_key(q.signame):
                 if q.signame == "EXIT":
-                    self._sendplot("EXIT")
+                    self._sendplot("EXIT", block=True)
                     self.showGraphs(False)
                     self.norun = True
                 cb = self.callbacks[q.signame]

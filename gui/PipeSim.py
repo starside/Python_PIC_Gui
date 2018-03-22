@@ -83,7 +83,7 @@ class PipeSimulation():
         except:
             True
         wx.PostEvent(self._notify_window, ResultEvent(temp_obj, self.curTime))
-
+    
     def step(self):
         # Python Changes
         self.fC += 1
